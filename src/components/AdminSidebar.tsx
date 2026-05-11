@@ -5,10 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, FileText, BarChart3, LogOut } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Client Accounts", href: "/admin/clients", icon: Users },
-  { label: "All Invoices", href: "/admin/invoices", icon: FileText },
-  { label: "Reports", href: "/admin/reports", icon: BarChart3 },
+  { label: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
+  { label: "Client Accounts", href: "/admin-clients", icon: Users },
+  { label: "All Invoices", href: "/admin-invoices", icon: FileText },
+  { label: "Reports", href: "/admin-reports", icon: BarChart3 },
 ];
 
 export default function AdminSidebar() {

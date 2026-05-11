@@ -11,13 +11,13 @@ export async function proxy(req: NextRequest) {
     const session = req.cookies.get("session")?.value;
     const payload = await decrypt(session);
     if (payload) {
-      const dest = payload.role === "admin" ? "/admin/dashboard" : "/dashboard";
+      const dest = payload.role === "admin" ? "/admin-dashboard" : "/dashboard";
       return NextResponse.redirect(new URL(dest, req.nextUrl));
     }
     return NextResponse.next();
   }
 
-  if (path.startsWith("/admin") || path.startsWith("/dashboard") || path.startsWith("/invoices") ||
+  if (path.startsWith("/admin-") || path.startsWith("/dashboard") || path.startsWith("/invoices") ||
       path.startsWith("/create-invoice") || path.startsWith("/customers") || path.startsWith("/products") ||
       path.startsWith("/reports") || path.startsWith("/settings") || path.startsWith("/invoice-view")) {
     const session = req.cookies.get("session")?.value;
@@ -25,10 +25,10 @@ export async function proxy(req: NextRequest) {
     if (!payload) {
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
-    if (path.startsWith("/admin") && payload.role !== "admin") {
+    if (path.startsWith("/admin-") && payload.role !== "admin") {
       return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
     }
-    if (!path.startsWith("/admin") && payload.role === "admin" && !path.startsWith("/api")) {
+    if (!path.startsWith("/admin-") && payload.role === "admin" && !path.startsWith("/api")) {
       // Admin accessing client routes — allow, they might want to preview
     }
   }
@@ -37,7 +37,7 @@ export async function proxy(req: NextRequest) {
     const session = req.cookies.get("session")?.value;
     const payload = await decrypt(session);
     if (payload) {
-      const dest = payload.role === "admin" ? "/admin/dashboard" : "/dashboard";
+      const dest = payload.role === "admin" ? "/admin-dashboard" : "/dashboard";
       return NextResponse.redirect(new URL(dest, req.nextUrl));
     }
     return NextResponse.redirect(new URL("/login", req.nextUrl));
