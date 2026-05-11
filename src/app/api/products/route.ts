@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { kv } from "@/lib/kv";
 import { getSession } from "@/lib/session";
 import type { Product } from "@/lib/gst-types";
 import { generateId } from "@/lib/gst-utils";
