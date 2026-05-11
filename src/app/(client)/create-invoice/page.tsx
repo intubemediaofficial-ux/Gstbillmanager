@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, Save, Building2, ArrowRight, PenTool } from "lucide-react";
 import Image from "next/image";
 import type { Customer, Product, InvoiceType, Firm, Signature } from "@/lib/gst-types";
-import { INVOICE_TYPE_LABELS, GST_RATES, UNITS } from "@/lib/gst-types";
+import { INVOICE_TYPE_LABELS, GST_RATES, UNITS, HSN_LIBRARY } from "@/lib/gst-types";
 import { calculateGST, isInterState, formatCurrency } from "@/lib/gst-utils";
 
 interface ItemRow {
@@ -49,6 +49,7 @@ export default function CreateInvoicePage() {
   const [quickAmount, setQuickAmount] = useState("");
   const [quickDescription, setQuickDescription] = useState("");
   const [quickGstRate, setQuickGstRate] = useState(18);
+  const [quickHsn, setQuickHsn] = useState("");
 
   // Detailed mode items
   const [items, setItems] = useState<ItemRow[]>([{ description: "", hsn: "", qty: 1, unit: "PCS", rate: 0, gstRate: 18 }]);
@@ -129,7 +130,7 @@ export default function CreateInvoicePage() {
     const invoiceItems = quickMode
       ? [{
           description: quickDescription || `${MONTHS[month]} ${year} - Service`,
-          hsn: selectedFirm.hsnCode || "998361",
+          hsn: quickHsn || selectedFirm.hsnCode || "998361",
           qty: 1,
           unit: "MON",
           rate: qAmount,
@@ -328,7 +329,30 @@ export default function CreateInvoicePage() {
         {/* Quick Mode */}
         {quickMode && (
           <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-100">
-            <h3 className="text-sm font-semibold text-indigo-700 mb-4">Quick Invoice — Enter amount, GST auto-calculated</h3>
+            <h3 className="text-sm font-semibold text-indigo-700 mb-4">Quick Invoice — Select category, enter amount, GST auto-calculated</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Service / Goods Category</label>
+                <select onChange={(e) => {
+                  const hsn = HSN_LIBRARY.find((h) => h.code === e.target.value);
+                  if (hsn) {
+                    setQuickDescription(hsn.category);
+                    setQuickGstRate(hsn.gstRate);
+                    setQuickHsn(hsn.code);
+                  }
+                }} defaultValue=""
+                  className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                  <option value="">Select category → HSN auto-fill</option>
+                  {HSN_LIBRARY.map((h) => <option key={h.code} value={h.code}>{h.category} — {h.code} ({h.gstRate}%)</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">HSN/SAC Code</label>
+                <input value={quickHsn} onChange={(e) => setQuickHsn(e.target.value)}
+                  placeholder="Auto or enter manually"
+                  className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono" />
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
@@ -379,8 +403,15 @@ export default function CreateInvoicePage() {
                     </div>
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">HSN</label>
+                      <select onChange={(e) => {
+                        const h = HSN_LIBRARY.find((x) => x.code === e.target.value);
+                        if (h) { updateItem(idx, "hsn", h.code); updateItem(idx, "gstRate", h.gstRate); }
+                      }} defaultValue="" className="w-full px-2 py-1.5 border rounded text-sm mb-1">
+                        <option value="">Category → HSN</option>
+                        {HSN_LIBRARY.map((h) => <option key={h.code} value={h.code}>{h.category} ({h.code})</option>)}
+                      </select>
                       <input value={item.hsn} onChange={(e) => updateItem(idx, "hsn", e.target.value)}
-                        className="w-full px-2 py-1.5 border rounded text-sm font-mono" />
+                        className="w-full px-2 py-1.5 border rounded text-sm font-mono" placeholder="or type manually" />
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>

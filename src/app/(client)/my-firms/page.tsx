@@ -7,6 +7,7 @@ import type { Firm, Signature } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
 const emptyFirm = {
+  isGst: true,
   name: "", address: "", city: "", state: "", stateCode: "", pincode: "",
   gstin: "", pan: "", phone: "", email: "",
   bankName: "", accountNumber: "", ifscCode: "", branchName: "",
@@ -49,7 +50,8 @@ export default function MyFirmsPage() {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.gstin) return alert("Firm name and GSTIN are required");
+    if (!form.name) return alert("Firm name is required");
+    if (form.isGst && !form.gstin) return alert("GSTIN is required for GST firm");
     const action = editId ? "update" : "create";
     const res = await fetch("/api/firms", {
       method: "POST",
@@ -65,6 +67,7 @@ export default function MyFirmsPage() {
   const handleEdit = (f: Firm) => {
     setEditId(f.id);
     setForm({
+      isGst: f.isGst !== false,
       name: f.name, address: f.address, city: f.city, state: f.state,
       stateCode: f.stateCode, pincode: f.pincode, gstin: f.gstin, pan: f.pan,
       phone: f.phone, email: f.email, bankName: f.bankName,
@@ -136,25 +139,46 @@ export default function MyFirmsPage() {
               <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
+          {/* GST / Non-GST Toggle */}
+          <div className="flex gap-3 mb-4">
+            <button onClick={() => setForm((p) => ({ ...p, isGst: true }))}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${form.isGst ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>
+              GST Firm
+            </button>
+            <button onClick={() => setForm((p) => ({ ...p, isGst: false }))}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${!form.isGst ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>
+              Non-GST
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Firm Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Firm / Person Name *</label>
               <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Bainsla Music" />
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={form.isGst ? "Bainsla Music" : "Ajit Kumar"} />
             </div>
+            {form.isGst && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN *</label>
+                <input value={form.gstin} onChange={(e) => handleGstin(e.target.value.toUpperCase())}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="29ABCDE1234F1Z5" maxLength={15} />
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN *</label>
-              <input value={form.gstin} onChange={(e) => handleGstin(e.target.value.toUpperCase())}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="29ABCDE1234F1Z5" maxLength={15} />
+              <label className="block text-sm font-medium text-gray-700 mb-1">PAN {form.isGst ? "(auto)" : ""}</label>
+              {form.isGst ? (
+                <input value={form.pan} readOnly className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50" />
+              ) : (
+                <input value={form.pan} onChange={(e) => setForm((p) => ({ ...p, pan: e.target.value.toUpperCase() }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="ABCDE1234F" maxLength={10} />
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">PAN (auto)</label>
-              <input value={form.pan} readOnly className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State (auto)</label>
-              <input value={form.state} readOnly className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50" />
-            </div>
+            {form.isGst && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">State (auto)</label>
+                <input value={form.state} readOnly className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50" />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
               <input value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
@@ -180,11 +204,13 @@ export default function MyFirmsPage() {
               <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="firm@email.com" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Default HSN Code</label>
-              <input value={form.hsnCode} onChange={(e) => setForm((p) => ({ ...p, hsnCode: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="998361" />
-            </div>
+            {form.isGst && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Default HSN Code</label>
+                <input value={form.hsnCode} onChange={(e) => setForm((p) => ({ ...p, hsnCode: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="998361" />
+              </div>
+            )}
             <div className="md:col-span-3 border-t pt-4 mt-2">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Bank Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -266,8 +292,13 @@ export default function MyFirmsPage() {
                     <Building2 className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{f.name}</h3>
-                    <p className="text-sm text-gray-500">{f.gstin}</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900">{f.name}</h3>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.isGst !== false ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+                        {f.isGst !== false ? "GST" : "Non-GST"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500">{f.gstin || f.pan || ""}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -280,8 +311,8 @@ export default function MyFirmsPage() {
                 </div>
               </div>
               <div className="mt-3 text-sm text-gray-600 space-y-1">
-                {f.address && <p>{f.address}, {f.city}</p>}
-                <p>{f.state} ({f.stateCode}) {f.pincode && `- ${f.pincode}`}</p>
+                {f.address && <p>{f.address}{f.city ? `, ${f.city}` : ""}</p>}
+                {f.state && <p>{f.state} {f.stateCode ? `(${f.stateCode})` : ""} {f.pincode && `- ${f.pincode}`}</p>}
                 {f.phone && <p>Ph: {f.phone}</p>}
                 {f.hsnCode && <p>HSN: {f.hsnCode}</p>}
               </div>

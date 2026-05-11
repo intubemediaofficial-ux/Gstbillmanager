@@ -21,6 +21,7 @@ export interface SessionPayload {
 export interface Customer {
   id: string;
   userId: string; // owner client
+  isGst: boolean;
   name: string;
   address: string;
   city: string;
@@ -166,6 +167,7 @@ export interface Signature {
 export interface Firm {
   id: string;
   userId: string;
+  isGst: boolean;
   name: string;
   address: string;
   city: string;
@@ -244,3 +246,44 @@ export const INVOICE_TYPE_LABELS: Record<InvoiceType, string> = {
   quotation: "Quotation / Estimate",
   delivery_challan: "Delivery Challan",
 };
+
+// ── HSN/SAC Code Library ──
+export interface HsnEntry {
+  code: string;
+  category: string;
+  description: string;
+  gstRate: number;
+}
+
+export const HSN_LIBRARY: HsnEntry[] = [
+  // Services (SAC Codes)
+  { code: "998361", category: "Music & Entertainment", description: "Music production, distribution, entertainment services", gstRate: 18 },
+  { code: "998314", category: "Digital Media", description: "Digital content, media publishing, online platforms", gstRate: 18 },
+  { code: "998313", category: "Advertising & Marketing", description: "Advertising agency services, marketing campaigns", gstRate: 18 },
+  { code: "998311", category: "IT & Software", description: "IT consulting, software development, SaaS", gstRate: 18 },
+  { code: "998312", category: "Web Development", description: "Website design, web hosting, domain services", gstRate: 18 },
+  { code: "998231", category: "Management Consulting", description: "Business consulting, advisory, management services", gstRate: 18 },
+  { code: "998212", category: "Accounting & Taxation", description: "CA services, tax filing, bookkeeping, audit", gstRate: 18 },
+  { code: "998211", category: "Legal Services", description: "Legal advisory, documentation, compliance", gstRate: 18 },
+  { code: "997212", category: "Renting / Real Estate", description: "Commercial property rent, co-working space", gstRate: 18 },
+  { code: "996311", category: "Restaurant / Food", description: "Restaurant services, catering, food delivery", gstRate: 5 },
+  { code: "996411", category: "Transport / Logistics", description: "Goods transport, courier, freight, logistics", gstRate: 18 },
+  { code: "999210", category: "Education & Training", description: "Coaching, training, workshops, certifications", gstRate: 18 },
+  { code: "998599", category: "Support Services", description: "Office support, staffing, HR, maintenance", gstRate: 18 },
+  { code: "998511", category: "Photography & Video", description: "Photography, videography, post-production", gstRate: 18 },
+  { code: "998396", category: "Event Management", description: "Event planning, conferences, exhibitions", gstRate: 18 },
+  { code: "998315", category: "Graphic Design", description: "Graphic design, branding, print design", gstRate: 18 },
+  { code: "998319", category: "Content Writing", description: "Copywriting, content creation, blogging, SEO", gstRate: 18 },
+  { code: "998316", category: "Social Media", description: "Social media management, influencer marketing", gstRate: 18 },
+  // Goods (HSN Codes)
+  { code: "8471", category: "Computers & Laptops", description: "Computers, laptops, tablets, data processing machines", gstRate: 18 },
+  { code: "8517", category: "Mobile Phones", description: "Mobile phones, smartphones, telecom equipment", gstRate: 18 },
+  { code: "4901", category: "Printed Books", description: "Books, newspapers, printed materials", gstRate: 0 },
+  { code: "6109", category: "Clothing / T-shirts", description: "T-shirts, singlets, undergarments, knitwear", gstRate: 5 },
+  { code: "9403", category: "Furniture", description: "Office furniture, chairs, desks, shelves", gstRate: 18 },
+  { code: "3304", category: "Cosmetics", description: "Beauty products, skincare, makeup", gstRate: 28 },
+  { code: "0402", category: "Dairy Products", description: "Milk, cream, cheese, butter", gstRate: 5 },
+  { code: "1006", category: "Rice", description: "Rice, paddy, husked rice", gstRate: 5 },
+  { code: "8528", category: "Television / Monitors", description: "TV, monitors, display equipment", gstRate: 18 },
+  { code: "7108", category: "Gold / Jewellery", description: "Gold, silver, precious metals, jewellery", gstRate: 3 },
+];
