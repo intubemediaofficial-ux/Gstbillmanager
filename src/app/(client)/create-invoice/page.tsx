@@ -40,6 +40,10 @@ export default function CreateInvoicePage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [dueDate, setDueDate] = useState("");
 
+  // Bill number
+  const [billNumber, setBillNumber] = useState("");
+  const [billNumberError, setBillNumberError] = useState("");
+
   // Quick mode: just enter amount, auto-calc GST
   const [quickMode, setQuickMode] = useState(true);
   const [quickAmount, setQuickAmount] = useState("");
@@ -110,6 +114,8 @@ export default function CreateInvoicePage() {
   const handleSave = async () => {
     if (!selectedFirm) { alert("Please select your firm"); return; }
     if (!selectedCustomer) { alert("Please select Bill To party"); return; }
+    if (!billNumber.trim()) { alert("Please enter bill number"); return; }
+    if (billNumberError) { alert(billNumberError); return; }
 
     const signatureData = selectedSignature ? {
       id: selectedSignature.id,
@@ -144,6 +150,7 @@ export default function CreateInvoicePage() {
       body: JSON.stringify({
         action: "create",
         invoiceType,
+        customInvoiceNumber: billNumber.trim(),
         date,
         dueDate,
         firm: {
@@ -261,8 +268,25 @@ export default function CreateInvoicePage() {
           </div>
         </div>
 
-        {/* Invoice Type, Month, Date */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Bill Number, Invoice Type, Month, Date */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Bill Number *</label>
+            <input value={billNumber} onChange={(e) => {
+              const val = e.target.value;
+              setBillNumber(val);
+              if (val.trim()) {
+                fetch(`/api/invoices?checkNumber=${encodeURIComponent(val.trim())}`)
+                  .then((r) => r.json())
+                  .then((d) => { setBillNumberError(d.exists ? `Bill #${val.trim()} already exists` : ""); });
+              } else { setBillNumberError(""); }
+            }}
+              placeholder="01/2026"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm font-mono ${
+                billNumberError ? "border-red-400 focus:ring-red-500 bg-red-50" : "focus:ring-indigo-500"
+              }`} />
+            {billNumberError && <p className="text-xs text-red-500 mt-1">{billNumberError}</p>}
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">Invoice Type</label>
             <select value={invoiceType} onChange={(e) => setInvoiceType(e.target.value as InvoiceType)}

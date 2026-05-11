@@ -75,11 +75,12 @@ function InvoiceViewContent() {
         {/* Header */}
         <div className="flex justify-between items-start mb-8 border-b pb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{settings?.companyName || "Your Company"}</h1>
-            <p className="text-sm text-gray-500 mt-1">{settings?.address}</p>
-            <p className="text-sm text-gray-500">{settings?.city}, {settings?.state} {settings?.pincode}</p>
-            {settings?.gstin && <p className="text-sm mt-1"><span className="font-medium">GSTIN:</span> {settings.gstin}</p>}
-            {settings?.phone && <p className="text-sm text-gray-500">Ph: {settings.phone}</p>}
+            <h1 className="text-2xl font-bold text-gray-900">{invoice.firm?.name || settings?.companyName || "Your Company"}</h1>
+            <p className="text-sm text-gray-500 mt-1">{invoice.firm?.address || settings?.address}</p>
+            <p className="text-sm text-gray-500">{invoice.firm?.city || settings?.city}, {invoice.firm?.state || settings?.state} {invoice.firm ? "" : settings?.pincode}</p>
+            {(invoice.firm?.gstin || settings?.gstin) && <p className="text-sm mt-1"><span className="font-medium">GSTIN:</span> {invoice.firm?.gstin || settings?.gstin}</p>}
+            {(invoice.firm?.phone || settings?.phone) && <p className="text-sm text-gray-500">Ph: {invoice.firm?.phone || settings?.phone}</p>}
+            {invoice.firm?.email && <p className="text-sm text-gray-500">Email: {invoice.firm.email}</p>}
           </div>
           <div className="text-right">
             <h2 className="text-xl font-bold text-indigo-600">{INVOICE_TYPE_LABELS[invoice.invoiceType]}</h2>
@@ -171,13 +172,13 @@ function InvoiceViewContent() {
 
         {/* Bank & Terms */}
         <div className="grid grid-cols-2 gap-6 text-sm">
-          {settings?.bankName && (
+          {(invoice.firm?.bankName || settings?.bankName) && (
             <div>
               <h4 className="font-semibold mb-1">Bank Details</h4>
-              <p>Bank: {settings.bankName}</p>
-              <p>A/C: {settings.accountNumber}</p>
-              <p>IFSC: {settings.ifscCode}</p>
-              {settings.branchName && <p>Branch: {settings.branchName}</p>}
+              <p>Bank: {invoice.firm?.bankName || settings?.bankName}</p>
+              <p>A/C: {invoice.firm?.accountNumber || settings?.accountNumber}</p>
+              <p>IFSC: {invoice.firm?.ifscCode || settings?.ifscCode}</p>
+              {(invoice.firm?.branchName || settings?.branchName) && <p>Branch: {invoice.firm?.branchName || settings?.branchName}</p>}
             </div>
           )}
           <div>
@@ -187,12 +188,21 @@ function InvoiceViewContent() {
                 <p className="text-gray-600 whitespace-pre-line">{invoice.terms}</p>
               </>
             )}
-            {settings?.signatureText && (
-              <div className="mt-8 text-right">
-                <p className="text-xs text-gray-400">Authorized Signatory</p>
-                <p className="font-semibold mt-4">{settings.signatureText}</p>
-              </div>
-            )}
+            <div className="mt-8 text-right">
+              {invoice.signature ? (
+                <>
+                  <p className="text-xs text-gray-400">Authorized Signatory</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={invoice.signature.imageData} alt={invoice.signature.directorName} className="h-16 w-auto object-contain ml-auto mt-2" />
+                  <p className="font-semibold mt-1">{invoice.signature.directorName}</p>
+                </>
+              ) : (invoice.firm?.signatureText || settings?.signatureText) ? (
+                <>
+                  <p className="text-xs text-gray-400">Authorized Signatory</p>
+                  <p className="font-semibold mt-4">{invoice.firm?.signatureText || settings?.signatureText}</p>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
