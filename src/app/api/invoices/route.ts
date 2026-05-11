@@ -9,9 +9,15 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
+  const checkNumber = searchParams.get("checkNumber");
 
   const key = `gst_invoices:${session.id}`;
   const invoices: Invoice[] = (await kv.get(key)) || [];
+
+  if (checkNumber) {
+    const exists = invoices.some((i) => i.invoiceNumber === checkNumber);
+    return Response.json({ exists });
+  }
 
   if (id) {
     const inv = invoices.find((i) => i.id === id);
@@ -37,10 +43,18 @@ export async function POST(req: Request) {
       const settingsKey = `gst_settings:${userId}`;
       const settings: BusinessSettings | null = await kv.get(settingsKey);
 
-      const lastNum = settings?.lastInvoiceNumber || 0;
-      const prefix = settings?.invoicePrefix || "INV/2024-25/";
-      const nextNum = lastNum + 1;
-      const invoiceNumber = `${prefix}${String(nextNum).padStart(3, "0")}`;
+      const customNumber = body.customInvoiceNumber;
+      let invoiceNumber: string;
+      if (customNumber) {
+        const dup = invoices.some((i) => i.invoiceNumber === customNumber);
+        if (dup) return Response.json({ error: `Bill #${customNumber} already exists` }, { status: 400 });
+        invoiceNumber = customNumber;
+      } else {
+        const lastNum = settings?.lastInvoiceNumber || 0;
+        const prefix = settings?.invoicePrefix || "INV/2024-25/";
+        const nextNum = lastNum + 1;
+        invoiceNumber = `${prefix}${String(nextNum).padStart(3, "0")}`;
+      }
 
       const sellerState = body.firm?.stateCode || settings?.stateCode || "";
       const buyerState = body.customer?.stateCode || "";
@@ -105,8 +119,9 @@ export async function POST(req: Request) {
       invoices.push(invoice);
       await kv.set(key, invoices);
 
-      if (settings && (body.invoiceType === "tax_invoice" || body.invoiceType === "bill_of_supply")) {
-        await kv.set(settingsKey, { ...settings, lastInvoiceNumber: nextNum });
+      if (!customNumber && settings && (body.invoiceType === "tax_invoice" || body.invoiceType === "bill_of_supply")) {
+        const lastNum = settings.lastInvoiceNumber || 0;
+        await kv.set(settingsKey, { ...settings, lastInvoiceNumber: lastNum + 1 });
       }
 
       return Response.json({ success: true, data: invoice });
