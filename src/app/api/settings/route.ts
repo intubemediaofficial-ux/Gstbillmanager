@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { kv } from "@/lib/kv";
 import { getSession } from "@/lib/session";
 import type { BusinessSettings } from "@/lib/gst-types";
 
