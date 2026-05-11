@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut,
+  LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Customers", href: "/customers", icon: Users },
+  { label: "My Firms", href: "/my-firms", icon: Building2 },
+  { label: "Bill To (Parties)", href: "/customers", icon: Users },
   { label: "Products", href: "/products", icon: Package },
   { label: "Create Invoice", href: "/create-invoice", icon: FilePlus },
   { label: "Invoices", href: "/invoices", icon: FileText },

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       const nextNum = lastNum + 1;
       const invoiceNumber = `${prefix}${String(nextNum).padStart(3, "0")}`;
 
-      const sellerState = settings?.stateCode || "";
+      const sellerState = body.firm?.stateCode || settings?.stateCode || "";
       const buyerState = body.customer?.stateCode || "";
       const interState = isInterState(sellerState, buyerState);
 
@@ -83,6 +83,7 @@ export async function POST(req: Request) {
         referenceInvoiceNumber: body.referenceInvoiceNumber || undefined,
         date: body.date || new Date().toISOString().split("T")[0],
         dueDate: body.dueDate || "",
+        firm: body.firm || undefined,
         customer: body.customer,
         items,
         subtotal,
@@ -95,6 +96,7 @@ export async function POST(req: Request) {
         isInterState: interState,
         notes: body.notes || "",
         terms: body.terms || "",
+        signature: body.signature || undefined,
         status: body.invoiceType === "quotation" || body.invoiceType === "proforma" ? "draft" : (body.status || "draft"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

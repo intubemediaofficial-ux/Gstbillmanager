@@ -149,10 +149,10 @@ export default function CustomersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Customers</h1>
+        <h1 className="text-2xl font-bold">Bill To (Parties)</h1>
         <button onClick={() => { setEditing(undefined); setShowForm(true); }}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium">
-          <Plus className="w-4 h-4" /> Add Customer
+          <Plus className="w-4 h-4" /> Add Party
         </button>
       </div>
 

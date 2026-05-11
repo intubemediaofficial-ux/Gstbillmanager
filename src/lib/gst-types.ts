@@ -82,6 +82,23 @@ export interface Invoice {
   referenceInvoiceNumber?: string;
   date: string;
   dueDate: string;
+  firm?: {
+    id: string;
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    stateCode: string;
+    gstin: string;
+    pan: string;
+    phone: string;
+    email: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    branchName: string;
+    signatureText: string;
+  };
   customer: {
     id: string;
     name: string;
@@ -102,6 +119,11 @@ export interface Invoice {
   isInterState: boolean;
   notes: string;
   terms: string;
+  signature?: {
+    id: string;
+    directorName: string;
+    imageData: string;
+  };
   status: InvoiceStatus;
   createdAt: string;
   updatedAt: string;
@@ -128,6 +150,39 @@ export interface BusinessSettings {
   branchName: string;
   termsAndConditions: string;
   signatureText: string;
+}
+
+// ── Director Signature ──
+export interface Signature {
+  id: string;
+  userId: string;
+  firmId: string;
+  directorName: string;
+  imageData: string; // base64 data URL
+  createdAt: string;
+}
+
+// ── My Firm (Seller Company) ──
+export interface Firm {
+  id: string;
+  userId: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  stateCode: string;
+  pincode: string;
+  gstin: string;
+  pan: string;
+  phone: string;
+  email: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  branchName: string;
+  hsnCode: string;
+  signatureText: string;
+  createdAt: string;
 }
 
 // ── Indian States ──
