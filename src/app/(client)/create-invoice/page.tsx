@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Save, Building2, ArrowRight, PenTool } from "lucide-react";
 import Image from "next/image";
-import type { Customer, Product, InvoiceType, Firm, Signature } from "@/lib/gst-types";
+import type { Customer, Product, InvoiceType, Firm, Signature, Invoice } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS, GST_RATES, UNITS, HSN_LIBRARY } from "@/lib/gst-types";
 import { calculateGST, isInterState, formatCurrency } from "@/lib/gst-utils";
 
@@ -56,6 +56,9 @@ export default function CreateInvoicePage() {
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
 
+  const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
+  const [lastBillFilled, setLastBillFilled] = useState(false);
+
   const didFetch = useRef(false);
   useEffect(() => {
     if (didFetch.current) return;
@@ -65,15 +68,45 @@ export default function CreateInvoicePage() {
       fetch("/api/customers").then((r) => r.json()),
       fetch("/api/products").then((r) => r.json()),
       fetch("/api/signatures").then((r) => r.json()),
-    ]).then(([fRes, cRes, pRes, sRes]) => {
+      fetch("/api/invoices").then((r) => r.json()),
+    ]).then(([fRes, cRes, pRes, sRes, iRes]) => {
       const f = fRes.data || [];
       setFirms(f);
       if (f.length === 1) setSelectedFirm(f[0]);
       setCustomers(cRes.data || []);
       setProducts(pRes.data || []);
       setSignatures(sRes.data || []);
+      setAllInvoices(iRes.data || []);
     }).finally(() => setLoading(false));
   }, []);
+
+  // Auto-fill from last invoice when same firm + customer pair selected
+  const lastFillRef = useRef("");
+  const applyLastBill = (firm: Firm, customer: Customer) => {
+    if (allInvoices.length === 0) return;
+    const pairKey = `${firm.id}_${customer.id}`;
+    if (lastFillRef.current === pairKey) return;
+    lastFillRef.current = pairKey;
+    const matching = allInvoices.filter(
+      (inv) => inv.firm?.id === firm.id && inv.customer?.id === customer.id
+    );
+    if (matching.length === 0) return;
+    const lastInv = matching[0];
+    setInvoiceType(lastInv.invoiceType);
+    if (lastInv.notes) setNotes(lastInv.notes);
+    if (lastInv.terms) setTerms(lastInv.terms);
+    if (lastInv.signature) {
+      const sig = signatures.find((s) => s.id === lastInv.signature?.id);
+      if (sig) setSelectedSignature(sig);
+    }
+    if (lastInv.items.length > 0) {
+      const firstItem = lastInv.items[0];
+      setQuickDescription(firstItem.description);
+      setQuickHsn(firstItem.hsn);
+      setQuickGstRate(firstItem.gstRate);
+    }
+    setLastBillFilled(true);
+  };
 
   const sellerState = selectedFirm?.stateCode || "";
   const buyerState = selectedCustomer?.stateCode || "";
@@ -220,7 +253,7 @@ export default function CreateInvoicePage() {
             ) : (
               <select
                 value={selectedFirm?.id || ""}
-                onChange={(e) => setSelectedFirm(firms.find((f) => f.id === e.target.value) || null)}
+                onChange={(e) => { const f = firms.find((x) => x.id === e.target.value) || null; setSelectedFirm(f); if (f && selectedCustomer) applyLastBill(f, selectedCustomer); }}
                 className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm"
               >
                 <option value="">Select your firm...</option>
@@ -250,7 +283,7 @@ export default function CreateInvoicePage() {
             ) : (
               <select
                 value={selectedCustomer?.id || ""}
-                onChange={(e) => setSelectedCustomer(customers.find((c) => c.id === e.target.value) || null)}
+                onChange={(e) => { const c = customers.find((x) => x.id === e.target.value) || null; setSelectedCustomer(c); if (selectedFirm && c) applyLastBill(selectedFirm, c); }}
                 className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm"
               >
                 <option value="">Select party...</option>
@@ -268,6 +301,16 @@ export default function CreateInvoicePage() {
             )}
           </div>
         </div>
+
+        {/* Auto-fill from last bill notification */}
+        {lastBillFilled && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
+            <p className="text-sm text-blue-700">
+              <span className="font-semibold">Last bill settings loaded</span> — description, HSN, GST rate, signature auto-filled. Just enter the amount.
+            </p>
+            <button onClick={() => setLastBillFilled(false)} className="text-blue-500 hover:text-blue-700 text-xs font-medium ml-3">Dismiss</button>
+          </div>
+        )}
 
         {/* Bill Number, Invoice Type, Month, Date */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
