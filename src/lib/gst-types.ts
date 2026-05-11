@@ -119,6 +119,11 @@ export interface Invoice {
   isInterState: boolean;
   notes: string;
   terms: string;
+  signature?: {
+    id: string;
+    directorName: string;
+    imageData: string;
+  };
   status: InvoiceStatus;
   createdAt: string;
   updatedAt: string;
@@ -145,6 +150,16 @@ export interface BusinessSettings {
   branchName: string;
   termsAndConditions: string;
   signatureText: string;
+}
+
+// ── Director Signature ──
+export interface Signature {
+  id: string;
+  userId: string;
+  firmId: string;
+  directorName: string;
+  imageData: string; // base64 data URL
+  createdAt: string;
 }
 
 // ── My Firm (Seller Company) ──

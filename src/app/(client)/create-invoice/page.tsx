@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Save, Building2, ArrowRight } from "lucide-react";
-import type { Customer, Product, InvoiceType, Firm } from "@/lib/gst-types";
+import { Plus, Trash2, Save, Building2, ArrowRight, PenTool } from "lucide-react";
+import Image from "next/image";
+import type { Customer, Product, InvoiceType, Firm, Signature } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS, GST_RATES, UNITS } from "@/lib/gst-types";
 import { calculateGST, isInterState, formatCurrency } from "@/lib/gst-utils";
 
@@ -26,11 +27,13 @@ export default function CreateInvoicePage() {
   const [firms, setFirms] = useState<Firm[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [signatures, setSignatures] = useState<Signature[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [selectedFirm, setSelectedFirm] = useState<Firm | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedSignature, setSelectedSignature] = useState<Signature | null>(null);
   const [invoiceType, setInvoiceType] = useState<InvoiceType>("tax_invoice");
   const [month, setMonth] = useState(new Date().getMonth());
   const [year] = useState(new Date().getFullYear());
@@ -56,12 +59,14 @@ export default function CreateInvoicePage() {
       fetch("/api/firms").then((r) => r.json()),
       fetch("/api/customers").then((r) => r.json()),
       fetch("/api/products").then((r) => r.json()),
-    ]).then(([fRes, cRes, pRes]) => {
+      fetch("/api/signatures").then((r) => r.json()),
+    ]).then(([fRes, cRes, pRes, sRes]) => {
       const f = fRes.data || [];
       setFirms(f);
       if (f.length === 1) setSelectedFirm(f[0]);
       setCustomers(cRes.data || []);
       setProducts(pRes.data || []);
+      setSignatures(sRes.data || []);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -105,6 +110,12 @@ export default function CreateInvoicePage() {
   const handleSave = async () => {
     if (!selectedFirm) { alert("Please select your firm"); return; }
     if (!selectedCustomer) { alert("Please select Bill To party"); return; }
+
+    const signatureData = selectedSignature ? {
+      id: selectedSignature.id,
+      directorName: selectedSignature.directorName,
+      imageData: selectedSignature.imageData,
+    } : undefined;
     if (quickMode && !qAmount) { alert("Please enter amount"); return; }
     if (!quickMode && items.some((i) => !i.description)) { alert("Please fill all item descriptions"); return; }
     setSaving(true);
@@ -164,6 +175,7 @@ export default function CreateInvoicePage() {
         items: invoiceItems,
         notes,
         terms,
+        signature: signatureData,
       }),
     });
 
@@ -409,6 +421,36 @@ export default function CreateInvoicePage() {
             </div>
           </div>
         </div>
+
+        {/* Signature Selection */}
+        {selectedFirm && (() => {
+          const firmSigs = signatures.filter((s) => s.firmId === selectedFirm.id);
+          return firmSigs.length > 0 ? (
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <PenTool className="w-4 h-4 text-gray-500" />
+                <label className="text-sm font-medium">Director Signature</label>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button onClick={() => setSelectedSignature(null)}
+                  className={`border-2 rounded-lg px-4 py-3 text-sm transition ${!selectedSignature ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-gray-300"}`}>
+                  No Signature
+                </button>
+                {firmSigs.map((sig) => (
+                  <button key={sig.id} onClick={() => setSelectedSignature(sig)}
+                    className={`border-2 rounded-lg p-3 text-center transition ${selectedSignature?.id === sig.id ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-gray-300"}`}>
+                    <Image src={sig.imageData} alt={sig.directorName} width={80} height={40} className="h-10 w-auto object-contain mx-auto" />
+                    <p className="text-xs text-gray-600 mt-1">{sig.directorName}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="border-t pt-4 text-sm text-gray-400">
+              No signatures uploaded for this firm. <a href="/my-firms" className="text-indigo-600 hover:underline">Upload in My Firms</a>
+            </div>
+          );
+        })()}
 
         {/* Notes & Terms */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">

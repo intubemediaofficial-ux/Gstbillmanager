@@ -96,6 +96,7 @@ export async function POST(req: Request) {
         isInterState: interState,
         notes: body.notes || "",
         terms: body.terms || "",
+        signature: body.signature || undefined,
         status: body.invoiceType === "quotation" || body.invoiceType === "proforma" ? "draft" : (body.status || "draft"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

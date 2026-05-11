@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Building2, Plus, Trash2, Edit2, Save, X } from "lucide-react";
-import type { Firm } from "@/lib/gst-types";
+import { Building2, Plus, Trash2, Edit2, Save, X, Upload, PenTool } from "lucide-react";
+import Image from "next/image";
+import type { Firm, Signature } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
 const emptyFirm = {
@@ -14,15 +15,25 @@ const emptyFirm = {
 
 export default function MyFirmsPage() {
   const [firms, setFirms] = useState<Firm[]>([]);
+  const [signatures, setSignatures] = useState<Signature[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyFirm);
 
+  // Signature upload state
+  const [showSigUpload, setShowSigUpload] = useState<string | null>(null);
+  const [sigName, setSigName] = useState("");
+  const [sigImage, setSigImage] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const didMount = useRef(false);
   const load = async () => {
-    const res = await fetch("/api/firms");
-    const d = await res.json();
-    if (d.data) setFirms(d.data);
+    const [fRes, sRes] = await Promise.all([
+      fetch("/api/firms").then((r) => r.json()),
+      fetch("/api/signatures").then((r) => r.json()),
+    ]);
+    if (fRes.data) setFirms(fRes.data);
+    if (sRes.data) setSignatures(sRes.data);
   };
 
   useEffect(() => { if (didMount.current) return; didMount.current = true; load(); }, []);
@@ -31,14 +42,9 @@ export default function MyFirmsPage() {
     const updates: Partial<typeof form> = { gstin };
     if (gstin.length >= 2) {
       const code = gstin.substring(0, 2);
-      if (INDIAN_STATES[code]) {
-        updates.stateCode = code;
-        updates.state = INDIAN_STATES[code];
-      }
+      if (INDIAN_STATES[code]) { updates.stateCode = code; updates.state = INDIAN_STATES[code]; }
     }
-    if (gstin.length >= 12) {
-      updates.pan = gstin.substring(2, 12);
-    }
+    if (gstin.length >= 12) updates.pan = gstin.substring(2, 12);
     setForm((p) => ({ ...p, ...updates }));
   };
 
@@ -51,9 +57,7 @@ export default function MyFirmsPage() {
       body: JSON.stringify({ action, id: editId, ...form }),
     });
     if (res.ok) {
-      setShowForm(false);
-      setEditId(null);
-      setForm(emptyFirm);
+      setShowForm(false); setEditId(null); setForm(emptyFirm);
       load();
     }
   };
@@ -79,6 +83,40 @@ export default function MyFirmsPage() {
     });
     load();
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 500_000) return alert("File too large. Max 500KB.");
+    const reader = new FileReader();
+    reader.onload = () => setSigImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSigUpload = async () => {
+    if (!sigName || !sigImage || !showSigUpload) return alert("Director name and signature image required");
+    const res = await fetch("/api/signatures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "create", firmId: showSigUpload, directorName: sigName, imageData: sigImage }),
+    });
+    if (res.ok) {
+      setShowSigUpload(null); setSigName(""); setSigImage("");
+      load();
+    }
+  };
+
+  const handleSigDelete = async (id: string) => {
+    if (!confirm("Delete this signature?")) return;
+    await fetch("/api/signatures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete", id }),
+    });
+    load();
+  };
+
+  const firmSignatures = (firmId: string) => signatures.filter((s) => s.firmId === firmId);
 
   return (
     <div>
@@ -161,7 +199,7 @@ export default function MyFirmsPage() {
               </div>
             </div>
             <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Authorized Signatory</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Authorized Signatory Name</label>
               <input value={form.signatureText} onChange={(e) => setForm((p) => ({ ...p, signatureText: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Name of authorized signatory" />
             </div>
@@ -177,36 +215,106 @@ export default function MyFirmsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {firms.map((f) => (
-          <div key={f.id} className="bg-white rounded-xl shadow p-5 border hover:border-indigo-300 transition">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{f.name}</h3>
-                  <p className="text-sm text-gray-500">{f.gstin}</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(f)} className="text-gray-400 hover:text-indigo-600">
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button onClick={() => handleDelete(f.id)} className="text-gray-400 hover:text-red-600">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+      {/* Signature Upload Modal */}
+      {showSigUpload && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl w-full max-w-md mx-4 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2"><PenTool className="w-5 h-5" /> Upload Director Signature</h2>
+              <button onClick={() => { setShowSigUpload(null); setSigName(""); setSigImage(""); }}>
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
-            <div className="mt-3 text-sm text-gray-600 space-y-1">
-              {f.address && <p>{f.address}, {f.city}</p>}
-              <p>{f.state} ({f.stateCode}) {f.pincode && `- ${f.pincode}`}</p>
-              {f.phone && <p>Ph: {f.phone}</p>}
-              {f.hsnCode && <p>HSN: {f.hsnCode}</p>}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Director Name *</label>
+                <input value={sigName} onChange={(e) => setSigName(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Name of the director" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Signature Image * (max 500KB)</label>
+                <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              {sigImage && (
+                <div className="border rounded-lg p-3 bg-gray-50 text-center">
+                  <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                  <Image src={sigImage} alt="Signature" width={200} height={80} className="max-h-20 mx-auto object-contain" />
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button onClick={() => { setShowSigUpload(null); setSigName(""); setSigImage(""); }}
+                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onClick={handleSigUpload}
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2">
+                  <Upload className="w-4 h-4" /> Upload
+                </button>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {firms.map((f) => {
+          const fSigs = firmSignatures(f.id);
+          return (
+            <div key={f.id} className="bg-white rounded-xl shadow p-5 border hover:border-indigo-300 transition">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{f.name}</h3>
+                    <p className="text-sm text-gray-500">{f.gstin}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleEdit(f)} className="text-gray-400 hover:text-indigo-600">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(f.id)} className="text-gray-400 hover:text-red-600">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 text-sm text-gray-600 space-y-1">
+                {f.address && <p>{f.address}, {f.city}</p>}
+                <p>{f.state} ({f.stateCode}) {f.pincode && `- ${f.pincode}`}</p>
+                {f.phone && <p>Ph: {f.phone}</p>}
+                {f.hsnCode && <p>HSN: {f.hsnCode}</p>}
+              </div>
+
+              {/* Director Signatures */}
+              <div className="mt-4 border-t pt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Director Signatures</p>
+                  <button onClick={() => setShowSigUpload(f.id)}
+                    className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                    <Plus className="w-3 h-3" /> Add Signature
+                  </button>
+                </div>
+                {fSigs.length === 0 ? (
+                  <p className="text-xs text-gray-400">No signatures uploaded yet</p>
+                ) : (
+                  <div className="flex flex-wrap gap-3">
+                    {fSigs.map((sig) => (
+                      <div key={sig.id} className="border rounded-lg p-2 bg-gray-50 relative group">
+                        <Image src={sig.imageData} alt={sig.directorName} width={100} height={50} className="h-12 w-auto object-contain" />
+                        <p className="text-xs text-gray-600 mt-1 text-center">{sig.directorName}</p>
+                        <button onClick={() => handleSigDelete(sig.id)}
+                          className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
         {firms.length === 0 && !showForm && (
           <div className="col-span-2 text-center py-12 text-gray-400">
             No firms added yet. Click &quot;Add Firm&quot; to add your companies.
