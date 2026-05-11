@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { kv } from "@/lib/kv";
 import bcrypt from "bcryptjs";
 import type { User } from "@/lib/gst-types";
 import { generateId } from "@/lib/gst-utils";
