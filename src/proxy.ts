@@ -19,7 +19,8 @@ export async function proxy(req: NextRequest) {
 
   if (path.startsWith("/admin-") || path.startsWith("/dashboard") || path.startsWith("/invoices") ||
       path.startsWith("/create-invoice") || path.startsWith("/customers") || path.startsWith("/products") ||
-      path.startsWith("/reports") || path.startsWith("/settings") || path.startsWith("/invoice-view")) {
+      path.startsWith("/reports") || path.startsWith("/settings") || path.startsWith("/invoice-view") ||
+      path.startsWith("/my-firms")) {
     const session = req.cookies.get("session")?.value;
     const payload = await decrypt(session);
     if (!payload) {
