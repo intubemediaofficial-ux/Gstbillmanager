@@ -7,10 +7,11 @@ import { INDIAN_STATES } from "@/lib/gst-types";
 
 function CustomerForm({ customer, onSave, onCancel }: {
   customer?: Customer;
-  onSave: (data: Record<string, string>) => void;
+  onSave: (data: Record<string, string | boolean>) => void;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState({
+    isGst: customer?.isGst !== false,
     name: customer?.name || "", address: customer?.address || "", city: customer?.city || "",
     state: customer?.state || "", stateCode: customer?.stateCode || "", pincode: customer?.pincode || "",
     gstin: customer?.gstin || "", pan: customer?.pan || "", phone: customer?.phone || "", email: customer?.email || "",
@@ -33,33 +34,52 @@ function CustomerForm({ customer, onSave, onCancel }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-5 border-b flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{customer ? "Edit Customer" : "Add Customer"}</h2>
+          <h2 className="text-lg font-semibold">{customer ? "Edit Party" : "Add Party"}</h2>
           <button onClick={onCancel}><X className="w-5 h-5 text-gray-400" /></button>
         </div>
         <div className="p-5 space-y-4">
+          {/* GST / Non-GST Toggle */}
+          <div className="flex gap-3">
+            <button onClick={() => setForm({ ...form, isGst: true })}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${form.isGst ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>
+              GST Party
+            </button>
+            <button onClick={() => setForm({ ...form, isGst: false })}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${!form.isGst ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>
+              Non-GST
+            </button>
+          </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Company Name *</label>
+            <label className="block text-sm font-medium mb-1">{form.isGst ? "Company Name" : "Name"} *</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="ABC Enterprises" />
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder={form.isGst ? "ABC Enterprises" : "Aman Kumar"} />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">GSTIN</label>
-            <input value={form.gstin} onChange={(e) => handleGstinChange(e.target.value)} maxLength={15}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="07AABCU9603R1ZM" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+          {form.isGst && (
             <div>
-              <label className="block text-sm font-medium mb-1">State</label>
-              <select value={form.stateCode} onChange={(e) => setForm({ ...form, stateCode: e.target.value, state: INDIAN_STATES[e.target.value] || "" })}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="">Select State</option>
-                {Object.entries(INDIAN_STATES).map(([c, n]) => <option key={c} value={c}>{c} - {n}</option>)}
-              </select>
+              <label className="block text-sm font-medium mb-1">GSTIN *</label>
+              <input value={form.gstin} onChange={(e) => handleGstinChange(e.target.value)} maxLength={15}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="07AABCU9603R1ZM" />
             </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            {form.isGst && (
+              <div>
+                <label className="block text-sm font-medium mb-1">State {form.isGst ? "(auto from GSTIN)" : ""}</label>
+                <select value={form.stateCode} onChange={(e) => setForm({ ...form, stateCode: e.target.value, state: INDIAN_STATES[e.target.value] || "" })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="">Select State</option>
+                  {Object.entries(INDIAN_STATES).map(([c, n]) => <option key={c} value={c}>{c} - {n}</option>)}
+                </select>
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium mb-1">PAN</label>
-              <input value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value.toUpperCase() })} maxLength={10}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+              <label className="block text-sm font-medium mb-1">PAN {form.isGst ? "(auto)" : ""}</label>
+              {form.isGst ? (
+                <input value={form.pan} readOnly className="w-full px-3 py-2 border rounded-lg bg-gray-50 font-mono" />
+              ) : (
+                <input value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value.toUpperCase() })} maxLength={10}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="ABCDE1234F" />
+              )}
             </div>
           </div>
           <div>
@@ -94,7 +114,8 @@ function CustomerForm({ customer, onSave, onCancel }: {
         </div>
         <div className="p-5 border-t flex gap-3">
           <button onClick={onCancel} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-          <button onClick={() => onSave(form)} className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save</button>
+          <button onClick={() => { if (!form.name) { alert("Name is required"); return; } if (form.isGst && !form.gstin) { alert("GSTIN is required for GST party"); return; } onSave(form); }}
+            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save</button>
         </div>
       </div>
     </div>
@@ -120,7 +141,7 @@ export default function CustomersPage() {
   const didMount = useRef(false);
   useEffect(() => { if (didMount.current) return; didMount.current = true; fetchCustomers(); }, []);
 
-  const handleSave = async (data: Record<string, string>) => {
+  const handleSave = async (data: Record<string, string | boolean>) => {
     const action = editing ? "update" : "create";
     await fetch("/api/customers", {
       method: "POST",
@@ -180,8 +201,13 @@ export default function CustomersPage() {
             <tbody>
               {filtered.map((c) => (
                 <tr key={c.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">{c.name}</td>
-                  <td className="p-3 font-mono text-xs text-gray-600">{c.gstin || "-"}</td>
+                  <td className="p-3 font-medium">
+                    {c.name}
+                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${c.isGst !== false ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+                      {c.isGst !== false ? "GST" : "Non-GST"}
+                    </span>
+                  </td>
+                  <td className="p-3 font-mono text-xs text-gray-600">{c.gstin || c.pan || "-"}</td>
                   <td className="p-3 text-gray-500">{c.city || "-"}</td>
                   <td className="p-3 text-gray-500">{c.state || "-"}</td>
                   <td className="p-3 text-gray-500">{c.phone || "-"}</td>

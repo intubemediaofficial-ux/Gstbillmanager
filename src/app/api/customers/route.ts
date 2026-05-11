@@ -37,6 +37,7 @@ export async function POST(req: Request) {
       const customer: Customer = {
         id: generateId(),
         userId,
+        isGst: body.isGst !== false,
         name: body.name,
         address: body.address || "",
         city: body.city || "",

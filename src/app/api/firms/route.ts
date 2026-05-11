@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       const firm: Firm = {
         id: generateId(),
         userId: session.id,
+        isGst: body.isGst !== false,
         name: body.name || "",
         address: body.address || "",
         city: body.city || "",
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
     if (action === "update") {
       const idx = firms.findIndex((f) => f.id === body.id);
       if (idx === -1) return Response.json({ error: "Not found" }, { status: 404 });
+      if (body.isGst !== undefined) firms[idx].isGst = body.isGst;
       if (body.name !== undefined) firms[idx].name = body.name;
       if (body.address !== undefined) firms[idx].address = body.address;
       if (body.city !== undefined) firms[idx].city = body.city;
