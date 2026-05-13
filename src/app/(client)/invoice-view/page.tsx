@@ -11,6 +11,7 @@ function InvoiceViewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get("id");
+  const adminUserId = searchParams.get("userId");
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
@@ -20,14 +21,17 @@ function InvoiceViewContent() {
   useEffect(() => {
     if (didFetch.current || !id) return;
     didFetch.current = true;
+    const invoiceUrl = adminUserId
+      ? `/api/invoices?id=${id}&adminUserId=${adminUserId}`
+      : `/api/invoices?id=${id}`;
     Promise.all([
-      fetch(`/api/invoices?id=${id}`).then((r) => r.json()),
+      fetch(invoiceUrl).then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json()),
     ]).then(([iRes, sRes]) => {
       setInvoice(iRes.data || null);
       setSettings(sRes.data || null);
     }).finally(() => setLoading(false));
-  }, [id]);
+  }, [id, adminUserId]);
 
   const handlePrint = () => window.print();
 
