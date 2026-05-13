@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Building2, Plus, Trash2, Edit2, Save, X, Upload, PenTool } from "lucide-react";
+import { Building2, Plus, Trash2, Edit2, Save, X, Upload, PenTool, Landmark } from "lucide-react";
 import Image from "next/image";
 import type { Firm, Signature } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
@@ -212,16 +212,28 @@ export default function MyFirmsPage() {
               </div>
             )}
             <div className="md:col-span-3 border-t pt-4 mt-2">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Bank Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <input value={form.bankName} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 text-sm" placeholder="Bank Name" />
-                <input value={form.accountNumber} onChange={(e) => setForm((p) => ({ ...p, accountNumber: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 text-sm" placeholder="Account Number" />
-                <input value={form.ifscCode} onChange={(e) => setForm((p) => ({ ...p, ifscCode: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 text-sm" placeholder="IFSC Code" />
-                <input value={form.branchName} onChange={(e) => setForm((p) => ({ ...p, branchName: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 text-sm" placeholder="Branch Name" />
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Landmark className="w-4 h-4" /> Bank Account Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                  <input value={form.bankName} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="State Bank of India" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                  <input value={form.accountNumber} onChange={(e) => setForm((p) => ({ ...p, accountNumber: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="1234567890" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
+                  <input value={form.ifscCode} onChange={(e) => setForm((p) => ({ ...p, ifscCode: e.target.value.toUpperCase() }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm font-mono" placeholder="SBIN0001234" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+                  <input value={form.branchName} onChange={(e) => setForm((p) => ({ ...p, branchName: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Main Branch, Jaipur" />
+                </div>
               </div>
             </div>
             <div className="md:col-span-3">
@@ -337,6 +349,18 @@ export default function MyFirmsPage() {
                 {f.phone && <p>Ph: {f.phone}</p>}
                 {f.hsnCode && <p>HSN: {f.hsnCode}</p>}
               </div>
+
+              {/* Bank Account Details */}
+              {(f.bankName || f.accountNumber) && (
+                <div className="mt-3 border-t pt-3">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-1"><Landmark className="w-3 h-3" /> Bank Details</p>
+                  <div className="text-sm text-gray-600 space-y-0.5">
+                    {f.bankName && <p><span className="text-gray-400">Bank:</span> {f.bankName}{f.branchName ? ` (${f.branchName})` : ""}</p>}
+                    {f.accountNumber && <p><span className="text-gray-400">A/C:</span> {f.accountNumber}</p>}
+                    {f.ifscCode && <p><span className="text-gray-400">IFSC:</span> {f.ifscCode}</p>}
+                  </div>
+                </div>
+              )}
 
               {/* Director Signatures */}
               <div className="mt-4 border-t pt-3">

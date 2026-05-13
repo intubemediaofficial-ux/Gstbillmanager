@@ -15,6 +15,11 @@ function LoginContent() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetMode, setResetMode] = useState<"none" | "email" | "otp" | "done">("none");
+  const [resetEmail, setResetEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
 
   useEffect(() => {
     const err = searchParams.get("error");
@@ -141,6 +146,10 @@ function LoginContent() {
                 className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50">
                 {loading ? "Signing in..." : "Sign In"}
               </button>
+              <div className="text-center">
+                <button type="button" onClick={() => { setResetMode("email"); setError(""); setResetMsg(""); }}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Forgot Password?</button>
+              </div>
             </form>
           )}
 
@@ -182,6 +191,89 @@ function LoginContent() {
                 {loading ? "Creating account..." : "Create Account"}
               </button>
             </form>
+          )}
+          {/* Forgot Password Flow */}
+          {resetMode !== "none" && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <button onClick={() => { setResetMode("none"); setResetMsg(""); setError(""); }} className="text-gray-400 hover:text-gray-600 text-sm">&larr; Back to Login</button>
+              </div>
+              <h3 className="font-semibold text-gray-900">Reset Password</h3>
+
+              {resetMsg && <div className="bg-green-50 text-green-600 px-4 py-2 rounded-lg text-sm">{resetMsg}</div>}
+
+              {resetMode === "email" && (
+                <>
+                  <p className="text-sm text-gray-500">Enter your registered email. We will send an OTP to reset your password.</p>
+                  <input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="your@email.com" />
+                  <button onClick={async () => {
+                    setError(""); setResetMsg("");
+                    if (!resetEmail) { setError("Email is required"); return; }
+                    setLoading(true);
+                    const res = await fetch("/api/auth/forgot-password", {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: resetEmail }),
+                    });
+                    const data = await res.json();
+                    setLoading(false);
+                    if (!res.ok) { setError(data.error || "Failed to send OTP"); return; }
+                    setResetMsg("OTP sent to your email!");
+                    setResetMode("otp");
+                  }} disabled={loading}
+                    className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50">
+                    {loading ? "Sending OTP..." : "Send OTP"}
+                  </button>
+                </>
+              )}
+
+              {resetMode === "otp" && (
+                <>
+                  <p className="text-sm text-gray-500">Enter the 6-digit OTP sent to <strong>{resetEmail}</strong></p>
+                  <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-2xl tracking-widest font-mono"
+                    placeholder="000000" maxLength={6} />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+                    <div className="relative">
+                      <input type={showPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Min 6 characters" minLength={6} />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <button onClick={async () => {
+                    setError(""); setResetMsg("");
+                    if (otp.length !== 6) { setError("Enter 6-digit OTP"); return; }
+                    if (newPassword.length < 6) { setError("Password must be at least 6 characters"); return; }
+                    setLoading(true);
+                    const res = await fetch("/api/auth/reset-password", {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: resetEmail, otp, newPassword }),
+                    });
+                    const data = await res.json();
+                    setLoading(false);
+                    if (!res.ok) { setError(data.error || "Failed to reset password"); return; }
+                    setResetMsg("Password reset successfully! You can now login.");
+                    setResetMode("done");
+                  }} disabled={loading}
+                    className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50">
+                    {loading ? "Resetting..." : "Reset Password"}
+                  </button>
+                </>
+              )}
+
+              {resetMode === "done" && (
+                <button onClick={() => { setResetMode("none"); setEmail(resetEmail); setPassword(""); setError(""); setResetMsg(""); }}
+                  className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700">
+                  Go to Login
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
