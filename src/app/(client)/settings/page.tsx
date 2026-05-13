@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Save } from "lucide-react";
+import { Save, Eye, EyeOff, Lock } from "lucide-react";
 import type { BusinessSettings } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
@@ -17,6 +17,14 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMessage, setPwMessage] = useState("");
+  const [pwError, setPwError] = useState("");
 
   const didFetch = useRef(false);
   useEffect(() => {
@@ -145,6 +153,60 @@ export default function SettingsPage() {
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
             <div><label className="block text-sm font-medium mb-1">Signature Text</label>
               <input value={form.signatureText} onChange={(e) => setForm({ ...form, signatureText: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Authorized Signatory Name" /></div>
+          </div>
+        </div>
+
+        {/* Change Password */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+          <h2 className="font-semibold mb-4 flex items-center gap-2"><Lock className="w-4 h-4" /> Change Password</h2>
+          {pwError && <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm mb-3">{pwError}</div>}
+          {pwMessage && <div className="bg-green-50 text-green-600 px-4 py-2 rounded-lg text-sm mb-3">{pwMessage}</div>}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Current Password</label>
+              <div className="relative">
+                <input type={showCurrentPw ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter current password" />
+                <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">New Password (min 6 characters)</label>
+              <div className="relative">
+                <input type={showNewPw ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter new password" minLength={6} />
+                <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Confirm New Password</label>
+              <input type={showNewPw ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Confirm new password" />
+            </div>
+            <button onClick={async () => {
+              setPwError(""); setPwMessage("");
+              if (newPassword.length < 6) { setPwError("New password must be at least 6 characters"); return; }
+              if (newPassword !== confirmPassword) { setPwError("Passwords do not match"); return; }
+              setPwSaving(true);
+              const res = await fetch("/api/auth/change-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ currentPassword, newPassword }),
+              });
+              const data = await res.json();
+              setPwSaving(false);
+              if (!res.ok) { setPwError(data.error || "Failed to change password"); return; }
+              setPwMessage("Password changed successfully!");
+              setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+              setTimeout(() => setPwMessage(""), 3000);
+            }} disabled={pwSaving}
+              className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium disabled:opacity-50">
+              {pwSaving ? "Changing..." : "Change Password"}
+            </button>
           </div>
         </div>
 
