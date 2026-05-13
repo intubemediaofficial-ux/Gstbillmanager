@@ -50,6 +50,7 @@ export default function CreateInvoicePage() {
   const [quickDescription, setQuickDescription] = useState("");
   const [quickGstRate, setQuickGstRate] = useState(18);
   const [quickHsn, setQuickHsn] = useState("");
+  const [gstMode, setGstMode] = useState<"exclude" | "include">("exclude");
 
   // Detailed mode items
   const [items, setItems] = useState<ItemRow[]>([{ description: "", hsn: "", qty: 1, unit: "PCS", rate: 0, gstRate: 18 }]);
@@ -112,13 +113,19 @@ export default function CreateInvoicePage() {
   const buyerState = selectedCustomer?.stateCode || "";
   const interState = sellerState && buyerState ? isInterState(sellerState, buyerState) : false;
 
-  // Quick mode calculations
-  const qAmount = parseFloat(quickAmount) || 0;
+  // Quick mode calculations — handle Include/Exclude GST
+  const rawAmount = parseFloat(quickAmount) || 0;
+  const qAmount = gstMode === "include"
+    ? Math.round((rawAmount * 100) / (100 + quickGstRate) * 100) / 100
+    : rawAmount;
   const qGst = calculateGST(qAmount, quickGstRate, interState);
 
-  // Detailed mode calculations
+  // Detailed mode calculations — handle Include/Exclude GST
   const calculated = items.map((item) => {
-    const amount = item.qty * item.rate;
+    const rawAmt = item.qty * item.rate;
+    const amount = gstMode === "include"
+      ? Math.round((rawAmt * 100) / (100 + item.gstRate) * 100) / 100
+      : rawAmt;
     const gst = calculateGST(amount, item.gstRate, interState);
     return { ...item, amount, ...gst };
   });
@@ -216,6 +223,8 @@ export default function CreateInvoicePage() {
         items: invoiceItems,
         notes,
         terms,
+        gstMode,
+        letterhead: selectedFirm.letterhead || undefined,
         signature: signatureData,
       }),
     });
@@ -357,17 +366,34 @@ export default function CreateInvoicePage() {
           </div>
         </div>
 
-        {/* Quick Mode Toggle */}
-        <div className="flex items-center gap-4 border-t pt-4">
-          <button onClick={() => setQuickMode(true)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${quickMode ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-            ⚡ Quick Invoice (Amount Only)
-          </button>
-          <button onClick={() => setQuickMode(false)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!quickMode ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-            📋 Detailed (Multiple Items)
-          </button>
+        {/* Quick Mode Toggle + GST Include/Exclude */}
+        <div className="flex flex-wrap items-center gap-4 border-t pt-4">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setQuickMode(true)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${quickMode ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+              ⚡ Quick Invoice
+            </button>
+            <button onClick={() => setQuickMode(false)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!quickMode ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+              📋 Detailed
+            </button>
+          </div>
+          <div className="flex items-center gap-1 ml-auto bg-amber-50 border border-amber-200 rounded-lg p-1">
+            <button onClick={() => setGstMode("exclude")}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${gstMode === "exclude" ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-100"}`}>
+              GST Exclude
+            </button>
+            <button onClick={() => setGstMode("include")}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${gstMode === "include" ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-100"}`}>
+              GST Include
+            </button>
+          </div>
         </div>
+        {gstMode === "include" && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800">
+            GST Include mode: Enter total amount (GST included). Base amount will be auto-calculated by removing {quickGstRate}% GST.
+          </div>
+        )}
 
         {/* Quick Mode */}
         {quickMode && (
@@ -404,9 +430,9 @@ export default function CreateInvoicePage() {
                   className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Amount (before GST) *</label>
+                <label className="block text-sm font-medium mb-1">{gstMode === "include" ? "Total Amount (GST Included) *" : "Amount (before GST) *"}</label>
                 <input type="number" value={quickAmount} onChange={(e) => setQuickAmount(e.target.value)}
-                  placeholder="56257"
+                  placeholder={gstMode === "include" ? "100000" : "56257"}
                   className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-lg font-semibold" />
               </div>
               <div>
@@ -503,15 +529,20 @@ export default function CreateInvoicePage() {
         {/* Totals */}
         <div className="border-t pt-4">
           <div className="flex justify-end">
-            <div className="w-72 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
+            <div className="w-80 space-y-2 text-sm">
+              {gstMode === "include" && rawAmount > 0 && (
+                <div className="flex justify-between text-amber-700 bg-amber-50 rounded px-2 py-1">
+                  <span>Entered Amount (GST incl.)</span><span className="font-semibold">{formatCurrency(rawAmount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between"><span className="text-gray-500">Base Amount</span><span>{formatCurrency(subtotal)}</span></div>
               {!interState ? (
                 <>
-                  <div className="flex justify-between"><span className="text-gray-500">CGST</span><span>{formatCurrency(totalCgst)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">SGST</span><span>{formatCurrency(totalSgst)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">CGST ({quickMode ? quickGstRate / 2 : ""}%)</span><span>{formatCurrency(totalCgst)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">SGST ({quickMode ? quickGstRate / 2 : ""}%)</span><span>{formatCurrency(totalSgst)}</span></div>
                 </>
               ) : (
-                <div className="flex justify-between"><span className="text-gray-500">IGST</span><span>{formatCurrency(totalIgst)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">IGST ({quickMode ? quickGstRate : ""}%)</span><span>{formatCurrency(totalIgst)}</span></div>
               )}
               <div className="flex justify-between border-t pt-2 font-bold text-lg">
                 <span>Grand Total</span><span className="text-indigo-600">{formatCurrency(grandTotal)}</span>

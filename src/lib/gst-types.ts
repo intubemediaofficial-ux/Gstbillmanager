@@ -120,11 +120,13 @@ export interface Invoice {
   isInterState: boolean;
   notes: string;
   terms: string;
+  gstMode?: "exclude" | "include";
   signature?: {
     id: string;
     directorName: string;
     imageData: string;
   };
+  letterhead?: string;
   status: InvoiceStatus;
   createdAt: string;
   updatedAt: string;
@@ -184,6 +186,7 @@ export interface Firm {
   branchName: string;
   hsnCode: string;
   signatureText: string;
+  letterhead: string;
   createdAt: string;
 }
 
