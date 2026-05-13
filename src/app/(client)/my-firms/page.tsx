@@ -11,7 +11,7 @@ const emptyFirm = {
   name: "", address: "", city: "", state: "", stateCode: "", pincode: "",
   gstin: "", pan: "", phone: "", email: "",
   bankName: "", accountNumber: "", ifscCode: "", branchName: "",
-  hsnCode: "", signatureText: "",
+  hsnCode: "", signatureText: "", letterhead: "",
 };
 
 export default function MyFirmsPage() {
@@ -72,7 +72,7 @@ export default function MyFirmsPage() {
       stateCode: f.stateCode, pincode: f.pincode, gstin: f.gstin, pan: f.pan,
       phone: f.phone, email: f.email, bankName: f.bankName,
       accountNumber: f.accountNumber, ifscCode: f.ifscCode, branchName: f.branchName,
-      hsnCode: f.hsnCode, signatureText: f.signatureText,
+      hsnCode: f.hsnCode, signatureText: f.signatureText, letterhead: f.letterhead || "",
     });
     setShowForm(true);
   };
@@ -228,6 +228,27 @@ export default function MyFirmsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Authorized Signatory Name</label>
               <input value={form.signatureText} onChange={(e) => setForm((p) => ({ ...p, signatureText: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Name of authorized signatory" />
+            </div>
+            <div className="md:col-span-3 border-t pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Company Letterhead (Optional)</h3>
+              <p className="text-xs text-gray-500 mb-2">Upload your company letterhead image. Invoice will print on this letterhead background.</p>
+              <input type="file" accept="image/*" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) { alert("Max 2MB allowed"); return; }
+                const reader = new FileReader();
+                reader.onload = () => setForm((p) => ({ ...p, letterhead: reader.result as string }));
+                reader.readAsDataURL(file);
+              }} className="border rounded-lg px-3 py-2 text-sm w-full" />
+              {form.letterhead && (
+                <div className="mt-2 border rounded-lg p-2 bg-gray-50 relative">
+                  <p className="text-xs text-gray-500 mb-1">Preview:</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.letterhead} alt="Letterhead" className="max-h-32 mx-auto object-contain" />
+                  <button type="button" onClick={() => setForm((p) => ({ ...p, letterhead: "" }))}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs">✕ Remove</button>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
