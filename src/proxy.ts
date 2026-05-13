@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const publicRoutes = ["/login"];
+const publicRoutes = ["/", "/login"];
 
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -41,7 +41,7 @@ export async function proxy(req: NextRequest) {
       const dest = payload.role === "admin" ? "/admin-dashboard" : "/dashboard";
       return NextResponse.redirect(new URL(dest, req.nextUrl));
     }
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+    return NextResponse.next();
   }
 
   return NextResponse.next();
