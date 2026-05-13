@@ -24,49 +24,42 @@ export async function POST(req: Request) {
     }
 
     const resend = new Resend(resendKey);
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+    const customFrom = process.env.RESEND_FROM_EMAIL;
+    const fallbackFrom = "onboarding@resend.dev";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #4F46E5;">GST Bill Manager</h2>
+        <p>Your password reset OTP is:</p>
+        <div style="background: #F3F4F6; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;">
+          <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1F2937;">${otp}</span>
+        </div>
+        <p style="color: #6B7280; font-size: 14px;">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
+      </div>
+    `;
 
     let sent = false;
-    try {
-      await resend.emails.send({
-        from: `GST Bill Manager <${fromEmail}>`,
+
+    if (customFrom) {
+      const { error } = await resend.emails.send({
+        from: `GST Bill Manager <${customFrom}>`,
         to: email,
         subject: "Password Reset OTP - GST Bill Manager",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #4F46E5;">GST Bill Manager</h2>
-            <p>Your password reset OTP is:</p>
-            <div style="background: #F3F4F6; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1F2937;">${otp}</span>
-            </div>
-            <p style="color: #6B7280; font-size: 14px;">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
-          </div>
-        `,
+        html: emailHtml,
       });
-      sent = true;
-    } catch {
-      if (fromEmail !== "onboarding@resend.dev") {
-        await resend.emails.send({
-          from: "GST Bill Manager <onboarding@resend.dev>",
-          to: email,
-          subject: "Password Reset OTP - GST Bill Manager",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #4F46E5;">GST Bill Manager</h2>
-              <p>Your password reset OTP is:</p>
-              <div style="background: #F3F4F6; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1F2937;">${otp}</span>
-              </div>
-              <p style="color: #6B7280; font-size: 14px;">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
-            </div>
-          `,
-        });
-        sent = true;
-      }
+      if (!error) sent = true;
     }
 
     if (!sent) {
-      return Response.json({ error: "Failed to send OTP email" }, { status: 500 });
+      const { error } = await resend.emails.send({
+        from: `GST Bill Manager <${fallbackFrom}>`,
+        to: email,
+        subject: "Password Reset OTP - GST Bill Manager",
+        html: emailHtml,
+      });
+      if (error) {
+        return Response.json({ error: "Failed to send OTP email" }, { status: 500 });
+      }
     }
 
     return Response.json({ success: true, message: "OTP sent to your email" });
