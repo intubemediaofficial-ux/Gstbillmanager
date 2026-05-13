@@ -10,8 +10,10 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   const checkNumber = searchParams.get("checkNumber");
+  const adminUserId = searchParams.get("adminUserId");
 
-  const key = `gst_invoices:${session.id}`;
+  const lookupUserId = (adminUserId && session.role === "admin") ? adminUserId : session.id;
+  const key = `gst_invoices:${lookupUserId}`;
   const invoices: Invoice[] = (await kv.get(key)) || [];
 
   if (checkNumber) {

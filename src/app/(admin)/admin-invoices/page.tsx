@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search } from "lucide-react";
+import { Search, Trash2, Eye, Download } from "lucide-react";
 import type { Invoice } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
@@ -20,6 +20,8 @@ const statusColors: Record<string, string> = {
   overdue: "bg-orange-100 text-orange-700",
 };
 
+const statusOptions = ["draft", "sent", "paid", "partial", "overdue", "cancelled"];
+
 export default function AdminInvoicesPage() {
   const [invoices, setInvoices] = useState<AdminInvoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,14 +29,42 @@ export default function AdminInvoicesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const didFetch = useRef(false);
-  useEffect(() => {
-    if (didFetch.current) return;
-    didFetch.current = true;
+  const fetchInvoices = () => {
+    setLoading(true);
     fetch("/api/admin/invoices")
       .then((r) => r.json())
       .then((res) => setInvoices(res.data || []))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (didFetch.current) return;
+    didFetch.current = true;
+    fetchInvoices();
   }, []);
+
+  const handleDelete = async (inv: AdminInvoice) => {
+    if (!confirm(`Delete invoice ${inv.invoiceNumber}?`)) return;
+    await fetch("/api/admin/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete", userId: inv.userId, id: inv.id }),
+    });
+    fetchInvoices();
+  };
+
+  const handleStatusChange = async (inv: AdminInvoice, newStatus: string) => {
+    await fetch("/api/admin/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update_status", userId: inv.userId, id: inv.id, status: newStatus }),
+    });
+    fetchInvoices();
+  };
+
+  const handleView = (inv: AdminInvoice) => {
+    window.open(`/invoice-view?id=${inv.id}&userId=${inv.userId}`, "_blank");
+  };
 
   const filtered = invoices.filter((inv) => {
     const matchSearch =
@@ -89,6 +119,7 @@ export default function AdminInvoicesPage() {
                 <th className="text-left p-3 font-medium">Date</th>
                 <th className="text-right p-3 font-medium">Amount</th>
                 <th className="text-left p-3 font-medium">Status</th>
+                <th className="text-right p-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -104,14 +135,33 @@ export default function AdminInvoicesPage() {
                   <td className="p-3 text-gray-500">{formatDate(inv.date)}</td>
                   <td className="p-3 text-right font-medium">{formatCurrency(inv.grandTotal)}</td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[inv.status] || ""}`}>
-                      {inv.status}
-                    </span>
+                    <select
+                      value={inv.status}
+                      onChange={(e) => handleStatusChange(inv, e.target.value)}
+                      className={`px-2 py-1 rounded-full text-xs font-medium border-0 cursor-pointer ${statusColors[inv.status] || ""}`}
+                    >
+                      {statusOptions.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="p-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button onClick={() => handleView(inv)} className="p-1.5 hover:bg-blue-50 rounded text-blue-600" title="View Invoice">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleView(inv)} className="p-1.5 hover:bg-green-50 rounded text-green-600" title="Download/Print">
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(inv)} className="p-1.5 hover:bg-red-50 rounded text-red-600" title="Delete">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="p-8 text-center text-gray-400">No invoices found</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-gray-400">No invoices found</td></tr>
               )}
             </tbody>
           </table>

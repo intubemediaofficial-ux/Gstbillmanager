@@ -10,6 +10,8 @@ import {
 const adminNavItems = [
   { label: "Admin Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
   { label: "Client Accounts", href: "/admin-clients", icon: Users },
+  { label: "All Firms", href: "/admin-firms", icon: Building2 },
+  { label: "All Parties", href: "/admin-parties", icon: Users },
   { label: "All Invoices", href: "/admin-invoices", icon: FileText },
   { label: "Reports", href: "/admin-reports", icon: BarChart3 },
 ];
