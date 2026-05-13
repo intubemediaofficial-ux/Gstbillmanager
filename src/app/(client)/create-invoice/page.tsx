@@ -482,7 +482,7 @@ export default function CreateInvoicePage() {
                       <input value={item.hsn} onChange={(e) => updateItem(idx, "hsn", e.target.value)}
                         className="w-full px-2 py-1.5 border rounded text-sm font-mono" placeholder="or type manually" />
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Qty</label>
                         <input type="number" min="1" value={item.qty} onChange={(e) => updateItem(idx, "qty", parseInt(e.target.value) || 0)}

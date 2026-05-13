@@ -61,7 +61,7 @@ export default function ReportsPage() {
       <div className="bg-white rounded-xl shadow-sm border mb-6">
         <div className="p-5 border-b"><h2 className="font-semibold">GST Summary</h2></div>
         <div className="p-5">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-500">Total CGST</p>
               <p className="text-xl font-bold text-blue-600">{formatCurrency(totalCgst)}</p>

@@ -145,7 +145,7 @@ export default function ProductsPage() {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-1">Unit</label>
                   <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
