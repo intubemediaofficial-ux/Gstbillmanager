@@ -11,6 +11,7 @@ interface PricingPlan {
   period: string;
   features: string[];
   recommended: boolean;
+  razorpayPlanId?: string;
 }
 
 interface SiteSettings {
@@ -18,6 +19,7 @@ interface SiteSettings {
   razorpayKeyId: string;
   razorpayEnabled: boolean;
   paymentButtonText: string;
+  subscriptionMode: boolean;
 }
 
 export default function PricingSection() {

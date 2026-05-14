@@ -10,13 +10,16 @@ interface PricingPlan {
   period: string;
   features: string[];
   recommended: boolean;
+  razorpayPlanId?: string;
 }
 
 interface SiteSettings {
   pricing: PricingPlan[];
   razorpayKeyId: string;
+  razorpaySecretKey: string;
   razorpayEnabled: boolean;
   paymentButtonText: string;
+  subscriptionMode: boolean;
 }
 
 export default function AdminSiteSettings() {
@@ -26,6 +29,7 @@ export default function AdminSiteSettings() {
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState<"success" | "error">("success");
   const [showKey, setShowKey] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
   const [newFeature, setNewFeature] = useState<Record<string, string>>({});
 
   const didFetch = useRef(false);
@@ -158,6 +162,33 @@ export default function AdminSiteSettings() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Razorpay Secret Key</label>
+            <div className="relative">
+              <input type={showSecret ? "text" : "password"}
+                value={settings.razorpaySecretKey}
+                onChange={(e) => setSettings({ ...settings, razorpaySecretKey: e.target.value })}
+                className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="rzp_secret_xxxxxxxxxxxxxx" />
+              <button type="button" onClick={() => setShowSecret(!showSecret)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Required for subscription verification. Keep this secret!</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked={settings.subscriptionMode}
+                onChange={(e) => setSettings({ ...settings, subscriptionMode: e.target.checked })}
+                className="sr-only peer" />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:bg-violet-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all" />
+            </label>
+            <span className="text-sm font-medium text-gray-700">Subscription Mode (recurring payments)</span>
+            {settings.subscriptionMode && <span className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 font-medium">Active</span>}
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Payment Button Text</label>
             <input type="text" value={settings.paymentButtonText}
               onChange={(e) => setSettings({ ...settings, paymentButtonText: e.target.value })}
@@ -228,6 +259,18 @@ export default function AdminSiteSettings() {
                   </select>
                 </div>
               </div>
+
+              {/* Razorpay Plan ID (for subscriptions) */}
+              {settings.subscriptionMode && settings.razorpayEnabled && (
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Razorpay Plan ID (for subscription)</label>
+                  <input type="text" value={plan.razorpayPlanId || ""}
+                    onChange={(e) => updatePlan(plan.id, "razorpayPlanId", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="plan_xxxxxxxxxxxxxx" />
+                  <p className="text-[10px] text-gray-400 mt-0.5">Create plans at Razorpay Dashboard → Subscriptions → Plans</p>
+                </div>
+              )}
 
               {/* Features */}
               <div>

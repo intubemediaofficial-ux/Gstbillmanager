@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Printer, Download, Share2, Mail, ArrowLeft } from "lucide-react";
+import { Printer, Download, Share2, Mail, ArrowLeft, Loader2 } from "lucide-react";
 import type { Invoice, BusinessSettings } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/gst-utils";
@@ -16,6 +16,8 @@ function InvoiceViewContent() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const invoiceRef = useRef<HTMLDivElement>(null);
 
   const didFetch = useRef(false);
   useEffect(() => {
@@ -35,16 +37,37 @@ function InvoiceViewContent() {
 
   const handlePrint = () => window.print();
 
+  const handlePDF = async () => {
+    if (!invoice || !invoiceRef.current) return;
+    setPdfLoading(true);
+    try {
+      const html2canvas = (await import("html2canvas-pro")).default;
+      const { jsPDF } = await import("jspdf");
+      const el = invoiceRef.current;
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
+      pdf.save(`${invoice.invoiceNumber.replace(/[\/\s]/g, "_")}.pdf`);
+    } catch {
+      window.print();
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   const handleWhatsApp = () => {
     if (!invoice) return;
-    const text = `Invoice ${invoice.invoiceNumber}\nCustomer: ${invoice.customer.name}\nAmount: ${formatCurrency(invoice.grandTotal)}\nDate: ${formatDate(invoice.date)}\n\nView: ${window.location.href}`;
+    const text = `*${invoice.firm?.name || "GST Bill Manager"}*\n\n📄 Invoice: *${invoice.invoiceNumber}*\n👤 Customer: ${invoice.customer.name}\n💰 Amount: *${formatCurrency(invoice.grandTotal)}*\n📅 Date: ${formatDate(invoice.date)}\n\n🔗 View Invoice: ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const handleEmail = () => {
     if (!invoice) return;
     const subject = `Invoice ${invoice.invoiceNumber} - ${invoice.firm?.name || settings?.companyName || "GST Bill"}`;
-    const body = `Dear ${invoice.customer.name},\n\nPlease find the invoice details below:\n\nInvoice #: ${invoice.invoiceNumber}\nAmount: ${formatCurrency(invoice.grandTotal)}\nDate: ${formatDate(invoice.date)}\nDue Date: ${invoice.dueDate ? formatDate(invoice.dueDate) : "N/A"}\n\nThank you for your business.\n\n${invoice.firm?.name || settings?.companyName || ""}`;
+    const body = `Dear ${invoice.customer.name},\n\nPlease find the invoice details below:\n\nInvoice #: ${invoice.invoiceNumber}\nAmount: ${formatCurrency(invoice.grandTotal)}\nDate: ${formatDate(invoice.date)}\nDue Date: ${invoice.dueDate ? formatDate(invoice.dueDate) : "N/A"}\n\nView Invoice: ${window.location.href}\n\nThank you for your business.\n\n${invoice.firm?.name || settings?.companyName || ""}`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   };
 
@@ -82,14 +105,14 @@ function InvoiceViewContent() {
           <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium shadow-sm">
             <Printer className="w-4 h-4" /> Print
           </button>
-          <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm">
-            <Download className="w-4 h-4" /> PDF
+          <button onClick={handlePDF} disabled={pdfLoading} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm disabled:opacity-50">
+            {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} {pdfLoading ? "Generating..." : "PDF"}
           </button>
         </div>
       </div>
 
       {/* Premium GST Invoice */}
-      <div className="bg-white max-w-4xl mx-auto print:shadow-none print:border-none print:p-0 relative overflow-hidden" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
+      <div ref={invoiceRef} className="bg-white max-w-4xl mx-auto print:shadow-none print:border-none print:p-0 relative overflow-hidden" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
         {/* Google Fonts */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
