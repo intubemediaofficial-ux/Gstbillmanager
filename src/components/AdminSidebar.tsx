@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, FileText, BarChart3, LogOut,
-  Building2, Package, FilePlus, Settings, Menu, X,
+  Building2, Package, FilePlus, Settings, Menu, X, CreditCard,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -15,6 +15,7 @@ const adminNavItems = [
   { label: "All Parties", href: "/admin-parties", icon: Users },
   { label: "All Invoices", href: "/admin-invoices", icon: FileText },
   { label: "Reports", href: "/admin-reports", icon: BarChart3 },
+  { label: "Site Settings", href: "/admin-site-settings", icon: CreditCard },
 ];
 
 const clientNavItems = [

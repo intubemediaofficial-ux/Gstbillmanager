@@ -18,6 +18,7 @@ import {
   IndianRupee,
   Sparkles,
 } from "lucide-react";
+import PricingSection from "@/components/PricingSection";
 
 export default function HomePage() {
   return (
@@ -183,49 +184,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
-            <p className="text-lg text-gray-500">Start free, upgrade when you need</p>
-          </div>
-
-          <div className="max-w-lg mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl border-2 border-cyan-500 p-8 text-center relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-sm font-bold text-white shadow-md" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
-                Most Popular
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Plan</h3>
-              <div className="flex items-baseline justify-center gap-1 mb-6">
-                <span className="text-5xl font-extrabold text-cyan-600">&#8377;0</span>
-                <span className="text-gray-400">/month</span>
-              </div>
-              <ul className="text-left space-y-3 mb-8">
-                {[
-                  "Unlimited invoices",
-                  "Multiple firms & parties",
-                  "GST & Non-GST support",
-                  "HSN code auto-detect",
-                  "Director signatures",
-                  "Company letterhead",
-                  "Tally-style invoice format",
-                  "Dashboard & reports",
-                  "Google login",
-                ].map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-gray-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block w-full py-3.5 rounded-xl font-bold text-white transition text-lg shadow-lg hover:shadow-xl hover:scale-[1.02]" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
-                Get Started Free
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Pricing — dynamic from admin settings */}
+      <PricingSection />
 
       {/* CTA Section */}
       <section className="py-20" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%)" }}>

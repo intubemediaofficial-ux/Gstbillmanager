@@ -33,15 +33,15 @@ export default function ClientDashboard() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full" />
+      <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
     </div>
   );
 
   const stats = [
-    { label: "Customers", value: customers.length, icon: Users, gradient: "linear-gradient(135deg, #0ea5e9, #06b6d4)", lightBg: "#eef9ff" },
-    { label: "Invoices", value: invoices.length, icon: FileText, gradient: "linear-gradient(135deg, #f59e0b, #f97316)", lightBg: "#fff7ed" },
-    { label: "Revenue", value: formatCurrency(paidRevenue), icon: IndianRupee, gradient: "linear-gradient(135deg, #10b981, #14b8a6)", lightBg: "#ecfdf5" },
-    { label: "Pending", value: formatCurrency(pendingAmount), icon: Clock, gradient: "linear-gradient(135deg, #ef4444, #f97316)", lightBg: "#fef2f2" },
+    { label: "Customers", value: customers.length, icon: Users, iconBg: "bg-blue-50", iconColor: "text-blue-600", borderColor: "border-blue-100" },
+    { label: "Invoices", value: invoices.length, icon: FileText, iconBg: "bg-emerald-50", iconColor: "text-emerald-600", borderColor: "border-emerald-100" },
+    { label: "Revenue", value: formatCurrency(paidRevenue), icon: IndianRupee, iconBg: "bg-violet-50", iconColor: "text-violet-600", borderColor: "border-violet-100" },
+    { label: "Pending", value: formatCurrency(pendingAmount), icon: Clock, iconBg: "bg-amber-50", iconColor: "text-amber-600", borderColor: "border-amber-100" },
   ];
 
   return (
@@ -53,24 +53,22 @@ export default function ClientDashboard() {
           <p className="text-sm mt-1 text-gray-500">Welcome back! Here&apos;s your business overview.</p>
         </div>
         <Link href="/create-invoice"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md transition-all duration-300">
           <FilePlus className="w-4 h-4" /> Create Invoice
         </Link>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards — soft white cards with colored icons */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl p-5 text-white relative overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" style={{ background: s.gradient }}>
-            <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-20 -mr-8 -mt-8" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
-            <div className="flex items-center gap-3 relative">
-              <div className="p-2.5 rounded-xl bg-white/20">
-                <s.icon className="w-5 h-5 text-white" />
+          <div key={s.label} className={`rounded-2xl p-5 bg-white border ${s.borderColor} shadow-sm hover:shadow-md transition-all duration-300`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl ${s.iconBg}`}>
+                <s.icon className={`w-5 h-5 ${s.iconColor}`} />
               </div>
               <div>
-                <p className="text-sm font-medium text-white/80">{s.label}</p>
-                <p className="text-xl font-bold text-white">{s.value}</p>
+                <p className="text-sm font-medium text-gray-500">{s.label}</p>
+                <p className="text-xl font-bold text-gray-900">{s.value}</p>
               </div>
             </div>
           </div>
@@ -80,18 +78,18 @@ export default function ClientDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {[
-          { label: "New Invoice", href: "/create-invoice", icon: FilePlus, iconColor: "#0ea5e9", bg: "#eef9ff" },
-          { label: "Customers", href: "/customers", icon: Users, iconColor: "#10b981", bg: "#ecfdf5" },
-          { label: "Invoices", href: "/invoices", icon: FileText, iconColor: "#f97316", bg: "#fff7ed" },
-          { label: "Reports", href: "/reports", icon: TrendingUp, iconColor: "#8b5cf6", bg: "#ede9fe" },
+          { label: "New Invoice", href: "/create-invoice", icon: FilePlus, iconColor: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Customers", href: "/customers", icon: Users, iconColor: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Invoices", href: "/invoices", icon: FileText, iconColor: "text-orange-600", bg: "bg-orange-50" },
+          { label: "Reports", href: "/reports", icon: TrendingUp, iconColor: "text-violet-600", bg: "bg-violet-50" },
         ].map((a) => (
           <Link key={a.label} href={a.href}
             className="flex items-center gap-2.5 p-3.5 rounded-xl border border-gray-200 bg-white hover:shadow-md hover:border-gray-300 transition-all duration-300 group">
-            <div className="p-2 rounded-lg" style={{ background: a.bg }}>
-              <a.icon className="w-4 h-4" style={{ color: a.iconColor }} />
+            <div className={`p-2 rounded-lg ${a.bg}`}>
+              <a.icon className={`w-4 h-4 ${a.iconColor}`} />
             </div>
             <span className="text-sm font-medium text-gray-700">{a.label}</span>
-            <ArrowUpRight className="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: a.iconColor }} />
+            <ArrowUpRight className="w-3.5 h-3.5 ml-auto text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
         ))}
       </div>
@@ -99,14 +97,14 @@ export default function ClientDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Invoices */}
         <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-          <div className="p-4 flex items-center gap-2 text-white" style={{ background: "linear-gradient(135deg, #1e3a5f, #0ea5e9)" }}>
-            <TrendingUp className="w-5 h-5" />
-            <h2 className="font-bold">Recent Invoices</h2>
-            <Sparkles className="w-3.5 h-3.5 ml-auto text-amber-300" />
+          <div className="p-4 flex items-center gap-2 border-b border-gray-100 bg-gray-50">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            <h2 className="font-bold text-gray-900">Recent Invoices</h2>
+            <Sparkles className="w-3.5 h-3.5 ml-auto text-blue-400" />
           </div>
           <div className="divide-y divide-gray-100">
             {invoices.slice(0, 5).map((inv) => (
-              <Link key={inv.id} href={`/invoice-view?id=${inv.id}`} className="flex items-center justify-between p-4 hover:bg-cyan-50/50 transition-colors duration-200">
+              <Link key={inv.id} href={`/invoice-view?id=${inv.id}`} className="flex items-center justify-between p-4 hover:bg-blue-50/50 transition-colors duration-200">
                 <div>
                   <p className="font-medium text-sm text-gray-900">{inv.invoiceNumber}</p>
                   <p className="text-xs text-gray-400">{inv.customer.name} · {formatDate(inv.date)}</p>
@@ -123,7 +121,7 @@ export default function ClientDashboard() {
               <div className="p-8 text-center">
                 <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm text-gray-400">No invoices yet</p>
-                <Link href="/create-invoice" className="text-xs font-medium mt-1 inline-block text-cyan-600 hover:text-cyan-700">Create your first invoice</Link>
+                <Link href="/create-invoice" className="text-xs font-medium mt-1 inline-block text-blue-600 hover:text-blue-700">Create your first invoice</Link>
               </div>
             )}
           </div>
@@ -131,18 +129,18 @@ export default function ClientDashboard() {
 
         {/* Recent Customers */}
         <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-          <div className="p-4 flex items-center gap-2 text-white" style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}>
-            <Users className="w-5 h-5" />
-            <h2 className="font-bold">Recent Customers</h2>
-            <Sparkles className="w-3.5 h-3.5 ml-auto text-amber-100" />
+          <div className="p-4 flex items-center gap-2 border-b border-gray-100 bg-gray-50">
+            <Users className="w-5 h-5 text-emerald-600" />
+            <h2 className="font-bold text-gray-900">Recent Customers</h2>
+            <Sparkles className="w-3.5 h-3.5 ml-auto text-emerald-400" />
           </div>
           <div className="divide-y divide-gray-100">
             {customers.slice(0, 5).map((c, i) => {
-              const avatarColors = ["#0ea5e9", "#10b981", "#f97316", "#8b5cf6", "#ef4444"];
+              const avatarColors = ["bg-blue-500", "bg-emerald-500", "bg-orange-500", "bg-violet-500", "bg-rose-500"];
               return (
-                <div key={c.id} className="flex items-center justify-between p-4 hover:bg-orange-50/50 transition-colors duration-200">
+                <div key={c.id} className="flex items-center justify-between p-4 hover:bg-emerald-50/50 transition-colors duration-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm" style={{ background: avatarColors[i % avatarColors.length] }}>
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white ${avatarColors[i % avatarColors.length]}`}>
                       {c.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -158,7 +156,7 @@ export default function ClientDashboard() {
               <div className="p-8 text-center">
                 <Users className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm text-gray-400">No customers yet</p>
-                <Link href="/customers" className="text-xs font-medium mt-1 inline-block text-orange-600 hover:text-orange-700">Add your first customer</Link>
+                <Link href="/customers" className="text-xs font-medium mt-1 inline-block text-emerald-600 hover:text-emerald-700">Add your first customer</Link>
               </div>
             )}
           </div>
