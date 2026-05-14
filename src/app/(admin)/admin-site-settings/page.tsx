@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Save, Plus, Trash2, CreditCard, IndianRupee, Settings, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Save, Plus, Trash2, CreditCard, IndianRupee, Settings, CheckCircle, AlertCircle, Eye, EyeOff, Lock } from "lucide-react";
 
 interface PricingPlan {
   id: string;
@@ -31,6 +31,14 @@ export default function AdminSiteSettings() {
   const [showKey, setShowKey] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [newFeature, setNewFeature] = useState<Record<string, string>>({});
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState("");
+  const [pwMsgType, setPwMsgType] = useState<"success" | "error">("success");
 
   const didFetch = useRef(false);
   useEffect(() => {
@@ -307,6 +315,76 @@ export default function AdminSiteSettings() {
               <p className="text-sm">No pricing plans yet. Click &quot;Add Plan&quot; to create one.</p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Admin Change Password */}
+      <div className="bg-white rounded-xl border shadow-sm mt-6">
+        <div className="p-5 border-b flex items-center gap-2">
+          <Lock className="w-5 h-5 text-orange-600" />
+          <h2 className="text-lg font-semibold">Change Admin Password</h2>
+        </div>
+        <div className="p-5 space-y-4">
+          {pwMsg && (
+            <div className={`px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2 ${pwMsgType === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+              {pwMsgType === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {pwMsg}
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
+            <div className="relative">
+              <input type={showCurrentPw ? "text" : "password"} value={currentPw}
+                onChange={(e) => setCurrentPw(e.target.value)}
+                className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter current password" />
+              <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password (min 6 characters)</label>
+            <div className="relative">
+              <input type={showNewPw ? "text" : "password"} value={newPw}
+                onChange={(e) => setNewPw(e.target.value)}
+                className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter new password" minLength={6} />
+              <button type="button" onClick={() => setShowNewPw(!showNewPw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
+            <input type={showNewPw ? "text" : "password"} value={confirmPw}
+              onChange={(e) => setConfirmPw(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Confirm new password" />
+          </div>
+          <button onClick={async () => {
+            setPwMsg(""); setPwMsgType("error");
+            if (newPw.length < 6) { setPwMsg("New password must be at least 6 characters"); return; }
+            if (newPw !== confirmPw) { setPwMsg("Passwords do not match"); return; }
+            setPwSaving(true);
+            try {
+              const res = await fetch("/api/auth/change-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
+              });
+              const data = await res.json();
+              if (!res.ok) { setPwMsg(data.error || "Failed to change password"); setPwMsgType("error"); return; }
+              setPwMsg("Password changed successfully!"); setPwMsgType("success");
+              setCurrentPw(""); setNewPw(""); setConfirmPw("");
+            } catch { setPwMsg("Failed to change password"); }
+            finally { setPwSaving(false); setTimeout(() => setPwMsg(""), 5000); }
+          }} disabled={pwSaving}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 transition">
+            <Lock className="w-4 h-4" /> {pwSaving ? "Changing..." : "Change Password"}
+          </button>
         </div>
       </div>
     </div>
