@@ -75,52 +75,73 @@ function LoginContent() {
     window.location.href = "/api/auth/google";
   };
 
-  const inputStyle = "w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white/80 border border-white/60 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent focus:bg-white transition-all duration-300 shadow-sm";
-  const inputStylePw = "w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white/80 border border-white/60 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent focus:bg-white transition-all duration-300 shadow-sm";
-
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%)" }}>
-      {/* Animated background blobs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-30 animate-pulse" style={{ background: "radial-gradient(circle, #ffecd2 0%, transparent 70%)" }} />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-25 animate-pulse" style={{ background: "radial-gradient(circle, #a18cd1 0%, transparent 70%)", animationDelay: "1s" }} />
-        <div className="absolute top-[30%] left-[50%] w-[350px] h-[350px] rounded-full opacity-20 animate-pulse" style={{ background: "radial-gradient(circle, #fbc2eb 0%, transparent 70%)", animationDelay: "2s" }} />
-        <div className="absolute top-[60%] right-[30%] w-[200px] h-[200px] rounded-full opacity-20 animate-pulse" style={{ background: "radial-gradient(circle, #a1c4fd 0%, transparent 70%)", animationDelay: "3s" }} />
+    <div className="min-h-screen flex">
+      {/* Left Panel — Branding */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center" style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 50%, #06b6d4 100%)" }}>
+        <div className="absolute top-[-20%] right-[-15%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #fbbf24 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #34d399 0%, transparent 70%)" }} />
+        <div className="absolute top-[50%] left-[60%] w-[250px] h-[250px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #fb923c 0%, transparent 70%)" }} />
+
+        <div className="relative z-10 text-center px-12">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-sm mb-8 shadow-2xl border border-white/20">
+            <FileText className="w-12 h-12 text-white" />
+          </div>
+          <h2 className="text-4xl font-extrabold text-white mb-4 leading-tight">GST Bill Manager</h2>
+          <p className="text-xl text-white/70 mb-8 leading-relaxed">India&apos;s simplest GST billing software.<br/>Create professional invoices in seconds.</p>
+
+          <div className="space-y-4 text-left max-w-xs mx-auto">
+            {[
+              { icon: Zap, text: "Create invoice in 30 seconds", color: "#fbbf24" },
+              { icon: Shield, text: "100% GST compliant & secure", color: "#34d399" },
+              { icon: FileText, text: "Tally-style Indian format", color: "#fb923c" },
+            ].map((f) => (
+              <div key={f.text} className="flex items-center gap-3 text-white/80">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10">
+                  <f.icon className="w-4 h-4" style={{ color: f.color }} />
+                </div>
+                <span className="text-sm">{f.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5 shadow-2xl" style={{ background: "linear-gradient(135deg, #fff 0%, #f0f0ff 100%)" }}>
-            <FileText className="w-10 h-10 text-violet-600" />
+      {/* Right Panel — Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 bg-gray-50">
+        <div className="w-full max-w-md">
+          {/* Mobile logo */}
+          <div className="text-center mb-8 lg:hidden">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
+              <FileText className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">GST Bill Manager</h1>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight drop-shadow-lg">GST Bill Manager</h1>
-          <p className="mt-2 text-base text-white/70">
-            {mode === "login" ? "Welcome back! Sign in to continue" : "Create your free account"}
-          </p>
-        </div>
 
-        {/* Card */}
-        <div className="rounded-3xl p-8 space-y-5 shadow-2xl border border-white/20" style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}>
+          <div className="lg:block hidden mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">{mode === "login" ? "Welcome back!" : "Create your account"}</h1>
+            <p className="text-gray-500 mt-1 text-sm">{mode === "login" ? "Sign in to manage your GST invoices" : "Start creating professional invoices for free"}</p>
+          </div>
+
           {/* Mode Toggle */}
-          <div className="flex rounded-xl p-1 bg-white/10">
+          <div className="flex rounded-xl p-1 mb-6 bg-gray-200">
             <button onClick={() => { setMode("login"); setError(""); }}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === "login" ? "bg-white text-violet-700 shadow-lg" : "text-white/60 hover:text-white"}`}>
+              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === "login" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
               Login
             </button>
             <button onClick={() => { setMode("signup"); setError(""); }}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === "signup" ? "bg-white text-violet-700 shadow-lg" : "text-white/60 hover:text-white"}`}>
+              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === "signup" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
               Sign Up
             </button>
           </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-xl text-sm font-medium bg-red-500/20 text-white border border-red-400/30">{error}</div>
+            <div className="px-4 py-3 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-200 mb-4">{error}</div>
           )}
 
           {/* Google Login */}
           <button onClick={handleGoogle} type="button"
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm bg-white/90 hover:bg-white text-gray-700 shadow-sm border border-white/60">
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm bg-white hover:bg-gray-50 text-gray-700 shadow-sm border border-gray-200 mb-4">
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -130,29 +151,31 @@ function LoginContent() {
             Continue with Google
           </button>
 
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/20" />
-            <span className="text-xs uppercase tracking-wider text-white/40">or</span>
-            <div className="flex-1 h-px bg-white/20" />
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs uppercase tracking-wider text-gray-400">or</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           {/* Login Form */}
           {mode === "login" && resetMode === "none" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-white/80">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    className={inputStyle} placeholder="your@email.com" required />
+                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                    placeholder="your@email.com" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-white/80">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-                    className={inputStylePw} placeholder="••••••••" required />
+                    className="w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                    placeholder="••••••••" required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -160,13 +183,13 @@ function LoginContent() {
                 </div>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+                className="w-full py-3 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+                style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                 {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
               </button>
               <div className="text-center">
                 <button type="button" onClick={() => { setResetMode("email"); setError(""); setResetMsg(""); }}
-                  className="text-sm font-medium text-white/70 hover:text-white transition-colors">Forgot Password?</button>
+                  className="text-sm font-medium text-cyan-600 hover:text-cyan-700 transition-colors">Forgot Password?</button>
               </div>
             </form>
           )}
@@ -175,35 +198,39 @@ function LoginContent() {
           {mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-white/80">Full Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                    className={inputStyle} placeholder="Your full name" required />
+                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                    placeholder="Your full name" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-white/80">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    className={inputStyle} placeholder="your@email.com" required />
+                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                    placeholder="your@email.com" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-white/80">Mobile Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile Number</label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                    className={inputStyle} placeholder="9876543210" />
+                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                    placeholder="9876543210" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-white/80">Password * (min 6 characters)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Password * (min 6 characters)</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-                    className={inputStylePw} placeholder="••••••••" required minLength={6} />
+                    className="w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                    placeholder="••••••••" required minLength={6} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -211,8 +238,8 @@ function LoginContent() {
                 </div>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+                className="w-full py-3 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+                style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                 {loading ? "Creating account..." : <><span>Create Account</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </form>
@@ -221,20 +248,18 @@ function LoginContent() {
           {/* Forgot Password Flow */}
           {resetMode !== "none" && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <button onClick={() => { setResetMode("none"); setResetMsg(""); setError(""); }} className="text-sm text-white/50 hover:text-white transition-colors">&larr; Back to Login</button>
-              </div>
-              <h3 className="font-bold text-white text-lg">Reset Password</h3>
-
-              {resetMsg && <div className="px-4 py-2 rounded-xl text-sm bg-emerald-500/20 text-emerald-100 border border-emerald-400/30">{resetMsg}</div>}
+              <button onClick={() => { setResetMode("none"); setResetMsg(""); setError(""); }} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">&larr; Back to Login</button>
+              <h3 className="font-bold text-gray-900 text-lg">Reset Password</h3>
+              {resetMsg && <div className="px-4 py-2 rounded-xl text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">{resetMsg}</div>}
 
               {resetMode === "email" && (
                 <>
-                  <p className="text-sm text-white/50">Enter your registered email. We will send an OTP to reset your password.</p>
+                  <p className="text-sm text-gray-500">Enter your registered email. We will send an OTP.</p>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)}
-                      className={inputStyle} placeholder="your@email.com" />
+                      className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                      placeholder="your@email.com" />
                   </div>
                   <button onClick={async () => {
                     setError(""); setResetMsg("");
@@ -250,8 +275,8 @@ function LoginContent() {
                     setResetMsg("OTP sent to your email!");
                     setResetMode("otp");
                   }} disabled={loading}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 disabled:opacity-50 shadow-lg"
-                    style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white disabled:opacity-50 shadow-lg transition-all duration-300"
+                    style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                     {loading ? "Sending OTP..." : "Send OTP"}
                   </button>
                 </>
@@ -259,16 +284,17 @@ function LoginContent() {
 
               {resetMode === "otp" && (
                 <>
-                  <p className="text-sm text-white/50">Enter the 6-digit OTP sent to <strong className="text-white">{resetEmail}</strong></p>
+                  <p className="text-sm text-gray-500">Enter the 6-digit OTP sent to <strong className="text-gray-900">{resetEmail}</strong></p>
                   <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="w-full px-4 py-3 rounded-xl text-center text-2xl tracking-widest font-mono bg-white/80 border border-white/60 text-violet-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent focus:bg-white transition-all duration-300 shadow-sm"
+                    className="w-full px-4 py-3 rounded-xl text-center text-2xl tracking-widest font-mono bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
                     placeholder="000000" maxLength={6} />
                   <div>
-                    <label className="block text-sm font-medium mb-1.5 text-white/80">New Password</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input type={showPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                        className={inputStylePw} placeholder="Min 6 characters" minLength={6} />
+                        className="w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+                        placeholder="Min 6 characters" minLength={6} />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -290,8 +316,8 @@ function LoginContent() {
                     setResetMsg("Password reset successfully! You can now login.");
                     setResetMode("done");
                   }} disabled={loading}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 disabled:opacity-50 shadow-lg"
-                    style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white disabled:opacity-50 shadow-lg transition-all duration-300"
+                    style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                     {loading ? "Resetting..." : "Reset Password"}
                   </button>
                 </>
@@ -299,20 +325,20 @@ function LoginContent() {
 
               {resetMode === "done" && (
                 <button onClick={() => { setResetMode("none"); setEmail(resetEmail); setPassword(""); setError(""); setResetMsg(""); }}
-                  className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 shadow-lg"
-                  style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+                  className="w-full py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all duration-300"
+                  style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                   Go to Login
                 </button>
               )}
             </div>
           )}
-        </div>
 
-        {/* Trust badges */}
-        <div className="mt-6 flex items-center justify-center gap-6 text-xs text-white/50">
-          <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-300" /> Secure</span>
-          <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-amber-300" /> Fast</span>
-          <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-sky-300" /> Free</span>
+          {/* Trust badges */}
+          <div className="mt-6 flex items-center justify-center gap-6 text-xs text-gray-400">
+            <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-500" /> Secure</span>
+            <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-amber-500" /> Fast</span>
+            <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-cyan-500" /> Free</span>
+          </div>
         </div>
       </div>
     </div>
@@ -321,7 +347,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%)" }}><div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full" /></div>}>
       <LoginContent />
     </Suspense>
   );
