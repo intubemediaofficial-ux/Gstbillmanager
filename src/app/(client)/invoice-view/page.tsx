@@ -385,6 +385,29 @@ function InvoiceViewContent() {
             </div>
           </div>
 
+          {/* ═══ E-INVOICE QR CODE ═══ */}
+          {invoice.invoiceType === "tax_invoice" && invoice.firm?.gstin && (
+            <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(JSON.stringify({ sellerGstin: invoice.firm.gstin, buyerGstin: invoice.customer.gstin || "N/A", invNo: invoice.invoiceNumber, invDate: invoice.date, totalValue: invoice.grandTotal, totalTax: invoice.totalTax }))}`}
+                  alt="E-Invoice QR"
+                  width={70}
+                  height={70}
+                  className="rounded"
+                />
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">E-Invoice QR Code</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5">Scan to verify invoice details</p>
+                </div>
+              </div>
+              <div className="text-right text-[9px] text-gray-400">
+                <p>IRN: {invoice.id.substring(0, 16).toUpperCase()}</p>
+              </div>
+            </div>
+          )}
+
           {/* ═══ FOOTER ═══ */}
           <div className="text-white text-center py-3 text-[11px] font-medium tracking-widest" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 70%, #2a5298 100%)" }}>
             This is a Computer Generated Invoice &nbsp;&bull;&nbsp; E. &amp; O.E.

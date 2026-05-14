@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Download } from "lucide-react";
 import type { Invoice } from "@/lib/gst-types";
 import { formatCurrency } from "@/lib/gst-utils";
 
@@ -38,7 +39,17 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Reports</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Reports</h1>
+        <div className="flex gap-2">
+          <a href="/api/tally-export?format=xml" download className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium">
+            <Download className="w-3.5 h-3.5" /> Tally XML
+          </a>
+          <a href="/api/tally-export?format=csv" download className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs font-medium">
+            <Download className="w-3.5 h-3.5" /> Export CSV
+          </a>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-xl shadow-sm border p-5">

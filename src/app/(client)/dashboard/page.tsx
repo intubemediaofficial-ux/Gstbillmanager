@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { FileText, Users, IndianRupee, FilePlus, Clock, TrendingUp, ArrowUpRight, Sparkles } from "lucide-react";
-import type { Customer, Invoice } from "@/lib/gst-types";
+import { FileText, Users, IndianRupee, FilePlus, Clock, TrendingUp, ArrowUpRight, Sparkles, Package, Truck, BarChart3, Bell, AlertTriangle } from "lucide-react";
+import type { Customer, Invoice, InventoryItem } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
 
 export default function ClientDashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([]);
+  const [pendingReminders, setPendingReminders] = useState<{ id: string; invoiceNumber: string; customerName: string; balance: number; dueDate: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const didFetch = useRef(false);
@@ -18,10 +20,14 @@ export default function ClientDashboard() {
     Promise.all([
       fetch("/api/customers").then((r) => r.json()),
       fetch("/api/invoices").then((r) => r.json()),
+      fetch("/api/inventory").then((r) => r.json()).catch(() => ({ data: { lowStock: [] } })),
+      fetch("/api/payment-reminders").then((r) => r.json()).catch(() => ({ data: [] })),
     ])
-      .then(([cRes, iRes]) => {
+      .then(([cRes, iRes, invRes, remRes]) => {
         setCustomers(cRes.data || []);
         setInvoices(iRes.data || []);
+        setLowStockItems(invRes.data?.lowStock || []);
+        setPendingReminders(remRes.data || []);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -75,13 +81,37 @@ export default function ClientDashboard() {
         ))}
       </div>
 
+      {/* Alerts */}
+      {(lowStockItems.length > 0 || pendingReminders.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          {lowStockItems.length > 0 && (
+            <Link href="/inventory" className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl hover:shadow-md transition-all">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div>
+                <p className="text-sm font-semibold text-amber-800">{lowStockItems.length} Low Stock Items</p>
+                <p className="text-xs text-amber-600">{lowStockItems.slice(0, 3).map((i) => i.name).join(", ")}</p>
+              </div>
+            </Link>
+          )}
+          {pendingReminders.length > 0 && (
+            <Link href="/invoices" className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl hover:shadow-md transition-all">
+              <Bell className="w-5 h-5 text-red-600" />
+              <div>
+                <p className="text-sm font-semibold text-red-800">{pendingReminders.length} Pending Payments</p>
+                <p className="text-xs text-red-600">{formatCurrency(pendingReminders.reduce((s, r) => s + r.balance, 0))} outstanding</p>
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {[
           { label: "New Invoice", href: "/create-invoice", icon: FilePlus, iconColor: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Customers", href: "/customers", icon: Users, iconColor: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Invoices", href: "/invoices", icon: FileText, iconColor: "text-orange-600", bg: "bg-orange-50" },
-          { label: "Reports", href: "/reports", icon: TrendingUp, iconColor: "text-violet-600", bg: "bg-violet-50" },
+          { label: "Inventory", href: "/inventory", icon: Package, iconColor: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "E-Way Bills", href: "/eway-bills", icon: Truck, iconColor: "text-orange-600", bg: "bg-orange-50" },
+          { label: "GSTR Reports", href: "/gstr-reports", icon: BarChart3, iconColor: "text-violet-600", bg: "bg-violet-50" },
         ].map((a) => (
           <Link key={a.label} href={a.href}
             className="flex items-center gap-2.5 p-3.5 rounded-xl border border-gray-200 bg-white hover:shadow-md hover:border-gray-300 transition-all duration-300 group">

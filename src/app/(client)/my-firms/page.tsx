@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Building2, Plus, Trash2, Edit2, Save, X, Upload, PenTool, Landmark } from "lucide-react";
+import { Building2, Plus, Trash2, Edit2, Save, X, Upload, PenTool, Landmark, Loader2 } from "lucide-react";
 import Image from "next/image";
 import type { Firm, Signature } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
@@ -25,6 +25,8 @@ export default function MyFirmsPage() {
   const [showSigUpload, setShowSigUpload] = useState<string | null>(null);
   const [sigName, setSigName] = useState("");
   const [sigImage, setSigImage] = useState("");
+  const [gstLookup, setGstLookup] = useState(false);
+  const [gstMsg, setGstMsg] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const didMount = useRef(false);
@@ -39,7 +41,7 @@ export default function MyFirmsPage() {
 
   useEffect(() => { if (didMount.current) return; didMount.current = true; load(); }, []);
 
-  const handleGstin = (gstin: string) => {
+  const handleGstin = async (gstin: string) => {
     const updates: Partial<typeof form> = { gstin };
     if (gstin.length >= 2) {
       const code = gstin.substring(0, 2);
@@ -47,6 +49,26 @@ export default function MyFirmsPage() {
     }
     if (gstin.length >= 12) updates.pan = gstin.substring(2, 12);
     setForm((p) => ({ ...p, ...updates }));
+
+    if (gstin.length === 15) {
+      setGstLookup(true); setGstMsg("");
+      try {
+        const res = await fetch(`/api/gstin-lookup?gstin=${gstin}`);
+        const json = await res.json();
+        if (json.data) {
+          const d = json.data;
+          setForm((f) => ({
+            ...f, gstin,
+            name: d.name || f.name, address: d.address || f.address,
+            city: d.city || f.city, state: d.state || f.state,
+            stateCode: d.stateCode || f.stateCode, pincode: d.pincode || f.pincode,
+            pan: d.pan || f.pan,
+          }));
+          setGstMsg(json.partial ? "State & PAN extracted from GSTIN" : "Auto-filled from GSTIN!");
+        }
+      } catch { setGstMsg("Could not lookup GSTIN"); }
+      finally { setGstLookup(false); }
+    }
   };
 
   const handleSave = async () => {
@@ -159,9 +181,10 @@ export default function MyFirmsPage() {
             </div>
             {form.isGst && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN * {gstLookup && <Loader2 className="inline w-3.5 h-3.5 animate-spin text-blue-500 ml-1" />}</label>
                 <input value={form.gstin} onChange={(e) => handleGstin(e.target.value.toUpperCase())}
                   className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="29ABCDE1234F1Z5" maxLength={15} />
+                {gstMsg && <p className="text-xs mt-1 text-emerald-600">{gstMsg}</p>}
               </div>
             )}
             <div>
