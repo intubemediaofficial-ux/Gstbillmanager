@@ -8,13 +8,16 @@ export interface PricingPlan {
   period: string;
   features: string[];
   recommended: boolean;
+  razorpayPlanId?: string;
 }
 
 export interface SiteSettings {
   pricing: PricingPlan[];
   razorpayKeyId: string;
+  razorpaySecretKey: string;
   razorpayEnabled: boolean;
   paymentButtonText: string;
+  subscriptionMode: boolean;
 }
 
 const KV_KEY = "gst_site_settings";
@@ -41,8 +44,10 @@ const defaultSettings: SiteSettings = {
     },
   ],
   razorpayKeyId: "",
+  razorpaySecretKey: "",
   razorpayEnabled: false,
   paymentButtonText: "Get Started",
+  subscriptionMode: false,
 };
 
 export async function GET() {
