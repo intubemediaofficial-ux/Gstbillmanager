@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, FilePlus, Trash2, Eye } from "lucide-react";
+import { Search, FilePlus, Trash2, Eye, MessageCircle } from "lucide-react";
 import type { Invoice, InvoiceStatus } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
@@ -51,6 +51,16 @@ export default function InvoicesPage() {
       body: JSON.stringify({ action: "delete", id }),
     });
     fetchInvoices();
+  };
+
+  const sendReminder = async (invoiceId: string) => {
+    const res = await fetch("/api/payment-reminders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "send_whatsapp", invoiceId }),
+    });
+    const json = await res.json();
+    if (json.whatsappUrl) window.open(json.whatsappUrl, "_blank");
   };
 
   const filtered = invoices.filter((inv) => {
@@ -127,6 +137,9 @@ export default function InvoicesPage() {
                   </td>
                   <td className="p-3 text-right">
                     <Link href={`/invoice-view?id=${inv.id}`} className="p-1.5 hover:bg-gray-100 rounded inline-block"><Eye className="w-4 h-4 text-indigo-500" /></Link>
+                    {["sent", "partial", "overdue"].includes(inv.status) && (
+                      <button onClick={() => sendReminder(inv.id)} className="p-1.5 hover:bg-green-50 rounded" title="WhatsApp Reminder"><MessageCircle className="w-4 h-4 text-green-600" /></button>
+                    )}
                     <button onClick={() => handleDelete(inv.id)} className="p-1.5 hover:bg-gray-100 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
                   </td>
                 </tr>

@@ -70,7 +70,10 @@ export type InvoiceType =
   | "debit_note"
   | "proforma"
   | "quotation"
-  | "delivery_challan";
+  | "delivery_challan"
+  | "purchase_bill"
+  | "payment_receipt"
+  | "export_invoice";
 
 export type InvoiceStatus = "draft" | "sent" | "paid" | "partial" | "cancelled" | "overdue";
 
@@ -248,7 +251,57 @@ export const INVOICE_TYPE_LABELS: Record<InvoiceType, string> = {
   proforma: "Proforma Invoice",
   quotation: "Quotation / Estimate",
   delivery_challan: "Delivery Challan",
+  purchase_bill: "Purchase Bill",
+  payment_receipt: "Payment Receipt",
+  export_invoice: "Export Invoice",
 };
+
+// ── Inventory ──
+export interface InventoryItem {
+  id: string;
+  userId: string;
+  productId?: string;
+  name: string;
+  hsn: string;
+  unit: string;
+  currentStock: number;
+  lowStockAlert: number;
+  purchasePrice: number;
+  sellingPrice: number;
+  lastUpdated: string;
+}
+
+export interface StockMovement {
+  id: string;
+  userId: string;
+  itemId: string;
+  type: "in" | "out";
+  qty: number;
+  invoiceId?: string;
+  note: string;
+  date: string;
+}
+
+// ── E-Way Bill ──
+export interface EWayBill {
+  id: string;
+  userId: string;
+  invoiceId: string;
+  invoiceNumber: string;
+  ewayBillNumber?: string;
+  transporterName: string;
+  transporterId: string;
+  vehicleNumber: string;
+  vehicleType: "regular" | "over_dimensional";
+  transportMode: "road" | "rail" | "air" | "ship";
+  distance: number;
+  fromState: string;
+  toState: string;
+  generatedAt?: string;
+  validUntil?: string;
+  status: "active" | "cancelled" | "expired";
+  createdAt: string;
+}
 
 // ── HSN/SAC Code Library ──
 export interface HsnEntry {

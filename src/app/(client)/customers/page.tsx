@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Pencil, Trash2, Search, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, Loader2 } from "lucide-react";
 import type { Customer } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
@@ -16,8 +16,10 @@ function CustomerForm({ customer, onSave, onCancel }: {
     state: customer?.state || "", stateCode: customer?.stateCode || "", pincode: customer?.pincode || "",
     gstin: customer?.gstin || "", pan: customer?.pan || "", phone: customer?.phone || "", email: customer?.email || "",
   });
+  const [gstLookup, setGstLookup] = useState(false);
+  const [gstMsg, setGstMsg] = useState("");
 
-  const handleGstinChange = (val: string) => {
+  const handleGstinChange = async (val: string) => {
     const upper = val.toUpperCase();
     setForm((f) => {
       const n = { ...f, gstin: upper };
@@ -28,6 +30,31 @@ function CustomerForm({ customer, onSave, onCancel }: {
       if (upper.length >= 12) n.pan = upper.substring(2, 12);
       return n;
     });
+
+    if (upper.length === 15) {
+      setGstLookup(true);
+      setGstMsg("");
+      try {
+        const res = await fetch(`/api/gstin-lookup?gstin=${upper}`);
+        const json = await res.json();
+        if (json.data) {
+          const d = json.data;
+          setForm((f) => ({
+            ...f,
+            gstin: upper,
+            name: d.name || f.name,
+            address: d.address || f.address,
+            city: d.city || f.city,
+            state: d.state || f.state,
+            stateCode: d.stateCode || f.stateCode,
+            pincode: d.pincode || f.pincode,
+            pan: d.pan || f.pan,
+          }));
+          setGstMsg(json.partial ? "State & PAN extracted from GSTIN" : "Auto-filled from GSTIN!");
+        }
+      } catch { setGstMsg("Could not lookup GSTIN"); }
+      finally { setGstLookup(false); }
+    }
   };
 
   return (
@@ -56,9 +83,10 @@ function CustomerForm({ customer, onSave, onCancel }: {
           </div>
           {form.isGst && (
             <div>
-              <label className="block text-sm font-medium mb-1">GSTIN *</label>
+              <label className="block text-sm font-medium mb-1">GSTIN * {gstLookup && <Loader2 className="inline w-3.5 h-3.5 animate-spin text-blue-500 ml-1" />}</label>
               <input value={form.gstin} onChange={(e) => handleGstinChange(e.target.value)} maxLength={15}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="07AABCU9603R1ZM" />
+              {gstMsg && <p className="text-xs mt-1 text-emerald-600">{gstMsg}</p>}
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
