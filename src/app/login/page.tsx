@@ -75,55 +75,52 @@ function LoginContent() {
     window.location.href = "/api/auth/google";
   };
 
+  const inputStyle = "w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white/80 border border-white/60 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent focus:bg-white transition-all duration-300 shadow-sm";
+  const inputStylePw = "w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white/80 border border-white/60 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent focus:bg-white transition-all duration-300 shadow-sm";
+
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 70%, #2a5298 100%)" }}>
-      {/* Animated background elements */}
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%)" }}>
+      {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #c9a84c 0%, transparent 70%)" }} />
-        <div className="absolute bottom-[-15%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-8" style={{ background: "radial-gradient(circle, #2a5298 0%, transparent 70%)" }} />
-        <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] rounded-full opacity-5" style={{ background: "radial-gradient(circle, #c9a84c 0%, transparent 70%)" }} />
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+        <div className="absolute top-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-30 animate-pulse" style={{ background: "radial-gradient(circle, #ffecd2 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-25 animate-pulse" style={{ background: "radial-gradient(circle, #a18cd1 0%, transparent 70%)", animationDelay: "1s" }} />
+        <div className="absolute top-[30%] left-[50%] w-[350px] h-[350px] rounded-full opacity-20 animate-pulse" style={{ background: "radial-gradient(circle, #fbc2eb 0%, transparent 70%)", animationDelay: "2s" }} />
+        <div className="absolute top-[60%] right-[30%] w-[200px] h-[200px] rounded-full opacity-20 animate-pulse" style={{ background: "radial-gradient(circle, #a1c4fd 0%, transparent 70%)", animationDelay: "3s" }} />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo & Header */}
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5 shadow-2xl" style={{ background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)" }}>
-            <FileText className="w-10 h-10" style={{ color: "#0a1628" }} />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5 shadow-2xl" style={{ background: "linear-gradient(135deg, #fff 0%, #f0f0ff 100%)" }}>
+            <FileText className="w-10 h-10 text-violet-600" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">GST Bill Manager</h1>
-          <p className="mt-2 text-base" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <h1 className="text-3xl font-bold text-white tracking-tight drop-shadow-lg">GST Bill Manager</h1>
+          <p className="mt-2 text-base text-white/70">
             {mode === "login" ? "Welcome back! Sign in to continue" : "Create your free account"}
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl p-8 space-y-5 shadow-2xl border" style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderColor: "rgba(255,255,255,0.12)" }}>
+        <div className="rounded-3xl p-8 space-y-5 shadow-2xl border border-white/20" style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}>
           {/* Mode Toggle */}
-          <div className="flex rounded-xl p-1" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <div className="flex rounded-xl p-1 bg-white/10">
             <button onClick={() => { setMode("login"); setError(""); }}
-              className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300"
-              style={mode === "login" ? { background: "linear-gradient(135deg, #c9a84c, #f0d78c)", color: "#0a1628" } : { color: "rgba(255,255,255,0.5)" }}>
+              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === "login" ? "bg-white text-violet-700 shadow-lg" : "text-white/60 hover:text-white"}`}>
               Login
             </button>
             <button onClick={() => { setMode("signup"); setError(""); }}
-              className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300"
-              style={mode === "signup" ? { background: "linear-gradient(135deg, #c9a84c, #f0d78c)", color: "#0a1628" } : { color: "rgba(255,255,255,0.5)" }}>
+              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === "signup" ? "bg-white text-violet-700 shadow-lg" : "text-white/60 hover:text-white"}`}>
               Sign Up
             </button>
           </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-lg text-sm font-medium" style={{ background: "rgba(239,68,68,0.15)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.3)" }}>{error}</div>
+            <div className="px-4 py-3 rounded-xl text-sm font-medium bg-red-500/20 text-white border border-red-400/30">{error}</div>
           )}
 
-          {/* Google Login Button */}
+          {/* Google Login */}
           <button onClick={handleGoogle} type="button"
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}>
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm bg-white/90 hover:bg-white text-gray-700 shadow-sm border border-white/60">
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -134,50 +131,42 @@ function LoginContent() {
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.15)" }} />
-            <span className="text-xs uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>or</span>
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.15)" }} />
+            <div className="flex-1 h-px bg-white/20" />
+            <span className="text-xs uppercase tracking-wider text-white/40">or</span>
+            <div className="flex-1 h-px bg-white/20" />
           </div>
 
           {/* Login Form */}
           {mode === "login" && resetMode === "none" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Email</label>
+                <label className="block text-sm font-medium mb-1.5 text-white/80">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                    placeholder="your@email.com" required />
+                    className={inputStyle} placeholder="your@email.com" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Password</label>
+                <label className="block text-sm font-medium mb-1.5 text-white/80">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-12 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                    placeholder="••••••••" required />
+                    className={inputStylePw} placeholder="••••••••" required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+                className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
                 {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
               </button>
               <div className="text-center">
                 <button type="button" onClick={() => { setResetMode("email"); setError(""); setResetMsg(""); }}
-                  className="text-sm font-medium transition-colors" style={{ color: "#c9a84c" }}>Forgot Password?</button>
+                  className="text-sm font-medium text-white/70 hover:text-white transition-colors">Forgot Password?</button>
               </div>
             </form>
           )}
@@ -186,60 +175,44 @@ function LoginContent() {
           {mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Full Name *</label>
+                <label className="block text-sm font-medium mb-1.5 text-white/80">Full Name *</label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                   <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                    placeholder="Your full name" required />
+                    className={inputStyle} placeholder="Your full name" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Email *</label>
+                <label className="block text-sm font-medium mb-1.5 text-white/80">Email *</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                    placeholder="your@email.com" required />
+                    className={inputStyle} placeholder="your@email.com" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Mobile Number</label>
+                <label className="block text-sm font-medium mb-1.5 text-white/80">Mobile Number</label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                   <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                    placeholder="9876543210" />
+                    className={inputStyle} placeholder="9876543210" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Password * (min 6 characters)</label>
+                <label className="block text-sm font-medium mb-1.5 text-white/80">Password * (min 6 characters)</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-12 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                    placeholder="••••••••" required minLength={6} />
+                    className={inputStylePw} placeholder="••••••••" required minLength={6} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+                className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
                 {loading ? "Creating account..." : <><span>Create Account</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </form>
@@ -249,23 +222,19 @@ function LoginContent() {
           {resetMode !== "none" && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
-                <button onClick={() => { setResetMode("none"); setResetMsg(""); setError(""); }} className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}>&larr; Back to Login</button>
+                <button onClick={() => { setResetMode("none"); setResetMsg(""); setError(""); }} className="text-sm text-white/50 hover:text-white transition-colors">&larr; Back to Login</button>
               </div>
-              <h3 className="font-semibold text-white text-lg">Reset Password</h3>
+              <h3 className="font-bold text-white text-lg">Reset Password</h3>
 
-              {resetMsg && <div className="px-4 py-2 rounded-lg text-sm" style={{ background: "rgba(34,197,94,0.15)", color: "#86efac", border: "1px solid rgba(34,197,94,0.3)" }}>{resetMsg}</div>}
+              {resetMsg && <div className="px-4 py-2 rounded-xl text-sm bg-emerald-500/20 text-emerald-100 border border-emerald-400/30">{resetMsg}</div>}
 
               {resetMode === "email" && (
                 <>
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>Enter your registered email. We will send an OTP to reset your password.</p>
+                  <p className="text-sm text-white/50">Enter your registered email. We will send an OTP to reset your password.</p>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                     <input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                      onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                      onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                      placeholder="your@email.com" />
+                      className={inputStyle} placeholder="your@email.com" />
                   </div>
                   <button onClick={async () => {
                     setError(""); setResetMsg("");
@@ -281,8 +250,8 @@ function LoginContent() {
                     setResetMsg("OTP sent to your email!");
                     setResetMode("otp");
                   }} disabled={loading}
-                    className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 disabled:opacity-50"
-                    style={{ background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 disabled:opacity-50 shadow-lg"
+                    style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
                     {loading ? "Sending OTP..." : "Send OTP"}
                   </button>
                 </>
@@ -290,25 +259,18 @@ function LoginContent() {
 
               {resetMode === "otp" && (
                 <>
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>Enter the 6-digit OTP sent to <strong className="text-white">{resetEmail}</strong></p>
+                  <p className="text-sm text-white/50">Enter the 6-digit OTP sent to <strong className="text-white">{resetEmail}</strong></p>
                   <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="w-full px-4 py-3 rounded-xl text-center text-2xl tracking-widest font-mono focus:outline-none transition-all duration-300"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#c9a84c" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
+                    className="w-full px-4 py-3 rounded-xl text-center text-2xl tracking-widest font-mono bg-white/80 border border-white/60 text-violet-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent focus:bg-white transition-all duration-300 shadow-sm"
                     placeholder="000000" maxLength={6} />
                   <div>
-                    <label className="block text-sm font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>New Password</label>
+                    <label className="block text-sm font-medium mb-1.5 text-white/80">New Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400" />
                       <input type={showPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full pl-11 pr-12 py-3 rounded-xl text-sm focus:outline-none transition-all duration-300"
-                        style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = "#c9a84c"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(201,168,76,0.15)"; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
-                        placeholder="Min 6 characters" minLength={6} />
+                        className={inputStylePw} placeholder="Min 6 characters" minLength={6} />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
@@ -328,8 +290,8 @@ function LoginContent() {
                     setResetMsg("Password reset successfully! You can now login.");
                     setResetMode("done");
                   }} disabled={loading}
-                    className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 disabled:opacity-50"
-                    style={{ background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 disabled:opacity-50 shadow-lg"
+                    style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
                     {loading ? "Resetting..." : "Reset Password"}
                   </button>
                 </>
@@ -337,8 +299,8 @@ function LoginContent() {
 
               {resetMode === "done" && (
                 <button onClick={() => { setResetMode("none"); setEmail(resetEmail); setPassword(""); setError(""); setResetMsg(""); }}
-                  className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300"
-                  style={{ background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+                  className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-300 shadow-lg"
+                  style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
                   Go to Login
                 </button>
               )}
@@ -347,10 +309,10 @@ function LoginContent() {
         </div>
 
         {/* Trust badges */}
-        <div className="mt-6 flex items-center justify-center gap-6 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-          <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" style={{ color: "#c9a84c" }} /> Secure</span>
-          <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" style={{ color: "#c9a84c" }} /> Fast</span>
-          <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" style={{ color: "#c9a84c" }} /> Free</span>
+        <div className="mt-6 flex items-center justify-center gap-6 text-xs text-white/50">
+          <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-300" /> Secure</span>
+          <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-amber-300" /> Fast</span>
+          <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-sky-300" /> Free</span>
         </div>
       </div>
     </div>
@@ -359,7 +321,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 70%, #2a5298 100%)" }}><div className="animate-spin w-8 h-8 border-4 border-t-transparent rounded-full" style={{ borderColor: "#c9a84c", borderTopColor: "transparent" }} /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%)" }}><div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full" /></div>}>
       <LoginContent />
     </Suspense>
   );
