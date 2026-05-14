@@ -26,21 +26,21 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
+              <FileText className="w-5 h-5" />
             </div>
             <span className="text-xl font-bold text-gray-900">GST Bill Manager</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#features" className="hover:text-violet-600 transition">Features</a>
-            <a href="#how-it-works" className="hover:text-violet-600 transition">How It Works</a>
-            <a href="#pricing" className="hover:text-violet-600 transition">Pricing</a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+            <a href="#features" className="hover:text-cyan-600 transition">Features</a>
+            <a href="#how-it-works" className="hover:text-cyan-600 transition">How It Works</a>
+            <a href="#pricing" className="hover:text-cyan-600 transition">Pricing</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="px-4 py-2 text-sm font-semibold text-violet-600 hover:bg-violet-50 rounded-lg transition">
+            <Link href="/login" className="px-4 py-2 text-sm font-semibold text-cyan-600 hover:bg-cyan-50 rounded-lg transition">
               Login
             </Link>
-            <Link href="/login" className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition shadow-md hover:shadow-lg hover:scale-105" style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+            <Link href="/login" className="px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
               Sign Up Free
             </Link>
           </div>
@@ -48,20 +48,20 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%)" }}>
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #ffecd2 0%, transparent 70%)" }} />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #a18cd1 0%, transparent 70%)" }} />
-        <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #fbc2eb 0%, transparent 70%)" }} />
+      <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 40%, #06b6d4 70%, #10b981 100%)" }}>
+        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #fbbf24 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #34d399 0%, transparent 70%)" }} />
+        <div className="absolute top-[40%] left-[55%] w-[350px] h-[350px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #fb923c 0%, transparent 70%)" }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/30">
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/25">
             <Zap className="w-4 h-4 text-amber-300" />
             India&apos;s Simplest GST Billing Software
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
             Create GST Invoices<br />
-            <span className="text-amber-200">in Seconds</span>
+            <span className="text-amber-300">in Seconds</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -70,7 +70,7 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link href="/login" className="inline-flex items-center gap-2 bg-white text-violet-700 px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/90 transition shadow-xl hover:shadow-2xl hover:scale-105">
+            <Link href="/login" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-lg font-bold transition shadow-xl hover:shadow-2xl hover:scale-105 text-white" style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}>
               Start Free <ArrowRight className="w-5 h-5" />
             </Link>
             <a href="#features" className="inline-flex items-center gap-2 text-white px-6 py-4 rounded-xl text-lg font-medium hover:bg-white/10 transition border-2 border-white/30 backdrop-blur-sm">
@@ -96,7 +96,7 @@ export default function HomePage() {
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-violet-50 text-violet-600 border border-violet-100">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-cyan-50 text-cyan-700 border border-cyan-100">
               <Sparkles className="w-3.5 h-3.5" /> FEATURES
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Everything You Need for GST Billing</h2>
@@ -105,22 +105,22 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
-              { icon: Building2, title: "My Firms", desc: "Add multiple firms with GSTIN, PAN, bank details. Switch between firms to create invoices.", bg: "bg-blue-50", iconColor: "text-blue-600", borderColor: "hover:border-blue-300" },
-              { icon: Users, title: "Bill To (Parties)", desc: "Save all your parties/clients with their GST details. Select and bill in one click.", bg: "bg-emerald-50", iconColor: "text-emerald-600", borderColor: "hover:border-emerald-300" },
-              { icon: FileText, title: "Quick Invoice", desc: "Select firm, select party, enter amount — invoice ready! GST auto-calculated at 18%.", bg: "bg-violet-50", iconColor: "text-violet-600", borderColor: "hover:border-violet-300" },
-              { icon: Calculator, title: "GST Include / Exclude", desc: "Enter amount with GST included or excluded. Auto reverse-calculation for inclusive amounts.", bg: "bg-amber-50", iconColor: "text-amber-600", borderColor: "hover:border-amber-300" },
-              { icon: ToggleLeft, title: "GST / Non-GST Toggle", desc: "Support for both GST and Non-GST firms. Non-GST firms need only name, address, PAN.", bg: "bg-orange-50", iconColor: "text-orange-600", borderColor: "hover:border-orange-300" },
-              { icon: Search, title: "HSN Code Library", desc: "28+ categories with auto HSN code detection. Music, IT, YouTube, Legal, Gold and more.", bg: "bg-purple-50", iconColor: "text-purple-600", borderColor: "hover:border-purple-300" },
-              { icon: PenTool, title: "Director Signatures", desc: "Upload director signatures per firm. Select which signature to use on each invoice.", bg: "bg-pink-50", iconColor: "text-pink-600", borderColor: "hover:border-pink-300" },
-              { icon: Image, title: "Company Letterhead", desc: "Upload your company letterhead. Invoice prints with your letterhead as background.", bg: "bg-teal-50", iconColor: "text-teal-600", borderColor: "hover:border-teal-300" },
-              { icon: IndianRupee, title: "Tally-Style Format", desc: "Indian GST invoice format like Tally. Bordered tables, HSN summary, Amount in Words.", bg: "bg-rose-50", iconColor: "text-rose-600", borderColor: "hover:border-rose-300" },
-              { icon: Repeat, title: "Repeat Last Bill", desc: "Same firm + same party? All settings auto-fill from last bill. Just enter new amount.", bg: "bg-cyan-50", iconColor: "text-cyan-600", borderColor: "hover:border-cyan-300" },
-              { icon: Shield, title: "Bill Number Check", desc: "Manual bill numbers with duplicate detection. Never create duplicate invoice numbers.", bg: "bg-lime-50", iconColor: "text-lime-600", borderColor: "hover:border-lime-300" },
-              { icon: BarChart3, title: "Reports & Dashboard", desc: "Revenue tracking, pending payments, customer insights. All in one clean dashboard.", bg: "bg-indigo-50", iconColor: "text-indigo-600", borderColor: "hover:border-indigo-300" },
+              { icon: Building2, title: "My Firms", desc: "Add multiple firms with GSTIN, PAN, bank details. Switch between firms to create invoices.", bg: "#eef9ff", iconColor: "#0ea5e9" },
+              { icon: Users, title: "Bill To (Parties)", desc: "Save all your parties/clients with their GST details. Select and bill in one click.", bg: "#ecfdf5", iconColor: "#10b981" },
+              { icon: FileText, title: "Quick Invoice", desc: "Select firm, select party, enter amount — invoice ready! GST auto-calculated at 18%.", bg: "#fff7ed", iconColor: "#f97316" },
+              { icon: Calculator, title: "GST Include / Exclude", desc: "Enter amount with GST included or excluded. Auto reverse-calculation for inclusive amounts.", bg: "#fef3c7", iconColor: "#d97706" },
+              { icon: ToggleLeft, title: "GST / Non-GST Toggle", desc: "Support for both GST and Non-GST firms. Non-GST firms need only name, address, PAN.", bg: "#fce7f3", iconColor: "#ec4899" },
+              { icon: Search, title: "HSN Code Library", desc: "28+ categories with auto HSN code detection. Music, IT, YouTube, Legal, Gold and more.", bg: "#ede9fe", iconColor: "#8b5cf6" },
+              { icon: PenTool, title: "Director Signatures", desc: "Upload director signatures per firm. Select which signature to use on each invoice.", bg: "#fef2f2", iconColor: "#ef4444" },
+              { icon: Image, title: "Company Letterhead", desc: "Upload your company letterhead. Invoice prints with your letterhead as background.", bg: "#e0f2fe", iconColor: "#0284c7" },
+              { icon: IndianRupee, title: "Tally-Style Format", desc: "Indian GST invoice format like Tally. Bordered tables, HSN summary, Amount in Words.", bg: "#dcfce7", iconColor: "#16a34a" },
+              { icon: Repeat, title: "Repeat Last Bill", desc: "Same firm + same party? All settings auto-fill from last bill. Just enter new amount.", bg: "#fef9c3", iconColor: "#ca8a04" },
+              { icon: Shield, title: "Bill Number Check", desc: "Manual bill numbers with duplicate detection. Never create duplicate invoice numbers.", bg: "#f0fdfa", iconColor: "#0d9488" },
+              { icon: BarChart3, title: "Reports & Dashboard", desc: "Revenue tracking, pending payments, customer insights. All in one clean dashboard.", bg: "#eef2ff", iconColor: "#6366f1" },
             ].map((f) => (
-              <div key={f.title} className={`rounded-2xl p-6 border border-gray-100 ${f.borderColor} hover:shadow-xl transition-all duration-300 group bg-white`}>
-                <div className={`w-12 h-12 rounded-xl ${f.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <f.icon className={`w-6 h-6 ${f.iconColor}`} />
+              <div key={f.title} className="rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 group bg-white hover:-translate-y-1">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300" style={{ background: f.bg }}>
+                  <f.icon className="w-6 h-6" style={{ color: f.iconColor }} />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
@@ -131,7 +131,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20" style={{ background: "linear-gradient(180deg, #f8f7ff 0%, #fff 100%)" }}>
+      <section id="how-it-works" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
@@ -140,9 +140,9 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: "1", title: "Add Your Firms", desc: "Add your company details — GSTIN, PAN, bank info, director signatures, letterhead. Save once, use forever.", gradient: "linear-gradient(135deg, #667eea, #764ba2)" },
-              { step: "2", title: "Add Your Parties", desc: "Add your clients/customers with their GST details. Both GST and Non-GST parties supported.", gradient: "linear-gradient(135deg, #f093fb, #f5576c)" },
-              { step: "3", title: "Create Invoice", desc: "Select firm → Select party → Enter amount → Done! GST auto-calculated, Indian format, ready to print.", gradient: "linear-gradient(135deg, #4facfe, #00f2fe)" },
+              { step: "1", title: "Add Your Firms", desc: "Add your company details — GSTIN, PAN, bank info, director signatures, letterhead. Save once, use forever.", gradient: "linear-gradient(135deg, #0ea5e9, #06b6d4)" },
+              { step: "2", title: "Add Your Parties", desc: "Add your clients/customers with their GST details. Both GST and Non-GST parties supported.", gradient: "linear-gradient(135deg, #f59e0b, #f97316)" },
+              { step: "3", title: "Create Invoice", desc: "Select firm → Select party → Enter amount → Done! GST auto-calculated, Indian format, ready to print.", gradient: "linear-gradient(135deg, #10b981, #14b8a6)" },
             ].map((s) => (
               <div key={s.step} className="text-center">
                 <div className="w-16 h-16 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-5 shadow-lg"
@@ -158,8 +158,9 @@ export default function HomePage() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-20" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 50%, #10b981 100%)" }}>
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #fbbf24 0%, transparent 70%)" }} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why GST Bill Manager?</h2>
             <p className="text-lg text-white/70 max-w-2xl mx-auto">Built specifically for Indian businesses. Simple, fast, and accurate.</p>
@@ -169,10 +170,10 @@ export default function HomePage() {
             {[
               { icon: Zap, title: "Super Fast", desc: "Create invoice in under 30 seconds", color: "text-amber-300" },
               { icon: IndianRupee, title: "Indian Format", desc: "Tally-style GST bill format", color: "text-emerald-300" },
-              { icon: Shield, title: "100% Accurate", desc: "Auto GST calculation with HSN codes", color: "text-sky-300" },
-              { icon: Star, title: "Free to Use", desc: "No hidden charges, start immediately", color: "text-pink-300" },
+              { icon: Shield, title: "100% Accurate", desc: "Auto GST calculation with HSN codes", color: "text-cyan-200" },
+              { icon: Star, title: "Free to Use", desc: "No hidden charges, start immediately", color: "text-orange-300" },
             ].map((f) => (
-              <div key={f.title} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/15 hover:bg-white/15 transition-all duration-300">
+              <div key={f.title} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/15 hover:bg-white/20 transition-all duration-300">
                 <f.icon className={`w-8 h-8 mx-auto mb-3 ${f.color}`} />
                 <h3 className="font-semibold text-lg mb-1 text-white">{f.title}</h3>
                 <p className="text-sm text-white/60">{f.desc}</p>
@@ -183,7 +184,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 bg-gray-50">
+      <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
@@ -191,13 +192,13 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-lg mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl border-2 border-violet-500 p-8 text-center relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-sm font-bold text-white shadow-md" style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+            <div className="bg-white rounded-2xl shadow-xl border-2 border-cyan-500 p-8 text-center relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-sm font-bold text-white shadow-md" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                 Most Popular
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Plan</h3>
               <div className="flex items-baseline justify-center gap-1 mb-6">
-                <span className="text-5xl font-extrabold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">&#8377;0</span>
+                <span className="text-5xl font-extrabold text-cyan-600">&#8377;0</span>
                 <span className="text-gray-400">/month</span>
               </div>
               <ul className="text-left space-y-3 mb-8">
@@ -218,7 +219,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/login" className="block w-full py-3.5 rounded-xl font-bold text-white transition text-lg shadow-lg hover:shadow-xl hover:scale-[1.02]" style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
+              <Link href="/login" className="block w-full py-3.5 rounded-xl font-bold text-white transition text-lg shadow-lg hover:shadow-xl hover:scale-[1.02]" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
                 Get Started Free
               </Link>
             </div>
@@ -227,11 +228,11 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20" style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #ffecd2 100%)" }}>
+      <section className="py-20" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%)" }}>
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 drop-shadow-lg">Ready to Simplify Your GST Billing?</h2>
           <p className="text-lg text-white/80 mb-8">Join businesses across India who trust GST Bill Manager for their invoicing needs.</p>
-          <Link href="/login" className="inline-flex items-center gap-2 bg-white text-violet-700 px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/90 transition shadow-xl hover:shadow-2xl hover:scale-105">
+          <Link href="/login" className="inline-flex items-center gap-2 bg-white text-orange-600 px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/90 transition shadow-xl hover:shadow-2xl hover:scale-105">
             Create Free Account <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
@@ -242,8 +243,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #667eea, #764ba2)" }}>
-                <FileText className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: "linear-gradient(135deg, #0ea5e9, #06b6d4)" }}>
+                <FileText className="w-5 h-5" />
               </div>
               <span className="text-lg font-bold text-white">GST Bill Manager</span>
             </div>
