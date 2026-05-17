@@ -1,7 +1,7 @@
 "use client";
 
 import DocGenerator from "@/components/documents/DocGenerator";
-import type { FieldDef, TemplateDef } from "@/components/documents/DocGenerator";
+import type { FieldDef, TemplateDef, DocAssets } from "@/components/documents/DocGenerator";
 import { legalTemplates, formatDate } from "@/components/documents/doc-templates";
 import type { Firm } from "@/lib/gst-types";
 
@@ -17,13 +17,14 @@ const fields: FieldDef[] = [
   { name: "additionalClauses", label: "Additional Clauses", type: "textarea", half: false, placeholder: "Any extra terms or conditions..." },
 ];
 
-function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Firm | null) {
+function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Firm | null, assets: DocAssets) {
   const c = template.colors;
   const companyName = firm?.name || "Your Company Name";
   const companyAddress = [firm?.address, firm?.city, firm?.state].filter(Boolean).join(", ");
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: c.bg, minHeight: "297mm" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", background: c.bg, minHeight: "297mm", position: "relative" }}>
+      {assets.letterhead && <img src={assets.letterhead} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.15, pointerEvents: "none" }} />}
       <div style={{ background: `linear-gradient(135deg, ${c.primary}, ${c.secondary})`, padding: "28px 36px", color: "white" }}>
         <div style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "2px", textTransform: "uppercase" }}>{data.agreementType || "Service Agreement"}</div>
       </div>

@@ -5,6 +5,7 @@ import { ArrowLeft, Download, Printer, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Firm } from "@/lib/gst-types";
 import { brandingTemplates } from "@/components/documents/doc-templates";
+import DocUploads, { useDocAssets } from "@/components/documents/DocUploads";
 
 export default function VisitingCardPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function VisitingCardPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const docRef = useRef<HTMLDivElement>(null);
+  const { letterhead, signature, setLetterhead, setSignature } = useDocAssets();
   const [showBack, setShowBack] = useState(false);
 
   const [name, setName] = useState("");
@@ -154,18 +156,21 @@ export default function VisitingCardPage() {
           </div>
           <div className="flex justify-end"><button onClick={() => { if (!name) { alert("Enter your name"); return; } setShowPreview(true); }} className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm">Preview Card →</button></div>
         </div>
-        <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-4">Choose Design</h3>
-          <div className="space-y-3">
-            {brandingTemplates.map(t => (
-              <button key={t.id} onClick={() => setTemplate(t)} className={`w-full text-left p-3 rounded-xl border-2 transition ${template.id === t.id ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-gray-200"}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.colors.primary}, ${t.colors.secondary})` }} />
-                  <p className="font-medium text-sm">{t.name}</p>
-                </div>
-              </button>
-            ))}
+        <div>
+          <div className="bg-white rounded-xl border p-6">
+            <h3 className="font-semibold mb-4">Choose Design</h3>
+            <div className="space-y-3">
+              {brandingTemplates.map(t => (
+                <button key={t.id} onClick={() => setTemplate(t)} className={`w-full text-left p-3 rounded-xl border-2 transition ${template.id === t.id ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-gray-200"}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.colors.primary}, ${t.colors.secondary})` }} />
+                    <p className="font-medium text-sm">{t.name}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
+          <DocUploads letterhead={letterhead} signature={signature} setLetterhead={setLetterhead} setSignature={setSignature} />
         </div>
       </div>
     </div>
