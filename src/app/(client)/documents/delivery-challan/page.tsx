@@ -55,6 +55,7 @@ export default function DeliveryChallanPage() {
       const pdfH = (canvas.height * pdfW) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
       pdf.save(`Delivery_Challan_${dcNo}.pdf`);
+      fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "Delivery Challan", title: `Delivery Challan - ${receiverName}`, recipientName: receiverName, firmName: selectedFirm?.name || "", templateName: template.name, formData: { receiverName, receiverAddress, dcNo, dcDate, vehicleNo, transportMode, driverName, reason } }) }).catch(() => {});
     } catch { window.print(); }
     finally { setPdfLoading(false); }
   };

@@ -103,6 +103,23 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
     setShowPreview(true);
   };
 
+  const saveDocumentToHistory = async () => {
+    try {
+      await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: title,
+          title: `${title} - ${form[fields[0]?.name] || "Document"}`,
+          recipientName: form[fields[0]?.name] || "",
+          firmName: selectedFirm?.name || "",
+          templateName: selectedTemplate.name,
+          formData: form,
+        }),
+      });
+    } catch { /* noop — don't block PDF generation if save fails */ }
+  };
+
   const handlePDF = async () => {
     if (!docRef.current) return;
     setPdfLoading(true);
@@ -116,6 +133,7 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
       const pdfH = (canvas.height * pdfW) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
       pdf.save(`${title.replace(/\s+/g, "_")}_${form[fields[0]?.name] || "document"}.pdf`);
+      await saveDocumentToHistory();
     } catch { window.print(); }
     finally { setPdfLoading(false); }
   };

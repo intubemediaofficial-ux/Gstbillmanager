@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut, Menu, X, FolderOpen,
+  LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut, Menu, X, FolderOpen, History,
 } from "lucide-react";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { label: "Create Invoice", href: "/create-invoice", icon: FilePlus },
   { label: "Invoices", href: "/invoices", icon: FileText },
   { label: "Documents", href: "/documents", icon: FolderOpen },
+  { label: "Document History", href: "/document-history", icon: History },
   { label: "Reports", href: "/reports", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
