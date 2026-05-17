@@ -58,6 +58,7 @@ export default function PurchaseOrderPage() {
       const pdfH = (canvas.height * pdfW) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
       pdf.save(`Purchase_Order_${poNo}.pdf`);
+      fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "Purchase Order", title: `Purchase Order - ${vendorName}`, recipientName: vendorName, firmName: selectedFirm?.name || "", templateName: template.name, formData: { vendorName, vendorAddress, vendorGstin, poNo, poDate, deliveryDate, deliveryAddress, total: String(total) } }) }).catch(() => {});
     } catch { window.print(); }
     finally { setPdfLoading(false); }
   };

@@ -62,6 +62,7 @@ export default function QuotationPage() {
       const pdfH = (canvas.height * pdfW) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
       pdf.save(`Quotation_${quoteNo}.pdf`);
+      fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "Quotation", title: `Quotation - ${clientName}`, recipientName: clientName, firmName: selectedFirm?.name || "", templateName: template.name, formData: { clientName, clientAddress, clientGstin, quoteDate, validTill, quoteNo, notes, terms, grandTotal: String(grandTotal) } }) }).catch(() => {});
     } catch { window.print(); }
     finally { setPdfLoading(false); }
   };

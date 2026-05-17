@@ -58,6 +58,7 @@ export default function VisitingCardPage() {
       const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [89, 51] });
       pdf.addImage(imgData, "PNG", 0, 0, 89, 51);
       pdf.save(`Visiting_Card_${name || "card"}.pdf`);
+      fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "Visiting Card", title: `Visiting Card - ${name}`, recipientName: name, firmName: selectedFirm?.name || "", templateName: template.name, formData: { name, designation, mobile, email, website, address, gstNo, tagline } }) }).catch(() => {});
     } catch { window.print(); }
     finally { setPdfLoading(false); }
   };
