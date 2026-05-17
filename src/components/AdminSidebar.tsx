@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, FileText, BarChart3, LogOut,
   Building2, Package, FilePlus, Settings, Menu, X, CreditCard, TrendingUp,
-  Truck, Bell, ClipboardList,
+  Truck, Bell, ClipboardList, FolderOpen,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -32,6 +32,7 @@ const clientNavItems = [
   { label: "Invoices", href: "/invoices", icon: FileText },
   { label: "E-Way Bills", href: "/eway-bills", icon: Truck },
   { label: "GSTR Reports", href: "/gstr-reports", icon: BarChart3 },
+  { label: "Documents", href: "/documents", icon: FolderOpen },
   { label: "Invoice Reports", href: "/reports", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
