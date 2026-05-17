@@ -1,7 +1,7 @@
 "use client";
 
 import DocGenerator from "@/components/documents/DocGenerator";
-import type { FieldDef, TemplateDef } from "@/components/documents/DocGenerator";
+import type { FieldDef, TemplateDef, DocAssets } from "@/components/documents/DocGenerator";
 import { brandingTemplates, formatDate } from "@/components/documents/doc-templates";
 import type { Firm } from "@/lib/gst-types";
 
@@ -15,7 +15,7 @@ const fields: FieldDef[] = [
   { name: "senderDesignation", label: "Sender Designation", placeholder: "e.g. Director" },
 ];
 
-function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Firm | null) {
+function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Firm | null, assets: DocAssets) {
   const c = template.colors;
   const companyName = firm?.name || "Your Company Name";
   const companyAddress = [firm?.address, firm?.city, firm?.state].filter(Boolean).join(", ");
@@ -24,6 +24,7 @@ function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Fi
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: "white", minHeight: "297mm", position: "relative" }}>
+      {assets.letterhead && <img src={assets.letterhead} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.15, pointerEvents: "none" }} />}
       {/* Watermark */}
       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-30deg)", fontSize: "80px", fontWeight: 800, color: c.primary, opacity: 0.03, letterSpacing: "10px", pointerEvents: "none" }}>
         {companyName}
@@ -65,6 +66,7 @@ function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Fi
         <div style={{ marginTop: "60px" }}>
           <div style={{ marginBottom: "4px" }}>Yours sincerely,</div>
           <div style={{ marginTop: "40px" }}>
+            {assets.signature && <img src={assets.signature} alt="Signature" style={{ height: "50px", objectFit: "contain", marginBottom: "4px" }} />}
             <div style={{ borderTop: `2px solid ${c.primary}`, width: "180px", paddingTop: "8px" }}>
               <div style={{ fontWeight: 700, color: c.primary }}>{data.senderName || "Authorized Signatory"}</div>
               {data.senderDesignation && <div style={{ fontSize: "12px", color: "#6b7280" }}>{data.senderDesignation}</div>}

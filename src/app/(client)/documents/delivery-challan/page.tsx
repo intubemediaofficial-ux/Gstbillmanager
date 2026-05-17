@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Download, Printer, Share2, Loader2, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Firm } from "@/lib/gst-types";
-import { formatCurrency } from "@/lib/gst-utils";
 import { businessTemplates, formatDate } from "@/components/documents/doc-templates";
+import DocUploads, { useDocAssets } from "@/components/documents/DocUploads";
 
 interface DCItem { desc: string; qty: number; unit: string; remarks: string; }
 
@@ -17,6 +17,7 @@ export default function DeliveryChallanPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const docRef = useRef<HTMLDivElement>(null);
+  const { letterhead, signature, setLetterhead, setSignature } = useDocAssets();
 
   const [receiverName, setReceiverName] = useState("");
   const [receiverAddress, setReceiverAddress] = useState("");
@@ -73,7 +74,8 @@ export default function DeliveryChallanPage() {
             <button onClick={handlePDF} disabled={pdfLoading} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">{pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} PDF</button>
           </div>
         </div>
-        <div ref={docRef} className="bg-white max-w-[210mm] mx-auto shadow-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div ref={docRef} className="bg-white max-w-[210mm] mx-auto shadow-lg" style={{ fontFamily: "'Inter', sans-serif", position: "relative" }}>
+          {letterhead && <img src={letterhead} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.15, pointerEvents: "none" }} />}
           <div style={{ background: `linear-gradient(135deg, ${c.primary}, ${c.secondary})`, padding: "28px 36px", color: "white" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -128,7 +130,7 @@ export default function DeliveryChallanPage() {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", padding: "40px 36px" }}>
             <div style={{ borderTop: "2px solid #d1d5db", width: "180px", paddingTop: "8px", textAlign: "center" }}><p style={{ fontSize: "12px", color: "#6b7280" }}>Received By</p><p style={{ fontSize: "11px", color: "#9ca3af" }}>Name & Signature</p></div>
-            <div style={{ borderTop: `2px solid ${c.primary}`, width: "180px", paddingTop: "8px", textAlign: "center" }}><p style={{ fontWeight: 700, fontSize: "13px", color: c.primary }}>For {companyName}</p><p style={{ fontSize: "11px", color: "#6b7280" }}>Authorized Signatory</p></div>
+            <div style={{ textAlign: "center" }}>{signature && <img src={signature} alt="Signature" style={{ height: "50px", objectFit: "contain", margin: "0 auto 4px" }} />}<div style={{ borderTop: `2px solid ${c.primary}`, width: "180px", paddingTop: "8px" }}><p style={{ fontWeight: 700, fontSize: "13px", color: c.primary }}>For {companyName}</p><p style={{ fontSize: "11px", color: "#6b7280" }}>Authorized Signatory</p></div></div>
           </div>
         </div>
       </div>
@@ -181,18 +183,21 @@ export default function DeliveryChallanPage() {
           </div>
           <div className="flex justify-end"><button onClick={() => { if (!receiverName) { alert("Enter receiver name"); return; } setShowPreview(true); }} className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm">Preview & Generate PDF →</button></div>
         </div>
-        <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-4">Choose Template</h3>
-          <div className="space-y-3">
-            {businessTemplates.map(t => (
-              <button key={t.id} onClick={() => setTemplate(t)} className={`w-full text-left p-3 rounded-xl border-2 transition ${template.id === t.id ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-gray-200"}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.colors.primary}, ${t.colors.secondary})` }} />
-                  <p className="font-medium text-sm">{t.name}</p>
-                </div>
-              </button>
-            ))}
+        <div>
+          <div className="bg-white rounded-xl border p-6">
+            <h3 className="font-semibold mb-4">Choose Template</h3>
+            <div className="space-y-3">
+              {businessTemplates.map(t => (
+                <button key={t.id} onClick={() => setTemplate(t)} className={`w-full text-left p-3 rounded-xl border-2 transition ${template.id === t.id ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-gray-200"}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.colors.primary}, ${t.colors.secondary})` }} />
+                    <p className="font-medium text-sm">{t.name}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
+          <DocUploads letterhead={letterhead} signature={signature} setLetterhead={setLetterhead} setSignature={setSignature} />
         </div>
       </div>
     </div>

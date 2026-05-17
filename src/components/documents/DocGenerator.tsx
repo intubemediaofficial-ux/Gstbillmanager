@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Download, Printer, Share2, Mail, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Printer, Share2, Loader2, Upload, Image, PenTool, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Firm } from "@/lib/gst-types";
 
@@ -21,12 +21,20 @@ export interface TemplateDef {
   colors: { primary: string; secondary: string; accent: string; bg: string };
 }
 
+export interface DocAssets {
+  letterhead: string | null;
+  signature: string | null;
+}
+
 interface DocGeneratorProps {
   title: string;
   fields: FieldDef[];
   templates: TemplateDef[];
-  renderDoc: (data: Record<string, string>, template: TemplateDef, firm: Firm | null) => React.ReactNode;
+  renderDoc: (data: Record<string, string>, template: TemplateDef, firm: Firm | null, assets: DocAssets) => React.ReactNode;
 }
+
+const STORAGE_KEY_LETTERHEAD = "doc_letterhead";
+const STORAGE_KEY_SIGNATURE = "doc_signature";
 
 export default function DocGenerator({ title, fields, templates, renderDoc }: DocGeneratorProps) {
   const router = useRouter();
@@ -36,7 +44,11 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
   const [selectedFirm, setSelectedFirm] = useState<Firm | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [letterhead, setLetterhead] = useState<string | null>(null);
+  const [signature, setSignature] = useState<string | null>(null);
   const docRef = useRef<HTMLDivElement>(null);
+  const letterheadRef = useRef<HTMLInputElement>(null);
+  const signatureRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/firms").then(r => r.json()).then(res => {
@@ -44,7 +56,41 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
       setFirms(f);
       if (f.length === 1) setSelectedFirm(f[0]);
     });
+    try {
+      const savedLH = localStorage.getItem(STORAGE_KEY_LETTERHEAD);
+      const savedSig = localStorage.getItem(STORAGE_KEY_SIGNATURE);
+      if (savedLH) setLetterhead(savedLH);
+      if (savedSig) setSignature(savedSig);
+    } catch { /* noop */ }
   }, []);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: "letterhead" | "signature") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (type === "letterhead") {
+        setLetterhead(dataUrl);
+        try { localStorage.setItem(STORAGE_KEY_LETTERHEAD, dataUrl); } catch { /* noop */ }
+      } else {
+        setSignature(dataUrl);
+        try { localStorage.setItem(STORAGE_KEY_SIGNATURE, dataUrl); } catch { /* noop */ }
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const removeFile = (type: "letterhead" | "signature") => {
+    if (type === "letterhead") {
+      setLetterhead(null);
+      try { localStorage.removeItem(STORAGE_KEY_LETTERHEAD); } catch { /* noop */ }
+    } else {
+      setSignature(null);
+      try { localStorage.removeItem(STORAGE_KEY_SIGNATURE); } catch { /* noop */ }
+    }
+  };
 
   const set = (name: string, value: string) => setForm(prev => ({ ...prev, [name]: value }));
 
@@ -82,6 +128,8 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
 
   const handlePrint = () => window.print();
 
+  const assets: DocAssets = { letterhead, signature };
+
   if (showPreview) {
     return (
       <div>
@@ -103,7 +151,7 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
           </div>
         </div>
         <div ref={docRef} className="bg-white max-w-[210mm] mx-auto shadow-lg print:shadow-none">
-          {renderDoc(form, selectedTemplate, selectedFirm)}
+          {renderDoc(form, selectedTemplate, selectedFirm, assets)}
         </div>
       </div>
     );
@@ -179,27 +227,77 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
           </div>
         </div>
 
-        {/* Template Selection */}
-        <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Choose Template</h3>
-          <div className="space-y-3">
-            {templates.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setSelectedTemplate(t)}
-                className={`w-full text-left p-3 rounded-xl border-2 transition ${
-                  selectedTemplate.id === t.id ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-gray-200"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.colors.primary}, ${t.colors.secondary})` }} />
-                  <div>
-                    <p className="font-medium text-sm text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-400">Professional design</p>
+        {/* Template Selection + Uploads */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-xl border p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">Choose Template</h3>
+            <div className="space-y-3">
+              {templates.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedTemplate(t)}
+                  className={`w-full text-left p-3 rounded-xl border-2 transition ${
+                    selectedTemplate.id === t.id ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.colors.primary}, ${t.colors.secondary})` }} />
+                    <div>
+                      <p className="font-medium text-sm text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-400">Professional design</p>
+                    </div>
                   </div>
-                </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Letterhead Upload */}
+          <div className="bg-white rounded-xl border p-6">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Image className="w-4 h-4 text-indigo-500" /> Company Letterhead
+            </h3>
+            <p className="text-xs text-gray-400 mb-3">Upload your company letterhead — it will be used as background on the document (A4 size recommended)</p>
+            {letterhead ? (
+              <div className="relative">
+                <img src={letterhead} alt="Letterhead" className="w-full rounded-lg border object-contain max-h-32" />
+                <button onClick={() => removeFile("letterhead")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                  <X className="w-3 h-3" />
+                </button>
+                <p className="text-xs text-green-600 mt-2 font-medium">Letterhead uploaded — will appear on document</p>
+              </div>
+            ) : (
+              <button onClick={() => letterheadRef.current?.click()} className="w-full border-2 border-dashed border-gray-200 rounded-xl py-6 text-center hover:border-indigo-400 hover:bg-indigo-50/50 transition">
+                <Upload className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                <p className="text-sm text-gray-500">Click to upload letterhead</p>
+                <p className="text-xs text-gray-400">PNG, JPG (A4 size)</p>
               </button>
-            ))}
+            )}
+            <input ref={letterheadRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, "letterhead")} />
+          </div>
+
+          {/* Signature Upload */}
+          <div className="bg-white rounded-xl border p-6">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <PenTool className="w-4 h-4 text-violet-500" /> Signature
+            </h3>
+            <p className="text-xs text-gray-400 mb-3">Upload signature — it will appear on all documents automatically</p>
+            {signature ? (
+              <div className="relative">
+                <img src={signature} alt="Signature" className="h-16 rounded border object-contain bg-white p-1" />
+                <button onClick={() => removeFile("signature")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                  <X className="w-3 h-3" />
+                </button>
+                <p className="text-xs text-green-600 mt-2 font-medium">Signature uploaded — will appear on all documents</p>
+              </div>
+            ) : (
+              <button onClick={() => signatureRef.current?.click()} className="w-full border-2 border-dashed border-gray-200 rounded-xl py-6 text-center hover:border-violet-400 hover:bg-violet-50/50 transition">
+                <PenTool className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                <p className="text-sm text-gray-500">Click to upload signature</p>
+                <p className="text-xs text-gray-400">PNG with transparent background recommended</p>
+              </button>
+            )}
+            <input ref={signatureRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, "signature")} />
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import DocGenerator from "@/components/documents/DocGenerator";
-import type { FieldDef, TemplateDef } from "@/components/documents/DocGenerator";
+import type { FieldDef, TemplateDef, DocAssets } from "@/components/documents/DocGenerator";
 import { businessTemplates, formatDate } from "@/components/documents/doc-templates";
 import { formatCurrency } from "@/lib/gst-utils";
 import type { Firm } from "@/lib/gst-types";
@@ -19,7 +19,7 @@ const fields: FieldDef[] = [
   { name: "remarks", label: "Remarks", type: "textarea", half: false, placeholder: "Any additional notes..." },
 ];
 
-function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Firm | null) {
+function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Firm | null, assets: DocAssets) {
   const c = template.colors;
   const companyName = firm?.name || "Your Company Name";
   const companyAddress = [firm?.address, firm?.city, firm?.state].filter(Boolean).join(", ");
@@ -27,7 +27,8 @@ function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Fi
   const amount = parseInt(data.amount || "0");
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: c.bg, minHeight: "297mm" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", background: c.bg, minHeight: "297mm", position: "relative" }}>
+      {assets.letterhead && <img src={assets.letterhead} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.15, pointerEvents: "none" }} />}
       <div style={{ background: `linear-gradient(135deg, ${c.primary}, ${c.secondary})`, padding: "28px 36px", color: "white" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -87,8 +88,9 @@ function renderDoc(data: Record<string, string>, template: TemplateDef, firm: Fi
               <p style={{ fontSize: "12px", color: "#6b7280" }}>Receiver&apos;s Signature</p>
             </div>
           </div>
-          <div>
-            <div style={{ borderTop: `2px solid ${c.primary}`, width: "180px", paddingTop: "8px", textAlign: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            {assets.signature && <img src={assets.signature} alt="Signature" style={{ height: "50px", objectFit: "contain", margin: "0 auto 4px" }} />}
+            <div style={{ borderTop: `2px solid ${c.primary}`, width: "180px", paddingTop: "8px" }}>
               <p style={{ fontWeight: 700, fontSize: "13px", color: c.primary }}>For {companyName}</p>
               <p style={{ fontSize: "11px", color: "#6b7280" }}>Authorized Signatory</p>
             </div>

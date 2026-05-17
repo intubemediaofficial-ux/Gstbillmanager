@@ -20,6 +20,7 @@ const adminNavItems = [
   { label: "GSTR Reports", href: "/admin-gstr-reports", icon: BarChart3 },
   { label: "Reports", href: "/admin-reports", icon: BarChart3 },
   { label: "Analytics", href: "/admin-analytics", icon: TrendingUp },
+  { label: "Document Settings", href: "/admin-document-settings", icon: FolderOpen },
   { label: "Site Settings", href: "/admin-site-settings", icon: CreditCard },
 ];
 
