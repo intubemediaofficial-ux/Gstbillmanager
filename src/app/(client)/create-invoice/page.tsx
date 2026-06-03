@@ -57,6 +57,7 @@ export default function CreateInvoicePage() {
   const [items, setItems] = useState<ItemRow[]>([{ description: "", hsn: "", qty: 1, unit: "PCS", rate: 0, gstRate: 18 }]);
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
+  const [columnVisibility, setColumnVisibility] = useState({ hsn: true, qty: true, rate: true, taxableAmount: true, gstRate: true, unit: true });
 
   // Auto-save draft
   const invoiceDraft = {
@@ -261,6 +262,7 @@ export default function CreateInvoicePage() {
         gstMode,
         letterhead: selectedFirm.letterhead || undefined,
         signature: signatureData,
+        columnVisibility,
       }),
     });
 
@@ -616,6 +618,27 @@ export default function CreateInvoicePage() {
             </div>
           );
         })()}
+
+        {/* Column Visibility Toggles */}
+        <div className="border-t pt-4">
+          <label className="block text-sm font-medium mb-2">Invoice Column Settings <span className="text-gray-400 font-normal">(toggle to show/hide in PDF)</span></label>
+          <div className="flex flex-wrap gap-3">
+            {([
+              { key: "hsn" as const, label: "HSN/SAC" },
+              { key: "qty" as const, label: "Quantity" },
+              { key: "unit" as const, label: "Unit" },
+              { key: "rate" as const, label: "Rate" },
+              { key: "taxableAmount" as const, label: "Taxable Amount" },
+              { key: "gstRate" as const, label: "GST %" },
+            ]).map((col) => (
+              <label key={col.key} className="flex items-center gap-2 cursor-pointer text-sm bg-gray-50 border rounded-lg px-3 py-2 hover:bg-gray-100 transition">
+                <input type="checkbox" checked={columnVisibility[col.key]} onChange={(e) => setColumnVisibility((prev) => ({ ...prev, [col.key]: e.target.checked }))}
+                  className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                <span className={columnVisibility[col.key] ? "text-gray-800" : "text-gray-400 line-through"}>{col.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
 
         {/* Notes & Terms */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">

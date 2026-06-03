@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut, Menu, X, FolderOpen, History,
-  RefreshCw, Receipt, TrendingUp, UserCheck, CreditCard, CalendarDays, Target, Bell, Mail, Clock, ChevronDown, ChevronRight,
+  RefreshCw, Receipt, TrendingUp, UserCheck, CreditCard, CalendarDays, Target, Bell, Mail, Clock, ChevronDown, ChevronRight, Archive,
 } from "lucide-react";
 
 const navSections = [
@@ -31,6 +31,7 @@ const navSections = [
     items: [
       { label: "Expenses", href: "/expenses", icon: Receipt },
       { label: "Profit & Loss", href: "/profit-loss", icon: TrendingUp },
+      { label: "Bill Manager", href: "/bill-manager", icon: Archive },
       { label: "Aging Report", href: "/aging-report", icon: Clock },
       { label: "Reports", href: "/reports", icon: BarChart3 },
     ],
