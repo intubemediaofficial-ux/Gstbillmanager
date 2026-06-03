@@ -263,7 +263,7 @@ function InvoiceViewContent() {
                     <th className="px-1 py-1.5 text-center border-r border-blue-900/40 font-semibold text-[9px] uppercase">GST</th>
                   ))}
                   <th className="px-1 py-2.5 text-right border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Tax ₹</th>
-                  <th className="px-1 py-2.5 text-right font-semibold text-[10px] uppercase" rowSpan={2}>Total ₹</th>
+                  <th className="px-2 pr-3 py-2.5 text-right font-semibold text-[10px] uppercase" rowSpan={2}>Total ₹</th>
                 </tr>
                 <tr className="text-white text-[9px]" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 100%)" }}>
                   {cv.gstRate && (!invoice.isInterState ? (
@@ -299,7 +299,7 @@ function InvoiceViewContent() {
                       <td className="px-1 py-2.5 text-right border-r border-gray-100 font-semibold text-gray-800 text-[10px]">
                         {formatCurrency(itemTax)}
                       </td>
-                      <td className="px-1 py-2.5 text-right font-bold text-gray-900 text-[11px]">{formatCurrency(lineTotal)}</td>
+                      <td className="px-2 pr-3 py-2.5 text-right font-bold text-gray-900 text-[11px]">{formatCurrency(lineTotal)}</td>
                     </tr>
                   );
                 })}
