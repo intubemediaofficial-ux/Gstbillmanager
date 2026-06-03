@@ -103,6 +103,7 @@ export interface Invoice {
     branchName: string;
     signatureText: string;
     logo?: string;
+    isGst?: boolean;
   };
   customer: {
     id: string;

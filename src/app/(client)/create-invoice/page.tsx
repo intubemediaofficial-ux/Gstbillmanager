@@ -296,6 +296,7 @@ function CreateInvoiceContent() {
       branchName: selectedFirm.branchName,
       signatureText: selectedFirm.signatureText,
       logo: selectedFirm.logo || undefined,
+      isGst: selectedFirm.isGst !== false,
     };
 
     const customerData = {
@@ -384,7 +385,7 @@ function CreateInvoiceContent() {
             ) : (
               <select
                 value={selectedFirm?.id || ""}
-                onChange={(e) => { const f = firms.find((x) => x.id === e.target.value) || null; setSelectedFirm(f); if (f && selectedCustomer) applyLastBill(f, selectedCustomer); }}
+                onChange={(e) => { const f = firms.find((x) => x.id === e.target.value) || null; setSelectedFirm(f); if (f && !f.isGst) { setColumnVisibility((cv) => ({ ...cv, hsn: false, gstRate: false })); } else if (f) { setColumnVisibility((cv) => ({ ...cv, hsn: true, gstRate: true })); } if (f && selectedCustomer) applyLastBill(f, selectedCustomer); }}
                 className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm"
               >
                 <option value="">Select your firm...</option>
@@ -394,8 +395,9 @@ function CreateInvoiceContent() {
             {selectedFirm && (
               <div className="mt-3 text-sm text-gray-600 space-y-0.5">
                 <p className="font-medium text-gray-800">{selectedFirm.name}</p>
-                <p>GSTIN: {selectedFirm.gstin}</p>
+                {selectedFirm.gstin ? <p>GSTIN: {selectedFirm.gstin}</p> : selectedFirm.pan ? <p>PAN: {selectedFirm.pan}</p> : null}
                 <p>{selectedFirm.city}, {selectedFirm.state}</p>
+                {!selectedFirm.isGst && <p className="text-xs text-orange-600 font-medium">Non-GST Firm</p>}
               </div>
             )}
           </div>
@@ -500,18 +502,20 @@ function CreateInvoiceContent() {
               📋 Detailed
             </button>
           </div>
-          <div className="flex items-center gap-1 ml-auto bg-amber-50 border border-amber-200 rounded-lg p-1">
-            <button onClick={() => setGstMode("exclude")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${gstMode === "exclude" ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-100"}`}>
-              GST Exclude
-            </button>
-            <button onClick={() => setGstMode("include")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${gstMode === "include" ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-100"}`}>
-              GST Include
-            </button>
-          </div>
+          {selectedFirm?.isGst !== false && (
+            <div className="flex items-center gap-1 ml-auto bg-amber-50 border border-amber-200 rounded-lg p-1">
+              <button onClick={() => setGstMode("exclude")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${gstMode === "exclude" ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-100"}`}>
+                GST Exclude
+              </button>
+              <button onClick={() => setGstMode("include")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${gstMode === "include" ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-100"}`}>
+                GST Include
+              </button>
+            </div>
+          )}
         </div>
-        {gstMode === "include" && (
+        {selectedFirm?.isGst !== false && gstMode === "include" && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800">
             GST Include mode: Enter total amount (GST included). Base amount will be auto-calculated by removing {quickGstRate}% GST.
           </div>
@@ -520,30 +524,32 @@ function CreateInvoiceContent() {
         {/* Quick Mode */}
         {quickMode && (
           <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-100">
-            <h3 className="text-sm font-semibold text-indigo-700 mb-4">Quick Invoice — Select category, enter amount, GST auto-calculated</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Service / Goods Category</label>
-                <select onChange={(e) => {
-                  const hsn = HSN_LIBRARY.find((h) => h.code === e.target.value);
-                  if (hsn) {
-                    setQuickDescription(hsn.category);
-                    setQuickGstRate(hsn.gstRate);
-                    setQuickHsn(hsn.code);
-                  }
-                }} defaultValue=""
-                  className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                  <option value="">Select category → HSN auto-fill</option>
-                  {HSN_LIBRARY.map((h) => <option key={h.code} value={h.code}>{h.category} — {h.code} ({h.gstRate}%)</option>)}
-                </select>
+            <h3 className="text-sm font-semibold text-indigo-700 mb-4">{selectedFirm?.isGst === false ? "Quick Invoice — Enter description and amount" : "Quick Invoice — Select category, enter amount, GST auto-calculated"}</h3>
+            {selectedFirm?.isGst !== false && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Service / Goods Category</label>
+                  <select onChange={(e) => {
+                    const hsn = HSN_LIBRARY.find((h) => h.code === e.target.value);
+                    if (hsn) {
+                      setQuickDescription(hsn.category);
+                      setQuickGstRate(hsn.gstRate);
+                      setQuickHsn(hsn.code);
+                    }
+                  }} defaultValue=""
+                    className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <option value="">Select category → HSN auto-fill</option>
+                    {HSN_LIBRARY.map((h) => <option key={h.code} value={h.code}>{h.category} — {h.code} ({h.gstRate}%)</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">HSN/SAC Code</label>
+                  <input value={quickHsn} onChange={(e) => setQuickHsn(e.target.value)}
+                    placeholder="Auto or enter manually"
+                    className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">HSN/SAC Code</label>
-                <input value={quickHsn} onChange={(e) => setQuickHsn(e.target.value)}
-                  placeholder="Auto or enter manually"
-                  className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono" />
-              </div>
-            </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
@@ -552,18 +558,20 @@ function CreateInvoiceContent() {
                   className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">{gstMode === "include" ? "Total Amount (GST Included) *" : "Amount (before GST) *"}</label>
+                <label className="block text-sm font-medium mb-1">{selectedFirm?.isGst === false ? "Amount *" : gstMode === "include" ? "Total Amount (GST Included) *" : "Amount (before GST) *"}</label>
                 <input type="number" value={quickAmount} onChange={(e) => setQuickAmount(e.target.value)}
                   placeholder={gstMode === "include" ? "100000" : "56257"}
                   className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-lg font-semibold" />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">GST Rate</label>
-                <select value={quickGstRate} onChange={(e) => setQuickGstRate(parseInt(e.target.value))}
-                  className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                  {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
-                </select>
-              </div>
+              {selectedFirm?.isGst !== false && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">GST Rate</label>
+                  <select value={quickGstRate} onChange={(e) => setQuickGstRate(parseInt(e.target.value))}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -592,18 +600,20 @@ function CreateInvoiceContent() {
                       <input value={item.description} onChange={(e) => updateItem(idx, "description", e.target.value)}
                         placeholder="Item description" className="w-full px-2 py-1.5 border rounded text-sm" />
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">HSN</label>
-                      <select onChange={(e) => {
-                        const h = HSN_LIBRARY.find((x) => x.code === e.target.value);
-                        if (h) { updateItem(idx, "hsn", h.code); updateItem(idx, "gstRate", h.gstRate); }
-                      }} defaultValue="" className="w-full px-2 py-1.5 border rounded text-sm mb-1">
-                        <option value="">Category → HSN</option>
-                        {HSN_LIBRARY.map((h) => <option key={h.code} value={h.code}>{h.category} ({h.code})</option>)}
-                      </select>
-                      <input value={item.hsn} onChange={(e) => updateItem(idx, "hsn", e.target.value)}
-                        className="w-full px-2 py-1.5 border rounded text-sm font-mono" placeholder="or type manually" />
-                    </div>
+                    {selectedFirm?.isGst !== false && (
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">HSN</label>
+                        <select onChange={(e) => {
+                          const h = HSN_LIBRARY.find((x) => x.code === e.target.value);
+                          if (h) { updateItem(idx, "hsn", h.code); updateItem(idx, "gstRate", h.gstRate); }
+                        }} defaultValue="" className="w-full px-2 py-1.5 border rounded text-sm mb-1">
+                          <option value="">Category → HSN</option>
+                          {HSN_LIBRARY.map((h) => <option key={h.code} value={h.code}>{h.category} ({h.code})</option>)}
+                        </select>
+                        <input value={item.hsn} onChange={(e) => updateItem(idx, "hsn", e.target.value)}
+                          className="w-full px-2 py-1.5 border rounded text-sm font-mono" placeholder="or type manually" />
+                      </div>
+                    )}
                     <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Qty</label>
@@ -623,13 +633,15 @@ function CreateInvoiceContent() {
                           className="w-full px-2 py-1.5 border rounded text-sm" />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">GST %</label>
-                      <select value={item.gstRate} onChange={(e) => updateItem(idx, "gstRate", parseInt(e.target.value))}
-                        className="w-full px-2 py-1.5 border rounded text-sm">
-                        {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
-                      </select>
-                    </div>
+                    {selectedFirm?.isGst !== false && (
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">GST %</label>
+                        <select value={item.gstRate} onChange={(e) => updateItem(idx, "gstRate", parseInt(e.target.value))}
+                          className="w-full px-2 py-1.5 border rounded text-sm">
+                          {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
+                        </select>
+                      </div>
+                    )}
                     <div className="flex items-end">
                       <div className="flex-1">
                         <label className="block text-xs text-gray-500 mb-1">Amount</label>
@@ -718,7 +730,7 @@ function CreateInvoiceContent() {
               { key: "rate" as const, label: "Rate" },
               { key: "taxableAmount" as const, label: "Taxable Amount" },
               { key: "gstRate" as const, label: "GST %" },
-            ]).map((col) => (
+            ]).filter((col) => selectedFirm?.isGst !== false || (col.key !== "hsn" && col.key !== "gstRate" && col.key !== "taxableAmount")).map((col) => (
               <label key={col.key} className="flex items-center gap-2 cursor-pointer text-sm bg-gray-50 border rounded-lg px-3 py-2 hover:bg-gray-100 transition">
                 <input type="checkbox" checked={columnVisibility[col.key]} onChange={(e) => setColumnVisibility((prev) => ({ ...prev, [col.key]: e.target.checked }))}
                   className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
