@@ -6,7 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, FileText, BarChart3, LogOut,
   Building2, Package, FilePlus, Settings, Menu, X, CreditCard, TrendingUp,
-  Truck, Bell, ClipboardList, FolderOpen, History,
+  Truck, ClipboardList, FolderOpen, History,
+  RefreshCw, Receipt, UserCheck, CalendarDays, Target, Bell, Mail, Clock,
+  ChevronDown, ChevronRight,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -15,6 +17,9 @@ const adminNavItems = [
   { label: "All Firms", href: "/admin-firms", icon: Building2 },
   { label: "All Parties", href: "/admin-parties", icon: Users },
   { label: "All Invoices", href: "/admin-invoices", icon: FileText },
+  { label: "All Expenses", href: "/admin-expenses", icon: Receipt },
+  { label: "All Employees", href: "/admin-employees", icon: UserCheck },
+  { label: "All Leads", href: "/admin-leads", icon: Target },
   { label: "All Inventory", href: "/admin-inventory", icon: ClipboardList },
   { label: "All E-Way Bills", href: "/admin-eway-bills", icon: Truck },
   { label: "GSTR Reports", href: "/admin-gstr-reports", icon: BarChart3 },
@@ -32,8 +37,18 @@ const clientNavItems = [
   { label: "Inventory", href: "/inventory", icon: ClipboardList },
   { label: "Create Invoice", href: "/create-invoice", icon: FilePlus },
   { label: "Invoices", href: "/invoices", icon: FileText },
+  { label: "Recurring Invoices", href: "/recurring-invoices", icon: RefreshCw },
+  { label: "Expenses", href: "/expenses", icon: Receipt },
+  { label: "Profit & Loss", href: "/profit-loss", icon: TrendingUp },
+  { label: "Aging Report", href: "/aging-report", icon: Clock },
   { label: "E-Way Bills", href: "/eway-bills", icon: Truck },
   { label: "GSTR Reports", href: "/gstr-reports", icon: BarChart3 },
+  { label: "Employees", href: "/employees", icon: UserCheck },
+  { label: "Salary Slips", href: "/salary-slips", icon: CreditCard },
+  { label: "Attendance", href: "/attendance", icon: CalendarDays },
+  { label: "Leads", href: "/leads", icon: Target },
+  { label: "Follow-ups", href: "/follow-ups", icon: Bell },
+  { label: "Email Templates", href: "/email-templates", icon: Mail },
   { label: "Documents", href: "/documents", icon: FolderOpen },
   { label: "Document History", href: "/document-history", icon: History },
   { label: "Invoice Reports", href: "/reports", icon: BarChart3 },
@@ -44,6 +59,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [showClient, setShowClient] = useState(false);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -52,7 +68,6 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile hamburger button */}
       <button
         onClick={() => setOpen(true)}
         className="md:hidden fixed top-3 left-3 z-50 bg-slate-900 text-white p-2 rounded-lg shadow-lg"
@@ -60,7 +75,6 @@ export default function AdminSidebar() {
         <Menu className="w-6 h-6" />
       </button>
 
-      {/* Overlay backdrop for mobile */}
       {open && (
         <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setOpen(false)} />
       )}
@@ -78,32 +92,34 @@ export default function AdminSidebar() {
           </button>
         </div>
         <nav className="flex-1 py-4 px-3 space-y-1">
-          {/* Admin Pages */}
           <p className="px-3 pt-1 pb-2 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Admin</p>
           {adminNavItems.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
                   active ? "bg-indigo-600 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                 }`}>
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-4 h-4" />
                 {item.label}
               </Link>
             );
           })}
 
-          {/* Client Pages Access */}
           <div className="pt-3 mt-3 border-t border-slate-700">
-            <p className="px-3 pt-1 pb-2 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Client Panel Access</p>
-            {clientNavItems.map((item) => {
+            <button onClick={() => setShowClient(!showClient)}
+              className="flex items-center justify-between w-full px-3 pt-1 pb-2 text-[10px] uppercase tracking-wider text-slate-500 font-semibold hover:text-slate-300 transition">
+              <span>Client Panel Access</span>
+              {showClient ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </button>
+            {showClient && clientNavItems.map((item) => {
               const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
               return (
                 <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
                     active ? "bg-emerald-600 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   }`}>
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className="w-4 h-4" />
                   {item.label}
                 </Link>
               );

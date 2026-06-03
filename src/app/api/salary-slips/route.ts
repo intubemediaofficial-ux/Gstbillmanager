@@ -1,0 +1,99 @@
+import { kv } from "@/lib/kv";
+import { getSession } from "@/lib/session";
+import type { SalarySlip } from "@/lib/gst-types";
+import { generateId } from "@/lib/gst-utils";
+
+export async function GET(req: Request) {
+  const session = await getSession();
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const adminUserId = searchParams.get("adminUserId");
+  const lookupUserId = (adminUserId && session.role === "admin") ? adminUserId : session.id;
+
+  const data: SalarySlip[] = (await kv.get(`gst_salaryslips:${lookupUserId}`)) || [];
+  const sorted = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return Response.json({ data: sorted });
+}
+
+export async function POST(req: Request) {
+  const session = await getSession();
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const { action } = body;
+    const userId = session.id;
+    const key = `gst_salaryslips:${userId}`;
+    const items: SalarySlip[] = (await kv.get(key)) || [];
+
+    if (action === "create") {
+      const basic = Number(body.basicSalary) || 0;
+      const hra = Number(body.hra) || 0;
+      const conveyance = Number(body.conveyance) || 0;
+      const medical = Number(body.medicalAllowance) || 0;
+      const special = Number(body.specialAllowance) || 0;
+      const otherAllow = Number(body.otherAllowances) || 0;
+      const gross = basic + hra + conveyance + medical + special + otherAllow;
+
+      const pf = Number(body.pf) || 0;
+      const esi = Number(body.esi) || 0;
+      const pt = Number(body.professionalTax) || 0;
+      const tds = Number(body.tds) || 0;
+      const otherDed = Number(body.otherDeductions) || 0;
+      const totalDed = pf + esi + pt + tds + otherDed;
+
+      const slip: SalarySlip = {
+        id: generateId(),
+        userId,
+        employeeId: body.employeeId || "",
+        employeeName: body.employeeName || "",
+        empCode: body.empCode || "",
+        department: body.department || "",
+        designation: body.designation || "",
+        month: body.month || new Date().toISOString().slice(0, 7),
+        basicSalary: basic,
+        hra,
+        conveyance,
+        medicalAllowance: medical,
+        specialAllowance: special,
+        otherAllowances: otherAllow,
+        grossSalary: gross,
+        pf,
+        esi,
+        professionalTax: pt,
+        tds,
+        otherDeductions: otherDed,
+        totalDeductions: totalDed,
+        netSalary: gross - totalDed,
+        paymentDate: body.paymentDate || new Date().toISOString().split("T")[0],
+        paymentMode: body.paymentMode || "bank_transfer",
+        bankName: body.bankName,
+        accountNumber: body.accountNumber,
+        status: body.status || "draft",
+        createdAt: new Date().toISOString(),
+      };
+      items.push(slip);
+      await kv.set(key, items);
+      return Response.json({ success: true, data: slip });
+    }
+
+    if (action === "update_status") {
+      const idx = items.findIndex((i) => i.id === body.id);
+      if (idx === -1) return Response.json({ error: "Not found" }, { status: 404 });
+      items[idx].status = body.status || "paid";
+      await kv.set(key, items);
+      return Response.json({ success: true, data: items[idx] });
+    }
+
+    if (action === "delete") {
+      const filtered = items.filter((i) => i.id !== body.id);
+      await kv.set(key, filtered);
+      return Response.json({ success: true });
+    }
+
+    return Response.json({ error: "Invalid action" }, { status: 400 });
+  } catch {
+    return Response.json({ error: "Server error" }, { status: 500 });
+  }
+}
