@@ -18,6 +18,12 @@ export async function GET(req: Request) {
     return Response.json({ error: "Invoice not found" }, { status: 404 });
   }
 
+  const fullMode = searchParams.get("full") === "1";
+
+  if (fullMode) {
+    return Response.json({ data: invoice });
+  }
+
   return Response.json({
     data: {
       invoiceNumber: invoice.invoiceNumber,
