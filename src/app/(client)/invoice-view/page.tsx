@@ -238,6 +238,25 @@ function InvoiceViewContent() {
 
           {/* ═══ ITEMS TABLE ═══ */}
           <div>
+            {/* Header row as div for html2canvas compatibility */}
+            <div className="flex text-white text-[11px] font-bold uppercase" style={{ background: "#122a4e", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
+              <div className="py-3 text-center" style={{ width: "4%", minWidth: "4%" }}>Sr</div>
+              <div className="py-3 px-1 text-left" style={{ width: cv.gstRate ? (invoice.isInterState ? "28%" : "24%") : "36%", minWidth: cv.gstRate ? (invoice.isInterState ? "28%" : "24%") : "36%" }}>Description</div>
+              {cv.hsn && <div className="py-3 text-center" style={{ width: "8%", minWidth: "8%" }}>HSN</div>}
+              {cv.qty && <div className="py-3 text-center" style={{ width: "6%", minWidth: "6%" }}>Qty</div>}
+              {cv.rate && <div className="py-3 text-right px-1" style={{ width: "10%", minWidth: "10%" }}>Rate</div>}
+              {cv.taxableAmount && <div className="py-3 text-right px-1" style={{ width: "11%", minWidth: "11%" }}>Amount</div>}
+              {cv.gstRate && (!invoice.isInterState ? (
+                <>
+                  <div className="py-3 text-center text-[10px]" style={{ width: "6%", minWidth: "6%" }}>CGST%</div>
+                  <div className="py-3 text-center text-[10px]" style={{ width: "6%", minWidth: "6%" }}>SGST%</div>
+                </>
+              ) : (
+                <div className="py-3 text-center text-[10px]" style={{ width: "7%", minWidth: "7%" }}>IGST%</div>
+              ))}
+              <div className="py-3 text-right px-1" style={{ width: "9%", minWidth: "9%" }}>Tax ₹</div>
+              <div className="py-3 text-right pr-4" style={{ width: "11%", minWidth: "11%" }}>Total ₹</div>
+            </div>
             <table className="w-full text-[11px]" style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", tableLayout: "fixed", borderCollapse: "collapse", borderSpacing: "0" }}>
               <colgroup>
                 <col style={{ width: "4%" }} />
@@ -250,26 +269,6 @@ function InvoiceViewContent() {
                 <col style={{ width: "9%" }} />
                 <col style={{ width: "11%" }} />
               </colgroup>
-              <thead>
-                <tr className="text-white">
-                  <th className="px-1.5 py-3 text-center font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Sr</th>
-                  <th className="px-2 py-3 text-left font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Description</th>
-                  {cv.hsn && <th className="px-1.5 py-3 text-center font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>HSN</th>}
-                  {cv.qty && <th className="px-1.5 py-3 text-center font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Qty</th>}
-                  {cv.rate && <th className="px-1.5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Rate</th>}
-                  {cv.taxableAmount && <th className="px-1.5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Amount</th>}
-                  {cv.gstRate && (!invoice.isInterState ? (
-                    <>
-                      <th className="px-1 py-3 text-center font-bold text-[10px] uppercase" style={{ background: "#122a4e" }}>CGST%</th>
-                      <th className="px-1 py-3 text-center font-bold text-[10px] uppercase" style={{ background: "#122a4e" }}>SGST%</th>
-                    </>
-                  ) : (
-                    <th className="px-1.5 py-3 text-center font-bold text-[10px] uppercase" style={{ background: "#122a4e" }}>IGST%</th>
-                  ))}
-                  <th className="px-1.5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Tax ₹</th>
-                  <th className="px-2 pr-5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Total ₹</th>
-                </tr>
-              </thead>
               <tbody>
                 {invoice.items.map((item, idx) => {
                   const itemTax = item.cgst + item.sgst + item.igst;

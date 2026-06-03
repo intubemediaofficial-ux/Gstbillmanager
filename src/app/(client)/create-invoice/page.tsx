@@ -385,7 +385,7 @@ function CreateInvoiceContent() {
             ) : (
               <select
                 value={selectedFirm?.id || ""}
-                onChange={(e) => { const f = firms.find((x) => x.id === e.target.value) || null; setSelectedFirm(f); if (f && !f.isGst) { setColumnVisibility((cv) => ({ ...cv, hsn: false, gstRate: false })); } else if (f) { setColumnVisibility((cv) => ({ ...cv, hsn: true, gstRate: true })); } if (f && selectedCustomer) applyLastBill(f, selectedCustomer); }}
+                onChange={(e) => { const f = firms.find((x) => x.id === e.target.value) || null; setSelectedFirm(f); if (f && f.isGst === false) { setColumnVisibility((cv) => ({ ...cv, hsn: false, gstRate: false })); } else if (f) { setColumnVisibility((cv) => ({ ...cv, hsn: true, gstRate: true })); } if (f && selectedCustomer) applyLastBill(f, selectedCustomer); }}
                 className="w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm"
               >
                 <option value="">Select your firm...</option>
@@ -397,7 +397,7 @@ function CreateInvoiceContent() {
                 <p className="font-medium text-gray-800">{selectedFirm.name}</p>
                 {selectedFirm.gstin ? <p>GSTIN: {selectedFirm.gstin}</p> : selectedFirm.pan ? <p>PAN: {selectedFirm.pan}</p> : null}
                 <p>{selectedFirm.city}, {selectedFirm.state}</p>
-                {!selectedFirm.isGst && <p className="text-xs text-orange-600 font-medium">Non-GST Firm</p>}
+                {selectedFirm.isGst === false && <p className="text-xs text-orange-600 font-medium">Non-GST Firm</p>}
               </div>
             )}
           </div>
