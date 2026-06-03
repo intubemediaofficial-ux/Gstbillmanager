@@ -22,6 +22,7 @@ function firmData(invoice: Invoice, settings: BusinessSettings | null) {
     phone: invoice.firm?.phone || settings?.phone || "",
     email: invoice.firm?.email || "",
     logo: invoice.firm?.logo || "",
+    isGst: invoice.firm?.isGst !== false,
   };
 }
 
@@ -46,7 +47,8 @@ function hsnSummary(invoice: Invoice) {
 }
 
 function QRSection({ invoice, currentUserId }: { invoice: Invoice; currentUserId: string }) {
-  if (invoice.invoiceType !== "tax_invoice" || !invoice.firm?.gstin) return null;
+  const isGst = invoice.firm?.isGst !== false;
+  if (isGst && (invoice.invoiceType !== "tax_invoice" || !invoice.firm?.gstin)) return null;
   return (
     <div className="flex items-center justify-between px-5 py-2 border-t border-black/30 bg-gray-50">
       <div className="flex items-center gap-3">
@@ -266,8 +268,8 @@ export function ClassicTemplate({ invoice, settings, currentUserId, cv }: Invoic
           <p className="text-right text-[10px] text-gray-500">E. &amp; O.E</p>
         </div>
 
-        {/* HSN-wise Tax Summary */}
-        <div className="border-t-2 border-black">
+        {/* HSN-wise Tax Summary — only for GST firms */}
+        {f.isGst && <div className="border-t-2 border-black">
           <table className="w-full text-[10px] border-collapse">
             <thead>
               <tr className="font-bold bg-gray-100 border-b border-black">
@@ -340,13 +342,20 @@ export function ClassicTemplate({ invoice, settings, currentUserId, cv }: Invoic
               </tr>
             </tbody>
           </table>
-        </div>
+        </div>}
 
-        {/* Tax Amount in Words */}
-        <div className="px-4 py-2 border-t border-black text-[11px]">
-          <p><span className="font-semibold">Tax Amount (in words):</span> <span className="font-bold italic">INR {numberToWords(invoice.totalTax)} Only</span></p>
-          {f.pan && <p className="mt-1"><span className="font-semibold">Company&apos;s PAN:</span> <span className="font-bold">{f.pan}</span></p>}
-        </div>
+        {/* Tax Amount in Words — only for GST firms */}
+        {f.isGst && (
+          <div className="px-4 py-2 border-t border-black text-[11px]">
+            <p><span className="font-semibold">Tax Amount (in words):</span> <span className="font-bold italic">INR {numberToWords(invoice.totalTax)} Only</span></p>
+            {f.pan && <p className="mt-1"><span className="font-semibold">Company&apos;s PAN:</span> <span className="font-bold">{f.pan}</span></p>}
+          </div>
+        )}
+        {!f.isGst && f.pan && (
+          <div className="px-4 py-2 border-t border-black text-[11px]">
+            <p><span className="font-semibold">PAN:</span> <span className="font-bold">{f.pan}</span></p>
+          </div>
+        )}
 
         {/* Declaration + Bank + Signature */}
         <div className="flex border-t-2 border-black text-[11px]">
@@ -354,11 +363,13 @@ export function ClassicTemplate({ invoice, settings, currentUserId, cv }: Invoic
             <p className="font-bold mb-1">Declaration</p>
             {invoice.terms ? (
               invoice.terms.split("\n").map((line, i) => <p key={i} className="text-[10px]">{i + 1}. {line}</p>)
-            ) : (
+            ) : f.isGst ? (
               <>
                 <p className="text-[10px]">1. Goods once sold will not be taken back.</p>
                 <p className="text-[10px]">2. Interest @ 18% p.a. on overdue payments.</p>
               </>
+            ) : (
+              <p className="text-[10px]">1. Goods once sold will not be taken back.</p>
             )}
           </div>
           <div className="flex-1 p-3 border-r border-black">
@@ -498,7 +509,7 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
                 <span className="text-gray-500">Subtotal</span>
                 <span className="font-medium">{formatCurrency(invoice.subtotal)}</span>
               </div>
-              {!invoice.isInterState ? (
+              {f.isGst && (!invoice.isInterState ? (
                 <>
                   <div className="flex justify-between py-1">
                     <span className="text-gray-500">CGST</span>
@@ -514,7 +525,7 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
                   <span className="text-gray-500">IGST</span>
                   <span>{formatCurrency(invoice.totalIgst)}</span>
                 </div>
-              )}
+              ))}
               <div className="flex justify-between py-2 mt-1 border-t-2 border-gray-900">
                 <span className="font-bold text-[14px]">Total</span>
                 <span className="font-bold text-[16px]">{formatCurrency(invoice.grandTotal)}</span>
@@ -537,15 +548,28 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
             ) : <p className="text-gray-400 italic text-[10px]">Not provided</p>}
           </div>
           <div className="p-4 border-r border-gray-300">
-            <p className="font-bold text-[10px] uppercase tracking-wider text-gray-400 mb-2">Terms</p>
-            <div className="text-[10px] text-gray-600 space-y-0.5">
-              {invoice.terms ? invoice.terms.split("\n").map((l, i) => <p key={i}>{l}</p>) : (
-                <>
-                  <p>Goods once sold will not be taken back.</p>
-                  <p>Payment within due date.</p>
-                </>
-              )}
-            </div>
+            {f.isGst ? (
+              <>
+                <p className="font-bold text-[10px] uppercase tracking-wider text-gray-400 mb-2">Terms</p>
+                <div className="text-[10px] text-gray-600 space-y-0.5">
+                  {invoice.terms ? invoice.terms.split("\n").map((l, i) => <p key={i}>{l}</p>) : (
+                    <>
+                      <p>Goods once sold will not be taken back.</p>
+                      <p>Payment within due date.</p>
+                    </>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-[10px] uppercase tracking-wider text-gray-400 mb-2">QR Code</p>
+                <div className="flex items-center justify-center py-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://gstbillmanager.com/verify?id=${invoice.id}&uid=${invoice.userId}`)}`} alt="QR" width={65} height={65} className="rounded" />
+                </div>
+                <p className="text-[9px] text-gray-400 text-center mt-1">Scan to verify</p>
+              </>
+            )}
           </div>
           <div className="p-4">
             <SignatureBlock invoice={invoice} settings={settings} firmName={f.name} />
@@ -674,14 +698,14 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
               <div className="flex justify-between py-1.5 text-slate-600">
                 <span>Subtotal</span><span className="font-medium">{formatCurrency(invoice.subtotal)}</span>
               </div>
-              {!invoice.isInterState ? (
+              {f.isGst && (!invoice.isInterState ? (
                 <>
                   <div className="flex justify-between py-1 text-slate-600"><span>CGST</span><span>{formatCurrency(invoice.totalCgst)}</span></div>
                   <div className="flex justify-between py-1 text-slate-600"><span>SGST</span><span>{formatCurrency(invoice.totalSgst)}</span></div>
                 </>
               ) : (
                 <div className="flex justify-between py-1 text-slate-600"><span>IGST</span><span>{formatCurrency(invoice.totalIgst)}</span></div>
-              )}
+              ))}
               <div className="flex justify-between py-2.5 mt-1 border-t-2 border-slate-700 bg-slate-700 text-white px-3 -mx-3 rounded">
                 <span className="font-bold text-[13px]">Grand Total</span>
                 <span className="font-bold text-[16px]">{formatCurrency(invoice.grandTotal)}</span>
@@ -691,8 +715,8 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
           <p className="text-[11px] text-slate-500 mt-2 italic">{numberToWords(invoice.grandTotal)} Only</p>
         </div>
 
-        {/* HSN Summary */}
-        <div className="border-t border-slate-200 px-6 py-3">
+        {/* HSN Summary — only for GST firms */}
+        {f.isGst && <div className="border-t border-slate-200 px-6 py-3">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">HSN/SAC Summary</p>
           <table className="w-full text-[10px] border border-slate-200 border-collapse">
             <thead>
@@ -728,7 +752,7 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
               ))}
             </tbody>
           </table>
-        </div>
+        </div>}
 
         {/* Bank + Terms + Signature */}
         <div className="grid grid-cols-3 border-t border-slate-300 text-[11px]">
@@ -743,16 +767,29 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
             ) : <p className="text-slate-400 italic text-[10px]">Not provided</p>}
           </div>
           <div className="p-4 border-r border-slate-200">
-            <p className="font-bold text-[10px] uppercase tracking-wider text-slate-400 mb-2">Terms & Conditions</p>
-            <div className="text-[10px] text-slate-600 space-y-0.5">
-              {invoice.terms ? invoice.terms.split("\n").map((l, i) => <p key={i}>{l}</p>) : (
-                <>
-                  <p>Goods once sold will not be taken back.</p>
-                  <p>Payment within due date.</p>
-                  <p>Interest @ 18% p.a. on overdue.</p>
-                </>
-              )}
-            </div>
+            {f.isGst ? (
+              <>
+                <p className="font-bold text-[10px] uppercase tracking-wider text-slate-400 mb-2">Terms & Conditions</p>
+                <div className="text-[10px] text-slate-600 space-y-0.5">
+                  {invoice.terms ? invoice.terms.split("\n").map((l, i) => <p key={i}>{l}</p>) : (
+                    <>
+                      <p>Goods once sold will not be taken back.</p>
+                      <p>Payment within due date.</p>
+                      <p>Interest @ 18% p.a. on overdue.</p>
+                    </>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-[10px] uppercase tracking-wider text-slate-400 mb-2">QR Code</p>
+                <div className="flex items-center justify-center py-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://gstbillmanager.com/verify?id=${invoice.id}&uid=${invoice.userId}`)}`} alt="QR" width={65} height={65} className="rounded" />
+                </div>
+                <p className="text-[9px] text-slate-400 text-center mt-1">Scan to verify</p>
+              </>
+            )}
           </div>
           <div className="p-4 text-center">
             <SignatureBlock invoice={invoice} settings={settings} firmName={f.name} />

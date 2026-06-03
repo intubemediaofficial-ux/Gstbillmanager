@@ -88,6 +88,7 @@ function InvoiceViewContent() {
   const firmPhone = invoice.firm?.phone || settings?.phone || "";
   const firmEmail = invoice.firm?.email || "";
   const firmLogo = invoice.firm?.logo || "";
+  const firmIsGst = invoice.firm?.isGst !== false;
   const hasLetterhead = !!invoice.letterhead;
 
   const placeOfSupply = invoice.customer.state
@@ -237,42 +238,42 @@ function InvoiceViewContent() {
 
           {/* ═══ ITEMS TABLE ═══ */}
           <div>
-            <table className="w-full text-[11px] border-collapse" style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
+            <table className="w-full text-[11px]" style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", tableLayout: "fixed", borderCollapse: "collapse", borderSpacing: "0" }}>
               <colgroup>
                 <col style={{ width: "4%" }} />
-                <col style={{ width: "auto" }} />
+                <col style={{ width: cv.gstRate ? (invoice.isInterState ? "28%" : "24%") : "36%" }} />
                 {cv.hsn && <col style={{ width: "8%" }} />}
                 {cv.qty && <col style={{ width: "6%" }} />}
                 {cv.rate && <col style={{ width: "10%" }} />}
-                {cv.taxableAmount && <col style={{ width: "12%" }} />}
-                {cv.gstRate && (!invoice.isInterState ? (<><col style={{ width: "7%" }} /><col style={{ width: "7%" }} /></>) : (<col style={{ width: "7%" }} />))}
-                <col style={{ width: "10%" }} />
-                <col style={{ width: "12%" }} />
+                {cv.taxableAmount && <col style={{ width: "11%" }} />}
+                {cv.gstRate && (!invoice.isInterState ? (<><col style={{ width: "6%" }} /><col style={{ width: "6%" }} /></>) : (<col style={{ width: "7%" }} />))}
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "11%" }} />
               </colgroup>
-              <thead>
-                <tr className="text-white" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 100%)" }}>
-                  <th className="px-1 py-2.5 text-center border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Sr</th>
-                  <th className="px-1.5 py-2.5 text-left border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Description</th>
-                  {cv.hsn && <th className="px-1 py-2.5 text-center border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>HSN</th>}
-                  {cv.qty && <th className="px-1 py-2.5 text-center border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Qty</th>}
-                  {cv.rate && <th className="px-1 py-2.5 text-right border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Rate</th>}
-                  {cv.taxableAmount && <th className="px-1 py-2.5 text-right border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Amount</th>}
+              <thead style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 100%)" }}>
+                <tr className="text-white">
+                  <th className="px-1.5 py-3 text-center border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Sr</th>
+                  <th className="px-2 py-3 text-left border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Description</th>
+                  {cv.hsn && <th className="px-1.5 py-3 text-center border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>HSN</th>}
+                  {cv.qty && <th className="px-1.5 py-3 text-center border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Qty</th>}
+                  {cv.rate && <th className="px-1.5 py-3 text-right border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Rate</th>}
+                  {cv.taxableAmount && <th className="px-1.5 py-3 text-right border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Amount</th>}
                   {cv.gstRate && (!invoice.isInterState ? (
-                    <th className="px-1 py-1.5 text-center border-r border-blue-900/40 font-semibold text-[9px] uppercase" colSpan={2}>GST</th>
+                    <th className="px-1.5 py-2 text-center border-r border-white/10 font-bold text-[10px] uppercase" colSpan={2}>GST</th>
                   ) : (
-                    <th className="px-1 py-1.5 text-center border-r border-blue-900/40 font-semibold text-[9px] uppercase">GST</th>
+                    <th className="px-1.5 py-2 text-center border-r border-white/10 font-bold text-[10px] uppercase">GST</th>
                   ))}
-                  <th className="px-1 py-2.5 text-right border-r border-blue-900/40 font-semibold text-[10px] uppercase" rowSpan={2}>Tax ₹</th>
-                  <th className="px-2 pr-3 py-2.5 text-right font-semibold text-[10px] uppercase" rowSpan={2}>Total ₹</th>
+                  <th className="px-1.5 py-3 text-right border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Tax ₹</th>
+                  <th className="px-2 pr-4 py-3 text-right font-bold text-[11px] uppercase" rowSpan={2}>Total ₹</th>
                 </tr>
-                <tr className="text-white text-[9px]" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 100%)" }}>
+                <tr className="text-white text-[10px]">
                   {cv.gstRate && (!invoice.isInterState ? (
                     <>
-                      <th className="px-1 py-1 text-center border-r border-blue-900/40 font-semibold">CGST%</th>
-                      <th className="px-1 py-1 text-center border-r border-blue-900/40 font-semibold">SGST%</th>
+                      <th className="px-1.5 py-1.5 text-center border-r border-white/10 font-bold">CGST%</th>
+                      <th className="px-1.5 py-1.5 text-center border-r border-white/10 font-bold">SGST%</th>
                     </>
                   ) : (
-                    <th className="px-1 py-1 text-center border-r border-blue-900/40 font-semibold">IGST%</th>
+                    <th className="px-1.5 py-1.5 text-center border-r border-white/10 font-bold">IGST%</th>
                   ))}
                 </tr>
               </thead>
@@ -299,7 +300,7 @@ function InvoiceViewContent() {
                       <td className="px-1 py-2.5 text-right border-r border-gray-100 font-semibold text-gray-800 text-[10px]">
                         {formatCurrency(itemTax)}
                       </td>
-                      <td className="px-2 pr-3 py-2.5 text-right font-bold text-gray-900 text-[11px]">{formatCurrency(lineTotal)}</td>
+                      <td className="px-2 pr-5 py-2.5 text-right font-bold text-gray-900 text-[11px]">{formatCurrency(lineTotal)}</td>
                     </tr>
                   );
                 })}
@@ -313,25 +314,25 @@ function InvoiceViewContent() {
               <tbody>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-6 py-3 text-right font-semibold text-gray-500 uppercase tracking-wide text-[12px]" colSpan={2}>Subtotal (Taxable Value)</td>
-                  <td className="px-6 py-3 text-right font-bold w-36 text-gray-800" style={{ fontSize: "14px" }}>{formatCurrency(invoice.subtotal)}</td>
+                  <td className="px-6 pr-8 py-3 text-right font-bold w-44 text-gray-800" style={{ fontSize: "14px" }}>{formatCurrency(invoice.subtotal)}</td>
                 </tr>
-                {!invoice.isInterState ? (
+                {firmIsGst && (!invoice.isInterState ? (
                   <>
                     <tr className="border-b border-gray-100">
                       <td className="px-6 py-2.5 text-right font-semibold text-gray-500 text-[12px]" colSpan={2}>CGST @ {invoice.items[0]?.gstRate ? invoice.items[0].gstRate / 2 : 0}%</td>
-                      <td className="px-6 py-2.5 text-right font-bold w-36 text-gray-700">{formatCurrency(invoice.totalCgst)}</td>
+                      <td className="px-6 pr-8 py-2.5 text-right font-bold w-44 text-gray-700">{formatCurrency(invoice.totalCgst)}</td>
                     </tr>
                     <tr className="border-b border-gray-100">
                       <td className="px-6 py-2.5 text-right font-semibold text-gray-500 text-[12px]" colSpan={2}>SGST @ {invoice.items[0]?.gstRate ? invoice.items[0].gstRate / 2 : 0}%</td>
-                      <td className="px-6 py-2.5 text-right font-bold w-36 text-gray-700">{formatCurrency(invoice.totalSgst)}</td>
+                      <td className="px-6 pr-8 py-2.5 text-right font-bold w-44 text-gray-700">{formatCurrency(invoice.totalSgst)}</td>
                     </tr>
                   </>
                 ) : (
                   <tr className="border-b border-gray-100">
                     <td className="px-6 py-2.5 text-right font-semibold text-gray-500 text-[12px]" colSpan={2}>IGST @ {invoice.items[0]?.gstRate || 0}%</td>
-                    <td className="px-6 py-2.5 text-right font-bold w-36 text-gray-700">{formatCurrency(invoice.totalIgst)}</td>
+                    <td className="px-6 pr-8 py-2.5 text-right font-bold w-44 text-gray-700">{formatCurrency(invoice.totalIgst)}</td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -374,29 +375,51 @@ function InvoiceViewContent() {
               )}
             </div>
 
-            {/* Terms & Notes */}
-            <div className="px-5 py-5 border-r border-gray-200">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "linear-gradient(135deg, #122a4e, #1a3f6f)" }}>
-                  <span className="text-white text-[9px] font-bold">T</span>
+            {/* Terms & Notes — only for GST firms */}
+            {firmIsGst ? (
+              <div className="px-5 py-5 border-r border-gray-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "linear-gradient(135deg, #122a4e, #1a3f6f)" }}>
+                    <span className="text-white text-[9px] font-bold">T</span>
+                  </div>
+                  <h4 className="font-bold uppercase text-[11px] tracking-widest" style={{ color: "#122a4e", fontFamily: "'Outfit', 'Inter', sans-serif" }}>Terms & Notes</h4>
                 </div>
-                <h4 className="font-bold uppercase text-[11px] tracking-widest" style={{ color: "#122a4e", fontFamily: "'Outfit', 'Inter', sans-serif" }}>Terms & Notes</h4>
-              </div>
-              <ul className="text-[11px] text-gray-600 space-y-1.5 list-disc pl-4 leading-relaxed">
-                {invoice.terms ? (
-                  invoice.terms.split("\n").map((line, i) => <li key={i}>{line}</li>)
-                ) : (
-                  <>
-                    <li>Goods once sold will not be taken back.</li>
-                    <li>Please make payment within the due date.</li>
-                    <li>Interest @ 18% p.a. on overdue payments.</li>
-                  </>
+                <ul className="text-[11px] text-gray-600 space-y-1.5 list-disc pl-4 leading-relaxed">
+                  {invoice.terms ? (
+                    invoice.terms.split("\n").map((line, i) => <li key={i}>{line}</li>)
+                  ) : (
+                    <>
+                      <li>Goods once sold will not be taken back.</li>
+                      <li>Please make payment within the due date.</li>
+                      <li>Interest @ 18% p.a. on overdue payments.</li>
+                    </>
+                  )}
+                </ul>
+                {invoice.notes && (
+                  <p className="mt-2.5 pt-2.5 border-t border-gray-200 text-[11px] text-gray-600 leading-relaxed">{invoice.notes}</p>
                 )}
-              </ul>
-              {invoice.notes && (
-                <p className="mt-2.5 pt-2.5 border-t border-gray-200 text-[11px] text-gray-600 leading-relaxed">{invoice.notes}</p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="px-5 py-5 border-r border-gray-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "linear-gradient(135deg, #122a4e, #1a3f6f)" }}>
+                    <span className="text-white text-[9px] font-bold">Q</span>
+                  </div>
+                  <h4 className="font-bold uppercase text-[11px] tracking-widest" style={{ color: "#122a4e", fontFamily: "'Outfit', 'Inter', sans-serif" }}>QR Code</h4>
+                </div>
+                <div className="flex items-center justify-center py-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://gstbillmanager.com/verify?id=${invoice.id}&uid=${invoice.userId}`)}`}
+                    alt="Invoice QR"
+                    width={80}
+                    height={80}
+                    className="rounded"
+                  />
+                </div>
+                <p className="text-[9px] text-gray-400 text-center mt-1">Scan to verify &amp; download</p>
+              </div>
+            )}
 
             {/* Authorized Signatory */}
             <div className="px-5 py-5 flex flex-col items-center justify-between">
@@ -425,7 +448,7 @@ function InvoiceViewContent() {
           </div>
 
           {/* ═══ E-INVOICE QR CODE ═══ */}
-          {invoice.invoiceType === "tax_invoice" && invoice.firm?.gstin && (
+          {(invoice.invoiceType === "tax_invoice" || !firmIsGst) && (
             <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
