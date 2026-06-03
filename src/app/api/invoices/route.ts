@@ -115,6 +115,7 @@ export async function POST(req: Request) {
         gstMode: body.gstMode || "exclude",
         signature: body.signature || undefined,
         letterhead: body.letterhead || undefined,
+        columnVisibility: body.columnVisibility || undefined,
         status: body.invoiceType === "quotation" || body.invoiceType === "proforma" ? "draft" : (body.status || "draft"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

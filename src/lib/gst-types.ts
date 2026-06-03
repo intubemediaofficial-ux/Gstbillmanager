@@ -130,6 +130,14 @@ export interface Invoice {
     imageData: string;
   };
   letterhead?: string;
+  columnVisibility?: {
+    hsn?: boolean;
+    qty?: boolean;
+    rate?: boolean;
+    taxableAmount?: boolean;
+    gstRate?: boolean;
+    unit?: boolean;
+  };
   status: InvoiceStatus;
   createdAt: string;
   updatedAt: string;
