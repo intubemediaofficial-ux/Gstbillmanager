@@ -196,14 +196,12 @@ export default function MyFirmsPage() {
               <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={form.isGst ? "Bainsla Music" : "Ajit Kumar"} />
             </div>
-            {form.isGst && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN * {gstLookup && <Loader2 className="inline w-3.5 h-3.5 animate-spin text-blue-500 ml-1" />}</label>
-                <input value={form.gstin} onChange={(e) => handleGstin(e.target.value.toUpperCase())}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="29ABCDE1234F1Z5" maxLength={15} />
-                {gstMsg && <p className="text-xs mt-1 text-emerald-600">{gstMsg}</p>}
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN {form.isGst ? "*" : "(optional)"} {gstLookup && <Loader2 className="inline w-3.5 h-3.5 animate-spin text-blue-500 ml-1" />}</label>
+              <input value={form.gstin} onChange={(e) => handleGstin(e.target.value.toUpperCase())}
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="29ABCDE1234F1Z5" maxLength={15} />
+              {gstMsg && <p className="text-xs mt-1 text-emerald-600">{gstMsg}</p>}
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">PAN {form.isGst ? "(auto)" : ""}</label>
               {form.isGst ? (
@@ -213,12 +211,20 @@ export default function MyFirmsPage() {
                   className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="ABCDE1234F" maxLength={10} />
               )}
             </div>
-            {form.isGst && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State (auto)</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">State {form.isGst || form.gstin ? "(auto)" : ""}</label>
+              {form.isGst || form.gstin ? (
                 <input value={form.state} readOnly className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50" />
-              </div>
-            )}
+              ) : (
+                <select value={form.state} onChange={(e) => { const code = Object.entries(INDIAN_STATES).find(([, v]) => v === e.target.value)?.[0] || ""; setForm((p) => ({ ...p, state: e.target.value, stateCode: code })); }}
+                  className="w-full border rounded-lg px-3 py-2 text-sm">
+                  <option value="">Select State</option>
+                  {Object.entries(INDIAN_STATES).map(([code, name]) => (
+                    <option key={code} value={name}>{name} ({code})</option>
+                  ))}
+                </select>
+              )}
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
               <input value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
@@ -244,13 +250,11 @@ export default function MyFirmsPage() {
               <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="firm@email.com" />
             </div>
-            {form.isGst && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Default HSN Code</label>
-                <input value={form.hsnCode} onChange={(e) => setForm((p) => ({ ...p, hsnCode: e.target.value }))}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="998361" />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Default HSN Code</label>
+              <input value={form.hsnCode} onChange={(e) => setForm((p) => ({ ...p, hsnCode: e.target.value }))}
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="998361" />
+            </div>
             <div className="md:col-span-3 border-t pt-4 mt-2">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Landmark className="w-4 h-4" /> Bank Account Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

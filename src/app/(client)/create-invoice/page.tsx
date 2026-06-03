@@ -187,18 +187,20 @@ function CreateInvoiceContent() {
 
   // Quick mode calculations — handle Include/Exclude GST
   const rawAmount = parseFloat(quickAmount) || 0;
-  const qAmount = gstMode === "include"
-    ? Math.round((rawAmount * 100) / (100 + quickGstRate) * 100) / 100
+  const effectiveGstRate = columnVisibility.gstRate ? quickGstRate : 0;
+  const qAmount = gstMode === "include" && effectiveGstRate > 0
+    ? Math.round((rawAmount * 100) / (100 + effectiveGstRate) * 100) / 100
     : rawAmount;
-  const qGst = calculateGST(qAmount, quickGstRate, interState);
+  const qGst = calculateGST(qAmount, effectiveGstRate, interState);
 
   // Detailed mode calculations — handle Include/Exclude GST
   const calculated = items.map((item) => {
+    const itemGstRate = columnVisibility.gstRate ? item.gstRate : 0;
     const rawAmt = item.qty * item.rate;
-    const amount = gstMode === "include"
-      ? Math.round((rawAmt * 100) / (100 + item.gstRate) * 100) / 100
+    const amount = gstMode === "include" && itemGstRate > 0
+      ? Math.round((rawAmt * 100) / (100 + itemGstRate) * 100) / 100
       : rawAmt;
-    const gst = calculateGST(amount, item.gstRate, interState);
+    const gst = calculateGST(amount, itemGstRate, interState);
     return { ...item, amount, ...gst };
   });
 
@@ -246,7 +248,7 @@ function CreateInvoiceContent() {
           qty: 1,
           unit: "MON",
           rate: qAmount,
-          gstRate: quickGstRate,
+          gstRate: effectiveGstRate,
         }]
       : items.map((i) => ({
           description: i.description,
@@ -254,7 +256,7 @@ function CreateInvoiceContent() {
           qty: i.qty,
           unit: i.unit,
           rate: i.rate,
-          gstRate: i.gstRate,
+          gstRate: columnVisibility.gstRate ? i.gstRate : 0,
         }));
 
     const firmData = {
