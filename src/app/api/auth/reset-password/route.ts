@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     const storedOtp = await kv.get(`reset_otp:${email.toLowerCase()}`);
-    if (!storedOtp || storedOtp !== otp) {
+    if (!storedOtp || String(storedOtp) !== String(otp)) {
       return Response.json({ error: "Invalid or expired OTP" }, { status: 400 });
     }
 
