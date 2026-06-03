@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Trash2, Save, Building2, ArrowRight, PenTool } from "lucide-react";
 import Image from "next/image";
 import type { Customer, Product, InvoiceType, Firm, Signature, Invoice } from "@/lib/gst-types";
@@ -23,8 +23,12 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-export default function CreateInvoicePage() {
+function CreateInvoiceContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const [editMode, setEditMode] = useState(false);
+  const [editInvoice, setEditInvoice] = useState<Invoice | null>(null);
   const [firms, setFirms] = useState<Firm[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -95,28 +99,59 @@ export default function CreateInvoicePage() {
       setSignatures(s);
       setAllInvoices(iRes.data || []);
 
-      // Restore invoice draft
-      const draft = loadDraft<Record<string, unknown>>("invoice_draft");
-      if (draft) {
-        if (draft.firmId) { const firm = f.find((x: Firm) => x.id === draft.firmId); if (firm) setSelectedFirm(firm); }
-        if (draft.customerId) { const cust = c.find((x: Customer) => x.id === draft.customerId); if (cust) setSelectedCustomer(cust); }
-        if (draft.signatureId) { const sig = s.find((x: Signature) => x.id === draft.signatureId); if (sig) setSelectedSignature(sig); }
-        if (draft.invoiceType) setInvoiceType(draft.invoiceType as InvoiceType);
-        if (draft.date) setDate(draft.date as string);
-        if (draft.dueDate) setDueDate(draft.dueDate as string);
-        if (draft.billNumber) setBillNumber(draft.billNumber as string);
-        if (draft.quickMode !== undefined) setQuickMode(draft.quickMode as boolean);
-        if (draft.quickAmount) setQuickAmount(draft.quickAmount as string);
-        if (draft.quickDescription) setQuickDescription(draft.quickDescription as string);
-        if (draft.quickGstRate !== undefined) setQuickGstRate(draft.quickGstRate as number);
-        if (draft.quickHsn) setQuickHsn(draft.quickHsn as string);
-        if (draft.gstMode) setGstMode(draft.gstMode as "exclude" | "include");
-        if (draft.items && Array.isArray(draft.items) && (draft.items as ItemRow[]).length > 0) setItems(draft.items as ItemRow[]);
-        if (draft.notes) setNotes(draft.notes as string);
-        if (draft.terms) setTerms(draft.terms as string);
+      // Edit mode — load invoice data
+      if (editId) {
+        const inv = (iRes.data || []).find((i: Invoice) => i.id === editId);
+        if (inv) {
+          setEditMode(true);
+          setEditInvoice(inv);
+          if (inv.firm) { const firm = f.find((x: Firm) => x.id === inv.firm?.id); if (firm) setSelectedFirm(firm); }
+          if (inv.customer) { const cust = c.find((x: Customer) => x.id === inv.customer?.id); if (cust) setSelectedCustomer(cust); }
+          if (inv.signature) { const sig = s.find((x: Signature) => x.id === inv.signature?.id); if (sig) setSelectedSignature(sig); }
+          setInvoiceType(inv.invoiceType);
+          setDate(inv.date);
+          setDueDate(inv.dueDate || "");
+          setBillNumber(inv.invoiceNumber);
+          if (inv.gstMode) setGstMode(inv.gstMode);
+          if (inv.notes) setNotes(inv.notes);
+          if (inv.terms) setTerms(inv.terms);
+          if (inv.template) setInvoiceTemplate(inv.template);
+          if (inv.columnVisibility) setColumnVisibility({ hsn: inv.columnVisibility.hsn !== false, qty: inv.columnVisibility.qty !== false, rate: inv.columnVisibility.rate !== false, taxableAmount: inv.columnVisibility.taxableAmount !== false, gstRate: inv.columnVisibility.gstRate !== false, unit: inv.columnVisibility.unit !== false });
+          if (inv.items.length === 1 && inv.items[0].qty === 1 && inv.items[0].unit === "MON") {
+            setQuickMode(true);
+            setQuickDescription(inv.items[0].description);
+            setQuickHsn(inv.items[0].hsn);
+            setQuickGstRate(inv.items[0].gstRate);
+            setQuickAmount(String(inv.items[0].rate));
+          } else {
+            setQuickMode(false);
+            setItems(inv.items.map((it: { description: string; hsn: string; qty: number; unit: string; rate: number; gstRate: number }) => ({ description: it.description, hsn: it.hsn, qty: it.qty, unit: it.unit, rate: it.rate, gstRate: it.gstRate })));
+          }
+        }
+      } else {
+        // Restore invoice draft (only for new invoices)
+        const draft = loadDraft<Record<string, unknown>>("invoice_draft");
+        if (draft) {
+          if (draft.firmId) { const firm = f.find((x: Firm) => x.id === draft.firmId); if (firm) setSelectedFirm(firm); }
+          if (draft.customerId) { const cust = c.find((x: Customer) => x.id === draft.customerId); if (cust) setSelectedCustomer(cust); }
+          if (draft.signatureId) { const sig = s.find((x: Signature) => x.id === draft.signatureId); if (sig) setSelectedSignature(sig); }
+          if (draft.invoiceType) setInvoiceType(draft.invoiceType as InvoiceType);
+          if (draft.date) setDate(draft.date as string);
+          if (draft.dueDate) setDueDate(draft.dueDate as string);
+          if (draft.billNumber) setBillNumber(draft.billNumber as string);
+          if (draft.quickMode !== undefined) setQuickMode(draft.quickMode as boolean);
+          if (draft.quickAmount) setQuickAmount(draft.quickAmount as string);
+          if (draft.quickDescription) setQuickDescription(draft.quickDescription as string);
+          if (draft.quickGstRate !== undefined) setQuickGstRate(draft.quickGstRate as number);
+          if (draft.quickHsn) setQuickHsn(draft.quickHsn as string);
+          if (draft.gstMode) setGstMode(draft.gstMode as "exclude" | "include");
+          if (draft.items && Array.isArray(draft.items) && (draft.items as ItemRow[]).length > 0) setItems(draft.items as ItemRow[]);
+          if (draft.notes) setNotes(draft.notes as string);
+          if (draft.terms) setTerms(draft.terms as string);
+        }
       }
     }).finally(() => setLoading(false));
-  }, []);
+  }, [editId]);
 
   // Auto-fill from last invoice when same firm + customer pair selected
   const lastFillRef = useRef("");
@@ -192,8 +227,8 @@ export default function CreateInvoicePage() {
   const handleSave = async () => {
     if (!selectedFirm) { alert("Please select your firm"); return; }
     if (!selectedCustomer) { alert("Please select Bill To party"); return; }
-    if (!billNumber.trim()) { alert("Please enter bill number"); return; }
-    if (billNumberError) { alert(billNumberError); return; }
+    if (!editMode && !billNumber.trim()) { alert("Please enter bill number"); return; }
+    if (!editMode && billNumberError) { alert(billNumberError); return; }
 
     const signatureData = selectedSignature ? {
       id: selectedSignature.id,
@@ -222,52 +257,75 @@ export default function CreateInvoicePage() {
           gstRate: i.gstRate,
         }));
 
+    const firmData = {
+      id: selectedFirm.id,
+      name: selectedFirm.name,
+      address: selectedFirm.address,
+      city: selectedFirm.city,
+      state: selectedFirm.state,
+      stateCode: selectedFirm.stateCode,
+      gstin: selectedFirm.gstin,
+      pan: selectedFirm.pan,
+      phone: selectedFirm.phone,
+      email: selectedFirm.email,
+      bankName: selectedFirm.bankName,
+      accountNumber: selectedFirm.accountNumber,
+      ifscCode: selectedFirm.ifscCode,
+      branchName: selectedFirm.branchName,
+      signatureText: selectedFirm.signatureText,
+      logo: selectedFirm.logo || undefined,
+    };
+
+    const customerData = {
+      id: selectedCustomer.id,
+      name: selectedCustomer.name,
+      address: selectedCustomer.address,
+      city: selectedCustomer.city,
+      state: selectedCustomer.state,
+      stateCode: selectedCustomer.stateCode,
+      gstin: selectedCustomer.gstin,
+      phone: selectedCustomer.phone || "",
+      email: selectedCustomer.email || "",
+    };
+
+    const payload = editMode && editInvoice ? {
+      action: "update",
+      id: editInvoice.id,
+      invoiceType,
+      date,
+      dueDate,
+      firm: firmData,
+      customer: customerData,
+      items: invoiceItems,
+      notes,
+      terms,
+      gstMode,
+      letterhead: selectedFirm.letterhead || undefined,
+      signature: signatureData,
+      columnVisibility,
+      template: invoiceTemplate,
+    } : {
+      action: "create",
+      invoiceType,
+      customInvoiceNumber: billNumber.trim(),
+      date,
+      dueDate,
+      firm: firmData,
+      customer: customerData,
+      items: invoiceItems,
+      notes,
+      terms,
+      gstMode,
+      letterhead: selectedFirm.letterhead || undefined,
+      signature: signatureData,
+      columnVisibility,
+      template: invoiceTemplate,
+    };
+
     const res = await fetch("/api/invoices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "create",
-        invoiceType,
-        customInvoiceNumber: billNumber.trim(),
-        date,
-        dueDate,
-        firm: {
-          id: selectedFirm.id,
-          name: selectedFirm.name,
-          address: selectedFirm.address,
-          city: selectedFirm.city,
-          state: selectedFirm.state,
-          stateCode: selectedFirm.stateCode,
-          gstin: selectedFirm.gstin,
-          pan: selectedFirm.pan,
-          phone: selectedFirm.phone,
-          email: selectedFirm.email,
-          bankName: selectedFirm.bankName,
-          accountNumber: selectedFirm.accountNumber,
-          ifscCode: selectedFirm.ifscCode,
-          branchName: selectedFirm.branchName,
-          signatureText: selectedFirm.signatureText,
-        },
-        customer: {
-          id: selectedCustomer.id,
-          name: selectedCustomer.name,
-          address: selectedCustomer.address,
-          city: selectedCustomer.city,
-          state: selectedCustomer.state,
-          stateCode: selectedCustomer.stateCode,
-          gstin: selectedCustomer.gstin,
-          phone: selectedCustomer.phone || "",
-          email: selectedCustomer.email || "",
-        },
-        items: invoiceItems,
-        notes,
-        terms,
-        gstMode,
-        letterhead: selectedFirm.letterhead || undefined,
-        signature: signatureData,
-        columnVisibility,
-        template: invoiceTemplate,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -277,7 +335,7 @@ export default function CreateInvoicePage() {
       clearInvoiceDraft();
       router.push(`/invoice-view?id=${data.data.id}`);
     } else {
-      alert(data.error || "Failed to create invoice");
+      alert(data.error || (editMode ? "Failed to update invoice" : "Failed to create invoice"));
     }
   };
 
@@ -285,7 +343,7 @@ export default function CreateInvoicePage() {
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold mb-6">Create Invoice</h1>
+      <h1 className="text-2xl font-bold mb-6">{editMode ? "Edit Invoice" : "Create Invoice"}</h1>
 
       <div className="bg-white rounded-xl shadow-sm border p-6 space-y-6">
         {/* Firm (From) → Customer (To) Selection */}
@@ -689,10 +747,18 @@ export default function CreateInvoicePage() {
           </button>
           <button onClick={handleSave} disabled={saving}
             className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 disabled:opacity-50">
-            <Save className="w-4 h-4" /> {saving ? "Creating..." : "Create Invoice"}
+            <Save className="w-4 h-4" /> {saving ? (editMode ? "Updating..." : "Creating...") : (editMode ? "Update Invoice" : "Create Invoice")}
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateInvoicePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full" /></div>}>
+      <CreateInvoiceContent />
+    </Suspense>
   );
 }

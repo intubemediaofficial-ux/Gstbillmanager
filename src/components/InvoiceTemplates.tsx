@@ -21,6 +21,7 @@ function firmData(invoice: Invoice, settings: BusinessSettings | null) {
     pan: invoice.firm?.pan || settings?.pan || "",
     phone: invoice.firm?.phone || settings?.phone || "",
     email: invoice.firm?.email || "",
+    logo: invoice.firm?.logo || "",
   };
 }
 
@@ -115,12 +116,22 @@ export function ClassicTemplate({ invoice, settings, currentUserId, cv }: Invoic
         <div className="flex border-b-2 border-black">
           {/* Seller */}
           <div className="flex-1 p-4 border-r-2 border-black">
-            <p className="font-bold text-[16px] uppercase mb-1">{f.name}</p>
-            {f.address && <p className="text-[11px]">{f.address}{f.city ? `, ${f.city}` : ""}{f.state ? `-${f.state}` : ""}</p>}
-            {f.gstin && <p className="text-[11px]">GSTIN/UIN: <span className="font-bold">{f.gstin}</span></p>}
-            {f.state && <p className="text-[11px]">State Name: {f.state}</p>}
-            {f.phone && <p className="text-[11px]">Contact: {f.phone}</p>}
-            {f.email && <p className="text-[11px]">E-Mail: {f.email}</p>}
+            <div className="flex items-start gap-3">
+              {f.logo && (
+                <div className="w-14 h-14 flex-shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={f.logo} alt={f.name} className="w-full h-full object-contain" />
+                </div>
+              )}
+              <div>
+                <p className="font-bold text-[16px] uppercase mb-1">{f.name}</p>
+                {f.address && <p className="text-[11px]">{f.address}{f.city ? `, ${f.city}` : ""}{f.state ? `-${f.state}` : ""}</p>}
+                {f.gstin && <p className="text-[11px]">GSTIN/UIN: <span className="font-bold">{f.gstin}</span></p>}
+                {f.state && <p className="text-[11px]">State Name: {f.state}</p>}
+                {f.phone && <p className="text-[11px]">Contact: {f.phone}</p>}
+                {f.email && <p className="text-[11px]">E-Mail: {f.email}</p>}
+              </div>
+            </div>
           </div>
           {/* Invoice Meta */}
           <div className="w-[280px] text-[11px]">
@@ -374,11 +385,19 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
         {/* Header - minimal */}
         <div className="px-8 py-6 border-b border-gray-300">
           <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{f.name}</h1>
-              {f.address && <p className="text-gray-500 text-[11px] mt-1">{f.address}{f.city ? `, ${f.city}` : ""}{f.state ? ` - ${f.state}` : ""}</p>}
-              {f.gstin && <p className="text-[11px] text-gray-600 mt-0.5">GSTIN: <span className="font-semibold font-mono">{f.gstin}</span></p>}
-              {f.phone && <p className="text-[11px] text-gray-500">Phone: {f.phone} {f.email ? `| Email: ${f.email}` : ""}</p>}
+            <div className="flex items-start gap-4">
+              {f.logo && (
+                <div className="w-14 h-14 flex-shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={f.logo} alt={f.name} className="w-full h-full object-contain" />
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{f.name}</h1>
+                {f.address && <p className="text-gray-500 text-[11px] mt-1">{f.address}{f.city ? `, ${f.city}` : ""}{f.state ? ` - ${f.state}` : ""}</p>}
+                {f.gstin && <p className="text-[11px] text-gray-600 mt-0.5">GSTIN: <span className="font-semibold font-mono">{f.gstin}</span></p>}
+                {f.phone && <p className="text-[11px] text-gray-500">Phone: {f.phone} {f.email ? `| Email: ${f.email}` : ""}</p>}
+              </div>
             </div>
             <div className="text-right">
               <p className="text-2xl font-light text-gray-400 uppercase tracking-[6px]">{INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
@@ -518,11 +537,19 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
       <div className="relative z-10 border border-slate-300 shadow-sm">
         {/* Header */}
         <div className="bg-slate-700 text-white px-6 py-5 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold tracking-wide uppercase">{f.name}</h1>
-            {f.address && <p className="text-slate-300 text-[11px] mt-1">{f.address}{f.city ? `, ${f.city}` : ""}{f.state ? ` - ${f.state}` : ""}</p>}
-            {f.gstin && <p className="text-slate-200 text-[11px]">GSTIN: {f.gstin} {f.pan ? `| PAN: ${f.pan}` : ""}</p>}
-            {f.phone && <p className="text-slate-300 text-[11px]">{f.phone} {f.email ? `| ${f.email}` : ""}</p>}
+          <div className="flex items-center gap-4">
+            {f.logo && (
+              <div className="w-14 h-14 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={f.logo} alt={f.name} className="w-full h-full object-contain p-1" />
+              </div>
+            )}
+            <div>
+              <h1 className="text-xl font-bold tracking-wide uppercase">{f.name}</h1>
+              {f.address && <p className="text-slate-300 text-[11px] mt-1">{f.address}{f.city ? `, ${f.city}` : ""}{f.state ? ` - ${f.state}` : ""}</p>}
+              {f.gstin && <p className="text-slate-200 text-[11px]">GSTIN: {f.gstin} {f.pan ? `| PAN: ${f.pan}` : ""}</p>}
+              {f.phone && <p className="text-slate-300 text-[11px]">{f.phone} {f.email ? `| ${f.email}` : ""}</p>}
+            </div>
           </div>
           <div className="text-right">
             <p className="text-lg font-light uppercase tracking-[4px] text-slate-300">{INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>

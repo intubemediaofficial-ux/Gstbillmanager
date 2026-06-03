@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, FilePlus, Trash2, Eye, MessageCircle } from "lucide-react";
+import { Search, FilePlus, Trash2, Eye, MessageCircle, Edit2 } from "lucide-react";
 import type { Invoice, InvoiceStatus } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
@@ -136,11 +136,12 @@ export default function InvoicesPage() {
                     </select>
                   </td>
                   <td className="p-3 text-right">
-                    <Link href={`/invoice-view?id=${inv.id}`} className="p-1.5 hover:bg-gray-100 rounded inline-block"><Eye className="w-4 h-4 text-indigo-500" /></Link>
+                    <Link href={`/invoice-view?id=${inv.id}`} className="p-1.5 hover:bg-gray-100 rounded inline-block" title="View"><Eye className="w-4 h-4 text-indigo-500" /></Link>
+                    <Link href={`/create-invoice?edit=${inv.id}`} className="p-1.5 hover:bg-blue-50 rounded inline-block" title="Edit"><Edit2 className="w-4 h-4 text-blue-500" /></Link>
                     {["sent", "partial", "overdue"].includes(inv.status) && (
                       <button onClick={() => sendReminder(inv.id)} className="p-1.5 hover:bg-green-50 rounded" title="WhatsApp Reminder"><MessageCircle className="w-4 h-4 text-green-600" /></button>
                     )}
-                    <button onClick={() => handleDelete(inv.id)} className="p-1.5 hover:bg-gray-100 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                    <button onClick={() => handleDelete(inv.id)} className="p-1.5 hover:bg-gray-100 rounded" title="Delete"><Trash2 className="w-4 h-4 text-red-500" /></button>
                   </td>
                 </tr>
               ))}

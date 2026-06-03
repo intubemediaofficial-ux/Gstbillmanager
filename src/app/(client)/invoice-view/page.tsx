@@ -86,6 +86,7 @@ function InvoiceViewContent() {
   const firmPan = invoice.firm?.pan || settings?.pan || "";
   const firmPhone = invoice.firm?.phone || settings?.phone || "";
   const firmEmail = invoice.firm?.email || "";
+  const firmLogo = invoice.firm?.logo || "";
   const hasLetterhead = !!invoice.letterhead;
 
   const placeOfSupply = invoice.customer.state
@@ -150,9 +151,16 @@ function InvoiceViewContent() {
           {/* ═══ HEADER ═══ */}
           <div className="text-white px-7 py-6 flex items-center justify-between" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 70%, #2a5298 100%)" }}>
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
-                {firmName.charAt(0)}
-              </div>
+              {firmLogo ? (
+                <div className="w-16 h-16 rounded-xl overflow-hidden bg-white flex items-center justify-center shadow-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firmLogo} alt={firmName} className="w-full h-full object-contain p-1" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+                  {firmName.charAt(0)}
+                </div>
+              )}
               <div>
                 <h1 className="text-3xl font-bold tracking-wide uppercase" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", letterSpacing: "3px" }}>{firmName}</h1>
                 <p className="text-sm mt-1 font-medium tracking-widest uppercase" style={{ color: "#c9a84c" }}>{INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>

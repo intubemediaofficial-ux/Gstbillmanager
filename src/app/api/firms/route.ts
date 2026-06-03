@@ -42,6 +42,7 @@ export async function POST(req: Request) {
         hsnCode: body.hsnCode || "",
         signatureText: body.signatureText || "",
         letterhead: body.letterhead || "",
+        logo: body.logo || "",
         createdAt: new Date().toISOString(),
       };
       firms.push(firm);
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
       if (body.hsnCode !== undefined) firms[idx].hsnCode = body.hsnCode;
       if (body.signatureText !== undefined) firms[idx].signatureText = body.signatureText;
       if (body.letterhead !== undefined) firms[idx].letterhead = body.letterhead;
+      if (body.logo !== undefined) firms[idx].logo = body.logo;
       await kv.set(`firms_${session.id}`, firms);
       return Response.json({ success: true, data: firms[idx] });
     }
