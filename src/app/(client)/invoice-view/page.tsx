@@ -6,6 +6,7 @@ import { Printer, Download, Share2, Mail, ArrowLeft, Loader2 } from "lucide-reac
 import type { Invoice, BusinessSettings } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/gst-utils";
+import { ClassicTemplate, MinimalTemplate, CorporateTemplate } from "@/components/InvoiceTemplates";
 
 function InvoiceViewContent() {
   const searchParams = useSearchParams();
@@ -123,8 +124,16 @@ function InvoiceViewContent() {
         </div>
       </div>
 
-      {/* Premium GST Invoice */}
+      {/* Invoice Template */}
       <div ref={invoiceRef} className="bg-white max-w-4xl mx-auto print:shadow-none print:border-none print:p-0 relative overflow-hidden" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
+      {(invoice.template === "classic") ? (
+        <ClassicTemplate invoice={invoice} settings={settings} currentUserId={currentUserId} cv={cv} />
+      ) : (invoice.template === "minimal") ? (
+        <MinimalTemplate invoice={invoice} settings={settings} currentUserId={currentUserId} cv={cv} />
+      ) : (invoice.template === "corporate") ? (
+        <CorporateTemplate invoice={invoice} settings={settings} currentUserId={currentUserId} cv={cv} />
+      ) : (
+      <div className="relative overflow-hidden" style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
         {/* Google Fonts */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -425,6 +434,8 @@ function InvoiceViewContent() {
             This is a Computer Generated Invoice &nbsp;&bull;&nbsp; E. &amp; O.E.
           </div>
         </div>
+      </div>
+      )}
       </div>
     </div>
   );

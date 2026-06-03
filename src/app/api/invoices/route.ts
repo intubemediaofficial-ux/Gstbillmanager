@@ -116,6 +116,7 @@ export async function POST(req: Request) {
         signature: body.signature || undefined,
         letterhead: body.letterhead || undefined,
         columnVisibility: body.columnVisibility || undefined,
+        template: body.template || "premium",
         status: body.invoiceType === "quotation" || body.invoiceType === "proforma" ? "draft" : (body.status || "draft"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

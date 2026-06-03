@@ -58,6 +58,7 @@ export default function CreateInvoicePage() {
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
   const [columnVisibility, setColumnVisibility] = useState({ hsn: true, qty: true, rate: true, taxableAmount: true, gstRate: true, unit: true });
+  const [invoiceTemplate, setInvoiceTemplate] = useState<"premium" | "classic" | "minimal" | "corporate">("premium");
 
   // Auto-save draft
   const invoiceDraft = {
@@ -263,6 +264,7 @@ export default function CreateInvoicePage() {
         letterhead: selectedFirm.letterhead || undefined,
         signature: signatureData,
         columnVisibility,
+        template: invoiceTemplate,
       }),
     });
 
@@ -561,6 +563,10 @@ export default function CreateInvoicePage() {
                 </div>
               ))}
             </div>
+            {/* Inline Add Item Button - below items */}
+            <button onClick={addItem} className="mt-3 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-indigo-300 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition font-medium text-sm">
+              <Plus className="w-5 h-5" /> Add Another Item
+            </button>
           </div>
         )}
 
@@ -636,6 +642,26 @@ export default function CreateInvoicePage() {
                   className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                 <span className={columnVisibility[col.key] ? "text-gray-800" : "text-gray-400 line-through"}>{col.label}</span>
               </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Invoice Template Design */}
+        <div className="border-t pt-4">
+          <label className="block text-sm font-medium mb-2">Invoice Design Template</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {([
+              { key: "premium" as const, label: "Premium", desc: "Dark blue + gold, modern", color: "from-blue-900 to-blue-700" },
+              { key: "classic" as const, label: "Classic", desc: "Traditional GST bill style", color: "from-gray-700 to-gray-500" },
+              { key: "minimal" as const, label: "Minimal", desc: "Simple black & white", color: "from-gray-900 to-gray-700" },
+              { key: "corporate" as const, label: "Corporate", desc: "Blue-grey formal", color: "from-slate-700 to-slate-500" },
+            ]).map((t) => (
+              <button key={t.key} type="button" onClick={() => setInvoiceTemplate(t.key)}
+                className={`p-3 rounded-lg border-2 text-left transition-all ${invoiceTemplate === t.key ? "border-indigo-600 bg-indigo-50 shadow-md" : "border-gray-200 hover:border-gray-300 bg-white"}`}>
+                <div className={`h-2 w-full rounded-full bg-gradient-to-r ${t.color} mb-2`} />
+                <p className={`text-sm font-semibold ${invoiceTemplate === t.key ? "text-indigo-700" : "text-gray-800"}`}>{t.label}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">{t.desc}</p>
+              </button>
             ))}
           </div>
         </div>
