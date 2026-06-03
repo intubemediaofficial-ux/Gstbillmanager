@@ -250,31 +250,24 @@ function InvoiceViewContent() {
                 <col style={{ width: "9%" }} />
                 <col style={{ width: "11%" }} />
               </colgroup>
-              <thead style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 100%)" }}>
+              <thead>
                 <tr className="text-white">
-                  <th className="px-1.5 py-3 text-center border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Sr</th>
-                  <th className="px-2 py-3 text-left border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Description</th>
-                  {cv.hsn && <th className="px-1.5 py-3 text-center border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>HSN</th>}
-                  {cv.qty && <th className="px-1.5 py-3 text-center border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Qty</th>}
-                  {cv.rate && <th className="px-1.5 py-3 text-right border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Rate</th>}
-                  {cv.taxableAmount && <th className="px-1.5 py-3 text-right border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Amount</th>}
-                  {cv.gstRate && (!invoice.isInterState ? (
-                    <th className="px-1.5 py-2 text-center border-r border-white/10 font-bold text-[10px] uppercase" colSpan={2}>GST</th>
-                  ) : (
-                    <th className="px-1.5 py-2 text-center border-r border-white/10 font-bold text-[10px] uppercase">GST</th>
-                  ))}
-                  <th className="px-1.5 py-3 text-right border-r border-white/10 font-bold text-[11px] uppercase" rowSpan={2}>Tax ₹</th>
-                  <th className="px-2 pr-4 py-3 text-right font-bold text-[11px] uppercase" rowSpan={2}>Total ₹</th>
-                </tr>
-                <tr className="text-white text-[10px]">
+                  <th className="px-1.5 py-3 text-center font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Sr</th>
+                  <th className="px-2 py-3 text-left font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Description</th>
+                  {cv.hsn && <th className="px-1.5 py-3 text-center font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>HSN</th>}
+                  {cv.qty && <th className="px-1.5 py-3 text-center font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Qty</th>}
+                  {cv.rate && <th className="px-1.5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Rate</th>}
+                  {cv.taxableAmount && <th className="px-1.5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Amount</th>}
                   {cv.gstRate && (!invoice.isInterState ? (
                     <>
-                      <th className="px-1.5 py-1.5 text-center border-r border-white/10 font-bold">CGST%</th>
-                      <th className="px-1.5 py-1.5 text-center border-r border-white/10 font-bold">SGST%</th>
+                      <th className="px-1 py-3 text-center font-bold text-[10px] uppercase" style={{ background: "#122a4e" }}>CGST%</th>
+                      <th className="px-1 py-3 text-center font-bold text-[10px] uppercase" style={{ background: "#122a4e" }}>SGST%</th>
                     </>
                   ) : (
-                    <th className="px-1.5 py-1.5 text-center border-r border-white/10 font-bold">IGST%</th>
+                    <th className="px-1.5 py-3 text-center font-bold text-[10px] uppercase" style={{ background: "#122a4e" }}>IGST%</th>
                   ))}
+                  <th className="px-1.5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Tax ₹</th>
+                  <th className="px-2 pr-5 py-3 text-right font-bold text-[11px] uppercase" style={{ background: "#122a4e" }}>Total ₹</th>
                 </tr>
               </thead>
               <tbody>
