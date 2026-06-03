@@ -138,6 +138,7 @@ export interface Invoice {
     gstRate?: boolean;
     unit?: boolean;
   };
+  template?: "premium" | "classic" | "minimal" | "corporate";
   status: InvoiceStatus;
   createdAt: string;
   updatedAt: string;
