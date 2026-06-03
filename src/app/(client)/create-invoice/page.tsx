@@ -46,7 +46,7 @@ export default function CreateInvoicePage() {
   const [billNumberError, setBillNumberError] = useState("");
 
   // Quick mode: just enter amount, auto-calc GST
-  const [quickMode, setQuickMode] = useState(true);
+  const [quickMode, setQuickMode] = useState(false);
   const [quickAmount, setQuickAmount] = useState("");
   const [quickDescription, setQuickDescription] = useState("");
   const [quickGstRate, setQuickGstRate] = useState(18);
@@ -256,6 +256,8 @@ export default function CreateInvoicePage() {
           state: selectedCustomer.state,
           stateCode: selectedCustomer.stateCode,
           gstin: selectedCustomer.gstin,
+          phone: selectedCustomer.phone || "",
+          email: selectedCustomer.email || "",
         },
         items: invoiceItems,
         notes,

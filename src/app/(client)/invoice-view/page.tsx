@@ -148,17 +148,17 @@ function InvoiceViewContent() {
 
         <div className="relative z-10 border border-gray-200 shadow-lg">
           {/* ═══ HEADER ═══ */}
-          <div className="text-white px-7 py-6 flex items-center justify-between" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 70%, #2a5298 100%)" }}>
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
+          <div className="text-white px-6 py-3.5 flex items-center justify-between" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 40%, #1a3f6f 70%, #2a5298 100%)" }}>
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-lg flex items-center justify-center text-xl shadow-md" style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "linear-gradient(135deg, #c9a84c 0%, #f0d78c 50%, #c9a84c 100%)", color: "#0a1628" }}>
                 {firmName.charAt(0)}
               </div>
               <div>
-                <h1 className="text-3xl font-bold tracking-wide uppercase" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", letterSpacing: "3px" }}>{firmName}</h1>
-                <p className="text-sm mt-1 font-medium tracking-widest uppercase" style={{ color: "#c9a84c" }}>{INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
+                <h1 className="text-xl font-bold tracking-wide uppercase" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", letterSpacing: "2px" }}>{firmName}</h1>
+                <p className="text-[11px] mt-0.5 font-medium tracking-widest uppercase" style={{ color: "#c9a84c" }}>{INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
               </div>
             </div>
-            <div className="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase" style={{ border: "1.5px solid #c9a84c", color: "#c9a84c", background: "rgba(201, 168, 76, 0.08)" }}>
+            <div className="px-3 py-1.5 rounded-md text-[10px] font-bold tracking-widest uppercase" style={{ border: "1.5px solid #c9a84c", color: "#c9a84c", background: "rgba(201, 168, 76, 0.08)" }}>
               Original for Recipient
             </div>
           </div>
@@ -218,7 +218,10 @@ function InvoiceViewContent() {
                 <tr><td className="pr-4 py-1 font-semibold text-gray-500 whitespace-nowrap">Customer Name</td><td className="px-2 text-gray-300">:</td><td className="py-1 font-bold text-gray-900" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontSize: "14px" }}>{invoice.customer.name}</td></tr>
                 {invoice.customer.address && <tr><td className="pr-4 py-1 font-semibold text-gray-500">Address</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-700">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}, India</td></tr>}
                 {invoice.customer.gstin && <tr><td className="pr-4 py-1 font-semibold text-gray-500">GSTIN</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-800 font-mono font-semibold tracking-wide">{invoice.customer.gstin}</td></tr>}
+                {invoice.customer.gstin && invoice.customer.gstin.length >= 12 && <tr><td className="pr-4 py-1 font-semibold text-gray-500">PAN</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-800 font-mono font-semibold tracking-wide">{invoice.customer.gstin.substring(2, 12)}</td></tr>}
                 {invoice.customer.state && <tr><td className="pr-4 py-1 font-semibold text-gray-500">State</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-700">{invoice.customer.state}{invoice.customer.stateCode ? ` (${invoice.customer.stateCode})` : ""}</td></tr>}
+                {invoice.customer.phone && <tr><td className="pr-4 py-1 font-semibold text-gray-500">Contact</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-700 font-medium">{invoice.customer.phone}</td></tr>}
+                {invoice.customer.email && <tr><td className="pr-4 py-1 font-semibold text-gray-500">Email</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-700">{invoice.customer.email}</td></tr>}
               </tbody>
             </table>
           </div>
@@ -320,13 +323,13 @@ function InvoiceViewContent() {
 
           {/* ═══ GRAND TOTAL + AMOUNT IN WORDS ═══ */}
           <div className="flex border-t-2" style={{ borderColor: "#122a4e" }}>
-            <div className="flex-1 px-7 py-4" style={{ background: "linear-gradient(135deg, #f0f4fa 0%, #e8eef7 100%)" }}>
-              <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#122a4e" }}>Amount in Words</p>
-              <p className="text-sm font-semibold italic" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: "#122a4e", lineHeight: "1.5" }}>{numberToWords(invoice.grandTotal)}</p>
+            <div className="flex-1 px-5 py-2.5" style={{ background: "linear-gradient(135deg, #f0f4fa 0%, #e8eef7 100%)" }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#122a4e" }}>Amount in Words</p>
+              <p className="text-[12px] font-semibold italic" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: "#122a4e" }}>{numberToWords(invoice.grandTotal)}</p>
             </div>
-            <div className="px-8 py-4 flex items-center gap-5" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 50%, #1a3f6f 100%)" }}>
-              <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#c9a84c", fontFamily: "'Outfit', 'Inter', sans-serif" }}>Grand Total</span>
-              <span className="text-3xl font-extrabold text-white" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
+            <div className="px-5 py-2.5 flex items-center gap-3" style={{ background: "linear-gradient(135deg, #0a1628 0%, #122a4e 50%, #1a3f6f 100%)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#c9a84c", fontFamily: "'Outfit', 'Inter', sans-serif" }}>Grand Total</span>
+              <span className="text-xl font-extrabold text-white" style={{ fontFamily: "'Outfit', 'Inter', sans-serif" }}>
                 {formatCurrency(invoice.grandTotal)}
               </span>
             </div>
@@ -412,7 +415,7 @@ function InvoiceViewContent() {
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : "https://gstbillmanager.com"}/verify?id=${invoice.id}&uid=${currentUserId}`)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://gstbillmanager.com/verify?id=${invoice.id}&uid=${invoice.userId}`)}`}
                   alt="E-Invoice QR"
                   width={70}
                   height={70}
