@@ -99,7 +99,7 @@ export async function POST(req: Request) {
         referenceInvoiceNumber: body.referenceInvoiceNumber || undefined,
         date: body.date || new Date().toISOString().split("T")[0],
         dueDate: body.dueDate || "",
-        firm: body.firm || undefined,
+        firm: body.firm ? { ...body.firm, logo: body.firm.logo || undefined } : undefined,
         customer: body.customer,
         items,
         subtotal,
@@ -131,6 +131,71 @@ export async function POST(req: Request) {
       }
 
       return Response.json({ success: true, data: invoice });
+    }
+
+    if (action === "update") {
+      const idx = invoices.findIndex((i) => i.id === body.id);
+      if (idx === -1) return Response.json({ error: "Not found" }, { status: 404 });
+
+      const sellerState = body.firm?.stateCode || invoices[idx].firm?.stateCode || "";
+      const buyerState = body.customer?.stateCode || invoices[idx].customer?.stateCode || "";
+      const interState = isInterState(sellerState, buyerState);
+
+      let subtotal = 0;
+      let totalCgst = 0;
+      let totalSgst = 0;
+      let totalIgst = 0;
+
+      const items = (body.items || []).map((item: { qty: number; rate: number; gstRate: number; description: string; hsn: string; unit: string }) => {
+        const amount = item.qty * item.rate;
+        const gst = calculateGST(amount, item.gstRate, interState);
+        subtotal += amount;
+        totalCgst += gst.cgst;
+        totalSgst += gst.sgst;
+        totalIgst += gst.igst;
+        return {
+          description: item.description,
+          hsn: item.hsn || "",
+          qty: item.qty,
+          unit: item.unit || "PCS",
+          rate: item.rate,
+          amount,
+          gstRate: item.gstRate,
+          cgst: gst.cgst,
+          sgst: gst.sgst,
+          igst: gst.igst,
+        };
+      });
+
+      const totalTax = totalCgst + totalSgst + totalIgst;
+
+      invoices[idx] = {
+        ...invoices[idx],
+        invoiceType: body.invoiceType || invoices[idx].invoiceType,
+        date: body.date || invoices[idx].date,
+        dueDate: body.dueDate !== undefined ? body.dueDate : invoices[idx].dueDate,
+        firm: body.firm || invoices[idx].firm,
+        customer: body.customer || invoices[idx].customer,
+        items,
+        subtotal,
+        totalCgst,
+        totalSgst,
+        totalIgst,
+        totalTax,
+        grandTotal: subtotal + totalTax,
+        isInterState: interState,
+        notes: body.notes !== undefined ? body.notes : invoices[idx].notes,
+        terms: body.terms !== undefined ? body.terms : invoices[idx].terms,
+        gstMode: body.gstMode || invoices[idx].gstMode,
+        signature: body.signature !== undefined ? body.signature : invoices[idx].signature,
+        letterhead: body.letterhead !== undefined ? body.letterhead : invoices[idx].letterhead,
+        columnVisibility: body.columnVisibility || invoices[idx].columnVisibility,
+        template: body.template || invoices[idx].template,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await kv.set(key, invoices);
+      return Response.json({ success: true, data: invoices[idx] });
     }
 
     if (action === "update_status") {

@@ -102,6 +102,7 @@ export interface Invoice {
     ifscCode: string;
     branchName: string;
     signatureText: string;
+    logo?: string;
   };
   customer: {
     id: string;
@@ -201,6 +202,7 @@ export interface Firm {
   hsnCode: string;
   signatureText: string;
   letterhead: string;
+  logo?: string;
   createdAt: string;
 }
 

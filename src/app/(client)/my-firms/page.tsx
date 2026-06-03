@@ -12,7 +12,7 @@ const emptyFirm = {
   name: "", address: "", city: "", state: "", stateCode: "", pincode: "",
   gstin: "", pan: "", phone: "", email: "",
   bankName: "", accountNumber: "", ifscCode: "", branchName: "",
-  hsnCode: "", signatureText: "", letterhead: "",
+  hsnCode: "", signatureText: "", letterhead: "", logo: "",
 };
 
 export default function MyFirmsPage() {
@@ -99,7 +99,7 @@ export default function MyFirmsPage() {
       stateCode: f.stateCode, pincode: f.pincode, gstin: f.gstin, pan: f.pan,
       phone: f.phone, email: f.email, bankName: f.bankName,
       accountNumber: f.accountNumber, ifscCode: f.ifscCode, branchName: f.branchName,
-      hsnCode: f.hsnCode, signatureText: f.signatureText, letterhead: f.letterhead || "",
+      hsnCode: f.hsnCode, signatureText: f.signatureText, letterhead: f.letterhead || "", logo: f.logo || "",
     });
     setShowForm(true);
   };
@@ -290,6 +290,27 @@ export default function MyFirmsPage() {
                 </div>
               )}
             </div>
+            <div className="md:col-span-3 border-t pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Company Logo (Optional)</h3>
+              <p className="text-xs text-gray-500 mb-2">Upload your company logo. It will appear in the invoice header next to your firm name.</p>
+              <input type="file" accept="image/*" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 1 * 1024 * 1024) { alert("Max 1MB allowed"); return; }
+                const reader = new FileReader();
+                reader.onload = () => setForm((p) => ({ ...p, logo: reader.result as string }));
+                reader.readAsDataURL(file);
+              }} className="border rounded-lg px-3 py-2 text-sm w-full" />
+              {form.logo && (
+                <div className="mt-2 border rounded-lg p-2 bg-gray-50 relative">
+                  <p className="text-xs text-gray-500 mb-1">Logo Preview:</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.logo} alt="Logo" className="max-h-20 mx-auto object-contain" />
+                  <button type="button" onClick={() => setForm((p) => ({ ...p, logo: "" }))}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs">✕ Remove</button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
             <button onClick={() => { setShowForm(false); setEditId(null); setForm(emptyFirm); }}
@@ -349,9 +370,16 @@ export default function MyFirmsPage() {
             <div key={f.id} className="bg-white rounded-xl shadow p-5 border hover:border-indigo-300 transition">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-indigo-600" />
-                  </div>
+                  {f.logo ? (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden border bg-white flex items-center justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={f.logo} alt={f.name} className="w-full h-full object-contain" />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-indigo-600" />
+                    </div>
+                  )}
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-gray-900">{f.name}</h3>
