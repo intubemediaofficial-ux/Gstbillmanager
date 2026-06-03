@@ -111,6 +111,8 @@ export interface Invoice {
     state: string;
     stateCode: string;
     gstin: string;
+    phone?: string;
+    email?: string;
   };
   items: InvoiceItem[];
   subtotal: number;

@@ -51,7 +51,7 @@ function QRSection({ invoice, currentUserId }: { invoice: Invoice; currentUserId
       <div className="flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : "https://gstbillmanager.com"}/verify?id=${invoice.id}&uid=${currentUserId}`)}`}
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(`https://gstbillmanager.com/verify?id=${invoice.id}&uid=${invoice.userId}`)}`}
           alt="QR" width={60} height={60} className="rounded"
         />
         <div>
@@ -164,7 +164,10 @@ export function ClassicTemplate({ invoice, settings, currentUserId, cv }: Invoic
           <p className="font-bold text-[14px] uppercase">{invoice.customer.name}</p>
           {invoice.customer.address && <p className="text-[11px]">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}</p>}
           {invoice.customer.gstin && <p className="text-[11px]">GSTIN/UIN: <span className="font-bold">{invoice.customer.gstin}</span></p>}
+          {invoice.customer.gstin && invoice.customer.gstin.length >= 12 && <p className="text-[11px]">PAN: <span className="font-bold">{invoice.customer.gstin.substring(2, 12)}</span></p>}
           {invoice.customer.state && <p className="text-[11px]">State Name: {invoice.customer.state}{invoice.customer.stateCode ? `, Code: ${invoice.customer.stateCode}` : ""}</p>}
+          {invoice.customer.phone && <p className="text-[11px]">Contact: {invoice.customer.phone}</p>}
+          {invoice.customer.email && <p className="text-[11px]">E-Mail: {invoice.customer.email}</p>}
 
         </div>
 
@@ -393,6 +396,9 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
           <p className="font-bold text-gray-900 text-[14px]">{invoice.customer.name}</p>
           {invoice.customer.address && <p className="text-[11px] text-gray-600">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}</p>}
           {invoice.customer.gstin && <p className="text-[11px] text-gray-600">GSTIN: <span className="font-semibold font-mono">{invoice.customer.gstin}</span></p>}
+          {invoice.customer.gstin && invoice.customer.gstin.length >= 12 && <p className="text-[11px] text-gray-600">PAN: <span className="font-semibold font-mono">{invoice.customer.gstin.substring(2, 12)}</span></p>}
+          {invoice.customer.phone && <p className="text-[11px] text-gray-500">Phone: {invoice.customer.phone}</p>}
+          {invoice.customer.email && <p className="text-[11px] text-gray-500">Email: {invoice.customer.email}</p>}
         </div>
 
         {/* Items */}
@@ -541,7 +547,9 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
             <p className="font-bold text-slate-900 text-[13px]">{invoice.customer.name}</p>
             {invoice.customer.address && <p className="text-[11px] text-slate-600 mt-0.5">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}</p>}
             {invoice.customer.gstin && <p className="text-[11px] text-slate-600">GSTIN: <span className="font-semibold font-mono">{invoice.customer.gstin}</span></p>}
-
+            {invoice.customer.gstin && invoice.customer.gstin.length >= 12 && <p className="text-[11px] text-slate-600">PAN: <span className="font-semibold font-mono">{invoice.customer.gstin.substring(2, 12)}</span></p>}
+            {invoice.customer.phone && <p className="text-[11px] text-slate-500">Phone: {invoice.customer.phone}</p>}
+            {invoice.customer.email && <p className="text-[11px] text-slate-500">Email: {invoice.customer.email}</p>}
           </div>
         </div>
 
