@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { FileText, Users, IndianRupee, FilePlus, Clock, TrendingUp, ArrowUpRight, Sparkles, Package, Truck, BarChart3, Bell, AlertTriangle } from "lucide-react";
-import type { Customer, Invoice, InventoryItem } from "@/lib/gst-types";
+import { FileText, Users, IndianRupee, FilePlus, Clock, TrendingUp, ArrowUpRight, Sparkles, Package, Truck, BarChart3, Bell, AlertTriangle, Receipt, UserCheck, Target, CreditCard, CalendarDays, FolderOpen, RefreshCw, Mail } from "lucide-react";
+import type { Customer, Invoice, InventoryItem, Expense, Employee, Lead, FollowUpReminder } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
 
 export default function ClientDashboard() {
@@ -11,6 +11,10 @@ export default function ClientDashboard() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([]);
   const [pendingReminders, setPendingReminders] = useState<{ id: string; invoiceNumber: string; customerName: string; balance: number; dueDate: string }[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUpReminder[]>([]);
   const [loading, setLoading] = useState(true);
 
   const didFetch = useRef(false);
@@ -22,12 +26,20 @@ export default function ClientDashboard() {
       fetch("/api/invoices").then((r) => r.json()),
       fetch("/api/inventory").then((r) => r.json()).catch(() => ({ data: { lowStock: [] } })),
       fetch("/api/payment-reminders").then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch("/api/expenses").then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch("/api/employees").then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch("/api/leads").then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch("/api/follow-ups").then((r) => r.json()).catch(() => ({ data: [] })),
     ])
-      .then(([cRes, iRes, invRes, remRes]) => {
+      .then(([cRes, iRes, invRes, remRes, expRes, empRes, leadRes, fuRes]) => {
         setCustomers(cRes.data || []);
         setInvoices(iRes.data || []);
         setLowStockItems(invRes.data?.lowStock || []);
         setPendingReminders(remRes.data || []);
+        setExpenses(expRes.data || []);
+        setEmployees(empRes.data || []);
+        setLeads(leadRes.data || []);
+        setFollowUps(fuRes.data || []);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -109,9 +121,13 @@ export default function ClientDashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {[
           { label: "New Invoice", href: "/create-invoice", icon: FilePlus, iconColor: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Inventory", href: "/inventory", icon: Package, iconColor: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "E-Way Bills", href: "/eway-bills", icon: Truck, iconColor: "text-orange-600", bg: "bg-orange-50" },
-          { label: "GSTR Reports", href: "/gstr-reports", icon: BarChart3, iconColor: "text-violet-600", bg: "bg-violet-50" },
+          { label: "Expenses", href: "/expenses", icon: Receipt, iconColor: "text-red-600", bg: "bg-red-50" },
+          { label: "Employees", href: "/employees", icon: UserCheck, iconColor: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Leads", href: "/leads", icon: Target, iconColor: "text-violet-600", bg: "bg-violet-50" },
+          { label: "Follow-ups", href: "/follow-ups", icon: Bell, iconColor: "text-orange-600", bg: "bg-orange-50" },
+          { label: "Documents", href: "/documents", icon: FolderOpen, iconColor: "text-cyan-600", bg: "bg-cyan-50" },
+          { label: "Recurring", href: "/recurring-invoices", icon: RefreshCw, iconColor: "text-pink-600", bg: "bg-pink-50" },
+          { label: "P&L Report", href: "/profit-loss", icon: TrendingUp, iconColor: "text-indigo-600", bg: "bg-indigo-50" },
         ].map((a) => (
           <Link key={a.label} href={a.href}
             className="flex items-center gap-2.5 p-3.5 rounded-xl border border-gray-200 bg-white hover:shadow-md hover:border-gray-300 transition-all duration-300 group">
@@ -122,6 +138,26 @@ export default function ClientDashboard() {
             <ArrowUpRight className="w-3.5 h-3.5 ml-auto text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
         ))}
+      </div>
+
+      {/* New Feature Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <Link href="/expenses" className="rounded-xl p-4 bg-white border border-red-100 shadow-sm hover:shadow-md transition">
+          <div className="flex items-center gap-2"><Receipt className="w-4 h-4 text-red-500" /><span className="text-xs text-gray-500">Total Expenses</span></div>
+          <p className="text-lg font-bold text-red-600 mt-1">{formatCurrency(expenses.reduce((s, e) => s + e.totalAmount, 0))}</p>
+        </Link>
+        <Link href="/employees" className="rounded-xl p-4 bg-white border border-emerald-100 shadow-sm hover:shadow-md transition">
+          <div className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-emerald-500" /><span className="text-xs text-gray-500">Active Employees</span></div>
+          <p className="text-lg font-bold text-emerald-600 mt-1">{employees.filter((e) => e.status === "active").length}</p>
+        </Link>
+        <Link href="/leads" className="rounded-xl p-4 bg-white border border-violet-100 shadow-sm hover:shadow-md transition">
+          <div className="flex items-center gap-2"><Target className="w-4 h-4 text-violet-500" /><span className="text-xs text-gray-500">Active Leads</span></div>
+          <p className="text-lg font-bold text-violet-600 mt-1">{leads.filter((l) => !["won", "lost"].includes(l.status)).length}</p>
+        </Link>
+        <Link href="/follow-ups" className="rounded-xl p-4 bg-white border border-orange-100 shadow-sm hover:shadow-md transition">
+          <div className="flex items-center gap-2"><Bell className="w-4 h-4 text-orange-500" /><span className="text-xs text-gray-500">Pending Reminders</span></div>
+          <p className="text-lg font-bold text-orange-600 mt-1">{followUps.filter((f) => f.status === "pending").length}</p>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

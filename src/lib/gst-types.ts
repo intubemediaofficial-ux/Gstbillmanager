@@ -350,3 +350,204 @@ export const HSN_LIBRARY: HsnEntry[] = [
   { code: "8528", category: "Television / Monitors", description: "TV, monitors, display equipment", gstRate: 18 },
   { code: "7108", category: "Gold / Jewellery", description: "Gold, silver, precious metals, jewellery", gstRate: 3 },
 ];
+
+// ── Recurring Invoice ──
+export interface RecurringInvoice {
+  id: string;
+  userId: string;
+  name: string;
+  frequency: "weekly" | "monthly" | "quarterly" | "half_yearly" | "yearly";
+  nextDueDate: string;
+  customerId: string;
+  customerName: string;
+  firmId?: string;
+  firmName?: string;
+  invoiceType: InvoiceType;
+  items: InvoiceItem[];
+  notes: string;
+  terms: string;
+  gstMode: "exclude" | "include";
+  isActive: boolean;
+  lastGenerated?: string;
+  totalGenerated: number;
+  createdAt: string;
+}
+
+// ── Expense ──
+export type ExpenseCategory =
+  | "rent" | "salary" | "utilities" | "office_supplies" | "travel"
+  | "marketing" | "insurance" | "maintenance" | "internet_phone"
+  | "professional_fees" | "raw_materials" | "transport" | "food"
+  | "entertainment" | "miscellaneous";
+
+export const EXPENSE_CATEGORIES: Record<ExpenseCategory, string> = {
+  rent: "Rent",
+  salary: "Salary & Wages",
+  utilities: "Utilities (Electric/Water/Gas)",
+  office_supplies: "Office Supplies",
+  travel: "Travel & Conveyance",
+  marketing: "Marketing & Advertising",
+  insurance: "Insurance",
+  maintenance: "Maintenance & Repairs",
+  internet_phone: "Internet & Phone",
+  professional_fees: "Professional Fees (CA/Legal)",
+  raw_materials: "Raw Materials",
+  transport: "Transport & Logistics",
+  food: "Food & Beverages",
+  entertainment: "Entertainment",
+  miscellaneous: "Miscellaneous",
+};
+
+export interface Expense {
+  id: string;
+  userId: string;
+  date: string;
+  category: ExpenseCategory;
+  description: string;
+  amount: number;
+  gstAmount: number;
+  totalAmount: number;
+  paymentMode: "cash" | "upi" | "bank_transfer" | "card" | "cheque";
+  reference?: string;
+  vendorName?: string;
+  billNumber?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+// ── Employee ──
+export interface Employee {
+  id: string;
+  userId: string;
+  name: string;
+  empId: string;
+  email: string;
+  phone: string;
+  department: string;
+  designation: string;
+  joiningDate: string;
+  salary: number;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  panNumber?: string;
+  aadharNumber?: string;
+  address?: string;
+  emergencyContact?: string;
+  status: "active" | "inactive" | "terminated";
+  createdAt: string;
+}
+
+// ── Salary Slip ──
+export interface SalarySlip {
+  id: string;
+  userId: string;
+  employeeId: string;
+  employeeName: string;
+  empCode: string;
+  department: string;
+  designation: string;
+  month: string; // "2026-05"
+  basicSalary: number;
+  hra: number;
+  conveyance: number;
+  medicalAllowance: number;
+  specialAllowance: number;
+  otherAllowances: number;
+  grossSalary: number;
+  pf: number;
+  esi: number;
+  professionalTax: number;
+  tds: number;
+  otherDeductions: number;
+  totalDeductions: number;
+  netSalary: number;
+  paymentDate: string;
+  paymentMode: "bank_transfer" | "cash" | "cheque" | "upi";
+  bankName?: string;
+  accountNumber?: string;
+  status: "draft" | "paid";
+  createdAt: string;
+}
+
+// ── Attendance ──
+export interface AttendanceRecord {
+  id: string;
+  userId: string;
+  employeeId: string;
+  employeeName: string;
+  date: string;
+  status: "present" | "absent" | "half_day" | "leave" | "holiday";
+  checkIn?: string;
+  checkOut?: string;
+  notes?: string;
+}
+
+// ── Lead / Enquiry ──
+export type LeadStatus = "new" | "contacted" | "interested" | "negotiation" | "won" | "lost";
+
+export interface Lead {
+  id: string;
+  userId: string;
+  name: string;
+  company?: string;
+  email: string;
+  phone: string;
+  source: "website" | "referral" | "social_media" | "cold_call" | "walk_in" | "other";
+  status: LeadStatus;
+  value?: number;
+  notes?: string;
+  nextFollowUp?: string;
+  assignedTo?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Follow-up Reminder ──
+export interface FollowUpReminder {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  relatedTo: "lead" | "customer" | "invoice" | "general";
+  relatedId?: string;
+  relatedName?: string;
+  dueDate: string;
+  dueTime?: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "pending" | "completed" | "overdue" | "cancelled";
+  createdAt: string;
+}
+
+// ── Email Template ──
+export interface EmailTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  subject: string;
+  body: string;
+  type: "invoice" | "reminder" | "quotation" | "receipt" | "welcome" | "custom";
+  isDefault: boolean;
+  createdAt: string;
+}
+
+// ── Currency ──
+export interface CurrencyConfig {
+  code: string;
+  symbol: string;
+  name: string;
+  exchangeRate: number; // to INR
+}
+
+export const CURRENCIES: CurrencyConfig[] = [
+  { code: "INR", symbol: "\u20B9", name: "Indian Rupee", exchangeRate: 1 },
+  { code: "USD", symbol: "$", name: "US Dollar", exchangeRate: 83.5 },
+  { code: "GBP", symbol: "\u00A3", name: "British Pound", exchangeRate: 105 },
+  { code: "EUR", symbol: "\u20AC", name: "Euro", exchangeRate: 91 },
+  { code: "AED", symbol: "AED", name: "UAE Dirham", exchangeRate: 22.7 },
+  { code: "SAR", symbol: "SAR", name: "Saudi Riyal", exchangeRate: 22.3 },
+  { code: "CAD", symbol: "C$", name: "Canadian Dollar", exchangeRate: 62 },
+  { code: "AUD", symbol: "A$", name: "Australian Dollar", exchangeRate: 55 },
+  { code: "SGD", symbol: "S$", name: "Singapore Dollar", exchangeRate: 63 },
+  { code: "JPY", symbol: "\u00A5", name: "Japanese Yen", exchangeRate: 0.56 },
+];
