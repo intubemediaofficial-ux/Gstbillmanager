@@ -118,10 +118,12 @@ function InvoiceViewContent() {
             style += `${prop}:${val};`;
           }
         }
-        // If parent is flex row, make this a table-cell
+        // If parent is flex row or grid, make this a table-cell
         const parentDisplay = source.parentElement ? window.getComputedStyle(source.parentElement).getPropertyValue("display") : "";
         const parentDirection = source.parentElement ? window.getComputedStyle(source.parentElement).getPropertyValue("flex-direction") : "";
         if ((parentDisplay === "flex" || parentDisplay === "inline-flex") && parentDirection !== "column") {
+          style = style.replace(/display:[^;]+;/, "display:table-cell;vertical-align:top;");
+        } else if (parentDisplay === "grid" || parentDisplay === "inline-grid") {
           style = style.replace(/display:[^;]+;/, "display:table-cell;vertical-align:top;");
         }
         target.setAttribute("style", style);
