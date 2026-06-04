@@ -150,6 +150,12 @@ function CreateInvoiceContent() {
           if (draft.terms) setTerms(draft.terms as string);
         }
 
+        // Override invoice type from URL param (?type=credit_note etc.)
+        const typeParam = searchParams.get("type");
+        if (typeParam && Object.keys(INVOICE_TYPE_LABELS).includes(typeParam)) {
+          setInvoiceType(typeParam as InvoiceType);
+        }
+
         // Auto-increment bill number from last invoice (only for new invoices)
         if (!editId && !draft?.billNumber) {
           const invoices = iRes.data || [];

@@ -208,6 +208,35 @@ export async function POST(req: Request) {
       return Response.json({ success: true });
     }
 
+    if (action === "convert_quotation") {
+      const idx = invoices.findIndex((i) => i.id === body.id);
+      if (idx === -1) return Response.json({ error: "Not found" }, { status: 404 });
+      const quote = invoices[idx];
+      const settingsKey = `gst_settings:${userId}`;
+      const settings: BusinessSettings | null = await kv.get(settingsKey);
+      const lastNum = settings?.lastInvoiceNumber || 0;
+      const prefix = settings?.invoicePrefix || "INV/2024-25/";
+      const nextNum = lastNum + 1;
+      const invoiceNumber = `${prefix}${String(nextNum).padStart(3, "0")}`;
+      const newInvoice: Invoice = {
+        ...quote,
+        id: generateId(),
+        invoiceNumber,
+        invoiceType: "tax_invoice",
+        referenceInvoiceId: quote.id,
+        referenceInvoiceNumber: quote.invoiceNumber,
+        status: "draft",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      invoices.push(newInvoice);
+      invoices[idx].status = "paid";
+      invoices[idx].updatedAt = new Date().toISOString();
+      await kv.set(key, invoices);
+      if (settings) await kv.set(settingsKey, { ...settings, lastInvoiceNumber: nextNum });
+      return Response.json({ success: true, data: newInvoice });
+    }
+
     if (action === "delete") {
       const filtered = invoices.filter((i) => i.id !== body.id);
       await kv.set(key, filtered);

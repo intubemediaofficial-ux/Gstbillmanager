@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut, Menu, X, FolderOpen, History,
   RefreshCw, Receipt, TrendingUp, UserCheck, CreditCard, CalendarDays, Target, Bell, Mail, Clock, ChevronDown, ChevronRight, Archive,
+  FileDown, FileUp, BookOpen, ShoppingCart, ClipboardList, IndianRupee, Upload, Image,
 } from "lucide-react";
 
 const navSections = [
@@ -23,16 +24,22 @@ const navSections = [
     items: [
       { label: "Create Invoice", href: "/create-invoice", icon: FilePlus },
       { label: "Invoices", href: "/invoices", icon: FileText },
+      { label: "Quotations", href: "/quotations", icon: ClipboardList },
+      { label: "Credit Notes", href: "/credit-notes", icon: FileDown },
+      { label: "Debit Notes", href: "/debit-notes", icon: FileUp },
+      { label: "Purchase Bills", href: "/purchase-bills", icon: ShoppingCart },
       { label: "Recurring Invoices", href: "/recurring-invoices", icon: RefreshCw },
     ],
   },
   {
     label: "Finance",
     items: [
+      { label: "Party Ledger (खाता)", href: "/party-ledger", icon: IndianRupee },
       { label: "Expenses", href: "/expenses", icon: Receipt },
       { label: "Profit & Loss", href: "/profit-loss", icon: TrendingUp },
       { label: "Bill Manager", href: "/bill-manager", icon: Archive },
       { label: "Aging Report", href: "/aging-report", icon: Clock },
+      { label: "Bulk Import", href: "/bulk-import", icon: Upload },
       { label: "Reports", href: "/reports", icon: BarChart3 },
     ],
   },
@@ -45,11 +52,19 @@ const navSections = [
     ],
   },
   {
+    label: "GST Reports",
+    items: [
+      { label: "GSTR Reports", href: "/gstr-reports", icon: BarChart3 },
+      { label: "GSTR-2B Reconciliation", href: "/gstr-2b", icon: BookOpen },
+    ],
+  },
+  {
     label: "CRM",
     items: [
       { label: "Leads & Enquiries", href: "/leads", icon: Target },
       { label: "Follow-up Reminders", href: "/follow-ups", icon: Bell },
       { label: "Email Templates", href: "/email-templates", icon: Mail },
+      { label: "Greeting Cards", href: "/greeting-cards", icon: Image },
     ],
   },
   {
