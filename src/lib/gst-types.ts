@@ -485,6 +485,8 @@ export interface SalarySlip {
   paymentMode: "bank_transfer" | "cash" | "cheque" | "upi";
   bankName?: string;
   accountNumber?: string;
+  referenceNumber?: string;
+  firmId?: string;
   status: "draft" | "paid";
   createdAt: string;
 }

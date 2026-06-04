@@ -70,6 +70,8 @@ export async function POST(req: Request) {
         paymentMode: body.paymentMode || "bank_transfer",
         bankName: body.bankName,
         accountNumber: body.accountNumber,
+        referenceNumber: body.referenceNumber || "",
+        firmId: body.firmId || "",
         status: body.status || "draft",
         createdAt: new Date().toISOString(),
       };

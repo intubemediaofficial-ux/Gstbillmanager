@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { FileText, Plus, Trash2, Search, Download, CheckCircle, X } from "lucide-react";
-import type { SalarySlip, Employee } from "@/lib/gst-types";
+import type { SalarySlip, Employee, Firm, Signature } from "@/lib/gst-types";
 import { formatCurrency } from "@/lib/gst-utils";
 
 export default function SalarySlipsPage() {
   const [items, setItems] = useState<SalarySlip[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [firms, setFirms] = useState<Firm[]>([]);
+  const [signatures, setSignatures] = useState<Signature[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
@@ -16,6 +18,7 @@ export default function SalarySlipsPage() {
     basicSalary: "", hra: "", conveyance: "", medicalAllowance: "", specialAllowance: "", otherAllowances: "",
     pf: "", esi: "", professionalTax: "", tds: "", otherDeductions: "",
     paymentMode: "bank_transfer", paymentDate: new Date().toISOString().split("T")[0],
+    referenceNumber: "", firmId: "",
   });
   const didFetch = useRef(false);
 
@@ -25,9 +28,13 @@ export default function SalarySlipsPage() {
     Promise.all([
       fetch("/api/salary-slips").then((r) => r.json()),
       fetch("/api/employees").then((r) => r.json()),
-    ]).then(([sRes, eRes]) => {
+      fetch("/api/firms").then((r) => r.json()),
+      fetch("/api/signatures").then((r) => r.json()),
+    ]).then(([sRes, eRes, fRes, sigRes]) => {
       setItems(sRes.data || []);
       setEmployees(eRes.data || []);
+      setFirms(fRes.data || []);
+      setSignatures(sigRes.data || []);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -83,129 +90,203 @@ export default function SalarySlipsPage() {
     const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     const monthLabel = new Date(slip.month + "-01").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-    const fc = (n: number) => "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
-    const w = 190;
-    let y = 15;
+    const fc = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const W = 190;
+    let y = 10;
 
-    // Header
+    // Get firm & signature
+    const firm = firms.find((f) => f.id === slip.firmId) || firms[0];
+    const sig = firm ? signatures.find((s) => s.firmId === firm.id) : undefined;
+
+    // Company Logo + Header
+    if (firm?.logo) {
+      try { doc.addImage(firm.logo, "PNG", 14, y, 20, 20); } catch { /* skip logo */ }
+    }
+    const logoOffset = firm?.logo ? 38 : 14;
     doc.setFillColor(18, 42, 78);
-    doc.rect(10, 10, w, 22, "F");
+    doc.rect(10, y, W, 24, "F");
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
+    doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("SALARY SLIP", 105, 20, { align: "center" });
+    doc.text(firm?.name || "SALARY SLIP", logoOffset, y + 10);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    if (firm) {
+      const addr = [firm.address, firm.city, firm.state, firm.pincode].filter(Boolean).join(", ");
+      doc.text(addr, logoOffset, y + 16);
+      const contact = [firm.phone ? `Ph: ${firm.phone}` : "", firm.email, firm.gstin ? `GSTIN: ${firm.gstin}` : ""].filter(Boolean).join("  |  ");
+      doc.text(contact, logoOffset, y + 21);
+    }
     doc.setFontSize(10);
-    doc.text(monthLabel, 105, 27, { align: "center" });
-    y = 40;
-
-    // Employee Details
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
+    doc.text("SALARY SLIP", W - 4, y + 10, { align: "right" });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(monthLabel, W - 4, y + 16, { align: "right" });
+    y += 30;
+
+    // Employee Details - proper table
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(18, 42, 78);
     doc.text("Employee Details", 14, y);
     y += 2;
-    doc.setDrawColor(200, 200, 200);
+    doc.setDrawColor(18, 42, 78);
+    doc.setLineWidth(0.5);
     doc.line(14, y, 196, y);
-    y += 7;
-    doc.setFontSize(9);
-    const details = [
-      ["Name", slip.employeeName, "Emp Code", slip.empCode],
-      ["Department", slip.department, "Designation", slip.designation],
-      ["Payment Mode", slip.paymentMode.replace("_", " ").toUpperCase(), "Payment Date", slip.paymentDate],
+    y += 6;
+
+    const detailRows = [
+      ["Employee Name", slip.employeeName, "Emp Code", slip.empCode || "-"],
+      ["Department", slip.department || "-", "Designation", slip.designation || "-"],
+      ["Payment Mode", slip.paymentMode.replace("_", " ").toUpperCase(), "Payment Date", slip.paymentDate || "-"],
       ["Bank", slip.bankName || "-", "Account", slip.accountNumber || "-"],
     ];
-    for (const row of details) {
+    if (slip.referenceNumber) {
+      detailRows.push(["Reference No.", slip.referenceNumber, "", ""]);
+    }
+
+    doc.setFontSize(8.5);
+    const labelX1 = 14, valX1 = 52, labelX2 = 108, valX2 = 148;
+    for (const row of detailRows) {
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      doc.text(row[0] + ":", 14, y);
+      doc.setTextColor(120, 120, 120);
+      doc.text(row[0], labelX1, y);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.text(row[1], 50, y);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      doc.text(row[2] + ":", 110, y);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.text(row[3], 148, y);
-      y += 6;
+      doc.setTextColor(30, 30, 30);
+      doc.text(row[1], valX1, y);
+      if (row[2]) {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(120, 120, 120);
+        doc.text(row[2], labelX2, y);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 30, 30);
+        doc.text(row[3], valX2, y);
+      }
+      y += 5.5;
     }
     y += 4;
 
-    // Earnings & Deductions side by side
+    // Earnings & Deductions - proper table with fixed columns
+    const leftX = 14;
+    const rightX = 108;
     const colW = 88;
-    // Earnings header
-    doc.setFillColor(220, 240, 220);
-    doc.rect(14, y, colW, 8, "F");
+    const labelPad = 2;
+    const amtRight = colW - 4;
+
+    // Headers
+    doc.setFillColor(230, 245, 230);
+    doc.rect(leftX, y, colW, 8, "F");
+    doc.setFillColor(245, 230, 230);
+    doc.rect(rightX, y, colW, 8, "F");
+
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(0, 100, 0);
-    doc.text("EARNINGS", 16, y + 5.5);
-    doc.text("Amount", 14 + colW - 4, y + 5.5, { align: "right" });
-    // Deductions header
-    doc.setFillColor(240, 220, 220);
-    doc.rect(108, y, colW, 8, "F");
+    doc.setTextColor(0, 120, 0);
+    doc.text("EARNINGS", leftX + labelPad, y + 5.5);
+    doc.text("Amount (Rs.)", leftX + amtRight, y + 5.5, { align: "right" });
     doc.setTextColor(180, 0, 0);
-    doc.text("DEDUCTIONS", 110, y + 5.5);
-    doc.text("Amount", 108 + colW - 4, y + 5.5, { align: "right" });
+    doc.text("DEDUCTIONS", rightX + labelPad, y + 5.5);
+    doc.text("Amount (Rs.)", rightX + amtRight, y + 5.5, { align: "right" });
     y += 10;
 
-    const earnings = [
-      ["Basic Salary", slip.basicSalary], ["HRA", slip.hra], ["Conveyance", slip.conveyance],
-      ["Medical Allowance", slip.medicalAllowance], ["Special Allowance", slip.specialAllowance], ["Other Allowances", slip.otherAllowances],
-    ].filter(([, v]) => (v as number) > 0);
-    const deductions = [
-      ["PF", slip.pf], ["ESI", slip.esi], ["Professional Tax", slip.professionalTax],
-      ["TDS", slip.tds], ["Other Deductions", slip.otherDeductions],
-    ].filter(([, v]) => (v as number) > 0);
+    const earnings: [string, number][] = [
+      ["Basic Salary", slip.basicSalary],
+      ["HRA", slip.hra],
+      ["Conveyance", slip.conveyance],
+      ["Medical Allowance", slip.medicalAllowance],
+      ["Special Allowance", slip.specialAllowance],
+      ["Other Allowances", slip.otherAllowances],
+    ].filter(([, v]) => (v as number) > 0) as [string, number][];
+
+    const deductions: [string, number][] = [
+      ["PF (Provident Fund)", slip.pf],
+      ["ESI", slip.esi],
+      ["Professional Tax", slip.professionalTax],
+      ["TDS", slip.tds],
+      ["Other Deductions", slip.otherDeductions],
+    ].filter(([, v]) => (v as number) > 0) as [string, number][];
 
     const maxRows = Math.max(earnings.length, deductions.length);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
+    const rowH = 6;
+
     for (let i = 0; i < maxRows; i++) {
+      // Alternating row bg
       if (i % 2 === 0) {
-        doc.setFillColor(248, 248, 248);
-        doc.rect(14, y - 1, colW, 6, "F");
-        doc.rect(108, y - 1, colW, 6, "F");
+        doc.setFillColor(250, 250, 250);
+        doc.rect(leftX, y, colW, rowH, "F");
+        doc.rect(rightX, y, colW, rowH, "F");
       }
-      doc.setTextColor(60, 60, 60);
+
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
       if (earnings[i]) {
-        doc.text(earnings[i][0] as string, 16, y + 3);
-        doc.text(fc(earnings[i][1] as number), 14 + colW - 4, y + 3, { align: "right" });
+        doc.text(earnings[i][0], leftX + labelPad, y + 4);
+        doc.setFont("helvetica", "bold");
+        doc.text(fc(earnings[i][1]), leftX + amtRight, y + 4, { align: "right" });
       }
+      doc.setFont("helvetica", "normal");
       if (deductions[i]) {
-        doc.text(deductions[i][0] as string, 110, y + 3);
-        doc.text(fc(deductions[i][1] as number), 108 + colW - 4, y + 3, { align: "right" });
+        doc.text(deductions[i][0], rightX + labelPad, y + 4);
+        doc.setFont("helvetica", "bold");
+        doc.text(fc(deductions[i][1]), rightX + amtRight, y + 4, { align: "right" });
       }
-      y += 6;
+      y += rowH;
     }
     y += 2;
 
-    // Totals
-    doc.setDrawColor(200, 200, 200);
-    doc.line(14, y, 196, y);
-    y += 5;
+    // Totals row
+    doc.setFillColor(230, 245, 230);
+    doc.rect(leftX, y, colW, 8, "F");
+    doc.setFillColor(245, 230, 230);
+    doc.rect(rightX, y, colW, 8, "F");
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 100, 0);
-    doc.text("Gross Salary:", 16, y);
-    doc.text(fc(slip.grossSalary), 14 + colW - 4, y, { align: "right" });
+    doc.text("Gross Salary", leftX + labelPad, y + 5.5);
+    doc.text(fc(slip.grossSalary), leftX + amtRight, y + 5.5, { align: "right" });
     doc.setTextColor(180, 0, 0);
-    doc.text("Total Deductions:", 110, y);
-    doc.text(fc(slip.totalDeductions), 108 + colW - 4, y, { align: "right" });
-    y += 10;
+    doc.text("Total Deductions", rightX + labelPad, y + 5.5);
+    doc.text(fc(slip.totalDeductions), rightX + amtRight, y + 5.5, { align: "right" });
+    y += 14;
 
     // Net Salary Box
     doc.setFillColor(18, 42, 78);
-    doc.rect(14, y, w, 14, "F");
+    doc.roundedRect(leftX, y, W, 14, 2, 2, "F");
     doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("NET SALARY", leftX + 6, y + 9.5);
     doc.setFontSize(13);
-    doc.text("NET SALARY", 20, y + 10);
-    doc.text(fc(slip.netSalary), 190, y + 10, { align: "right" });
+    doc.text("Rs. " + fc(slip.netSalary), leftX + W - 6, y + 9.5, { align: "right" });
     y += 22;
 
+    // Signature section
+    if (sig?.imageData || firm?.signatureText) {
+      doc.setDrawColor(200, 200, 200);
+      doc.line(130, y, 196, y);
+      y += 3;
+      if (sig?.imageData) {
+        try { doc.addImage(sig.imageData, "PNG", 145, y, 40, 18); y += 20; } catch { y += 2; }
+      }
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(60, 60, 60);
+      doc.text("Authorized Signatory", 163, y, { align: "center" });
+      if (sig?.directorName) {
+        y += 4;
+        doc.setFont("helvetica", "normal");
+        doc.text(sig.directorName, 163, y, { align: "center" });
+      }
+      y += 6;
+    }
+
     // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text("This is a system generated salary slip.", 105, y, { align: "center" });
+    doc.setFontSize(7);
+    doc.setTextColor(160, 160, 160);
+    doc.text("This is a computer generated salary slip and does not require physical signature.", 105, 285, { align: "center" });
+    if (firm?.name) doc.text(`Generated by ${firm.name}`, 105, 289, { align: "center" });
 
     doc.save(`Salary_Slip_${slip.employeeName.replace(/\s+/g, "_")}_${slip.month}.pdf`);
   };
@@ -233,14 +314,14 @@ export default function SalarySlipsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Slips", value: items.length, color: "blue" },
-          { label: "Paid", value: items.filter((i) => i.status === "paid").length, color: "emerald" },
-          { label: "Draft", value: items.filter((i) => i.status === "draft").length, color: "amber" },
-          { label: "Total Paid", value: formatCurrency(totalPaid), color: "violet" },
+          { label: "Total Slips", value: String(items.length), color: "text-blue-600", border: "border-blue-100" },
+          { label: "Paid", value: String(items.filter((i) => i.status === "paid").length), color: "text-emerald-600", border: "border-emerald-100" },
+          { label: "Draft", value: String(items.filter((i) => i.status === "draft").length), color: "text-amber-600", border: "border-amber-100" },
+          { label: "Total Paid", value: formatCurrency(totalPaid), color: "text-violet-600", border: "border-violet-100" },
         ].map((s) => (
-          <div key={s.label} className={`rounded-xl p-4 bg-white border border-${s.color}-100 shadow-sm`}>
+          <div key={s.label} className={`rounded-xl p-4 bg-white border ${s.border} shadow-sm`}>
             <p className="text-xs text-gray-500">{s.label}</p>
-            <p className="text-lg font-bold text-gray-900 mt-1">{s.value}</p>
+            <p className={`text-lg font-bold ${s.color} mt-1`}>{s.value}</p>
           </div>
         ))}
       </div>
@@ -258,6 +339,16 @@ export default function SalarySlipsPage() {
               <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <div className="space-y-3">
+              {/* Firm Selection */}
+              {firms.length > 0 && (
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">Company / Firm</label>
+                  <select value={form.firmId} onChange={(e) => setForm({ ...form, firmId: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="">Select Firm (optional)</option>
+                    {firms.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                  </select>
+                </div>
+              )}
               <select value={form.employeeId} onChange={(e) => handleSelectEmployee(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Employee</option>
                 {employees.filter((e) => e.status === "active").map((e) => <option key={e.id} value={e.id}>{e.name} ({e.empId})</option>)}
@@ -279,9 +370,13 @@ export default function SalarySlipsPage() {
                 <div><label className="text-xs text-gray-500">Prof. Tax</label><input type="number" value={form.professionalTax} onChange={(e) => setForm({ ...form, professionalTax: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
                 <div><label className="text-xs text-gray-500">TDS</label><input type="number" value={form.tds} onChange={(e) => setForm({ ...form, tds: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               </div>
+              <p className="text-xs font-semibold text-gray-500 uppercase mt-2">Payment</p>
               <select value={form.paymentMode} onChange={(e) => setForm({ ...form, paymentMode: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="bank_transfer">Bank Transfer</option><option value="cash">Cash</option><option value="cheque">Cheque</option><option value="upi">UPI</option>
               </select>
+              {(form.paymentMode === "bank_transfer" || form.paymentMode === "upi") && (
+                <input placeholder="Reference / UTR Number" value={form.referenceNumber} onChange={(e) => setForm({ ...form, referenceNumber: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" />
+              )}
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setShowForm(false)} className="flex-1 px-4 py-2 border rounded-lg text-sm font-medium">Cancel</button>
