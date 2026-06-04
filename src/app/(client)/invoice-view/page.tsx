@@ -233,7 +233,7 @@ p { margin: 0; }
 <!-- HEADER -->
 <tr>
 <td style="background-color:#122a4e;padding:18px 24px;">
-<table style="width:100%;border-collapse:collapse;">
+<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
 <tr>
 <td style="width:60px;vertical-align:middle;background-color:#122a4e;">${logoHtml}</td>
 <td style="vertical-align:middle;padding-left:14px;background-color:#122a4e;">
@@ -251,7 +251,7 @@ p { margin: 0; }
 <!-- SELLER + INVOICE DETAILS -->
 <tr>
 <td style="padding:0;background-color:#ffffff;">
-<table style="width:100%;border-collapse:collapse;">
+<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
 <tr>
 <td style="width:60%;padding:16px 24px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background-color:#ffffff;">
 <table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("S", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Seller</td></tr></table>
@@ -282,7 +282,7 @@ ${placeOfSupply ? `<tr><td style="padding:5px 0;font-weight:600;color:#555;font-
 <!-- ITEMS TABLE -->
 <tr>
 <td style="padding:0;background-color:#ffffff;">
-<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+<table style="width:100%;border-collapse:collapse;">
 <tr>${headerCols}</tr>
 ${itemRows}
 </table>
@@ -302,7 +302,7 @@ ${gstTotals}
 <!-- GRAND TOTAL -->
 <tr>
 <td style="padding:0;">
-<table style="width:100%;border-collapse:collapse;">
+<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
 <tr>
 <td style="width:55%;padding:14px 24px;background-color:#f0f4fa;border-top:2px solid #122a4e;">
 <p style="margin:0 0 4px 0;font-size:10px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:1px;">Amount in Words</p>
@@ -319,7 +319,7 @@ ${gstTotals}
 <!-- PAYMENT + TERMS/QR + SIGNATURE -->
 <tr>
 <td style="padding:0;background-color:#ffffff;border-top:1px solid #e2e8f0;">
-<table style="width:100%;border-collapse:collapse;">
+<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
 <tr>
 <td style="width:33%;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
 <table style="border-collapse:collapse;margin-bottom:8px;"><tr>${badge("₹", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">Payment Details</td></tr></table>
