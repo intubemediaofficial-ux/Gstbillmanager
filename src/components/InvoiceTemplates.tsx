@@ -448,7 +448,7 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
 
         {/* Bill To */}
         <div className="px-8 py-5 border-b border-gray-300">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Bill To</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Buyer</p>
           <p className="font-bold text-gray-900 text-[14px]">{invoice.customer.name}</p>
           {invoice.customer.address && <p className="text-[11px] text-gray-600">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}</p>}
           {invoice.customer.gstin && <p className="text-[11px] text-gray-600">GSTIN: <span className="font-semibold font-mono">{invoice.customer.gstin}</span></p>}
@@ -634,7 +634,7 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
             </table>
           </div>
           <div className="p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Bill To</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Buyer</p>
             <p className="font-bold text-slate-900 text-[13px]">{invoice.customer.name}</p>
             {invoice.customer.address && <p className="text-[11px] text-slate-600 mt-0.5">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}</p>}
             {invoice.customer.gstin && <p className="text-[11px] text-slate-600">GSTIN: <span className="font-semibold font-mono">{invoice.customer.gstin}</span></p>}
