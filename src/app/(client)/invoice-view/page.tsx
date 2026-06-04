@@ -308,7 +308,7 @@ function InvoiceViewContent() {
                   <td className="px-6 py-3 text-right font-semibold text-gray-500 uppercase tracking-wide text-[12px]" colSpan={2}>Subtotal (Taxable Value)</td>
                   <td className="px-6 pr-8 py-3 text-right font-bold w-44 text-gray-800" style={{ fontSize: "14px" }}>{formatCurrency(invoice.subtotal)}</td>
                 </tr>
-                {firmIsGst && (!invoice.isInterState ? (
+                {firmIsGst && cv.gstRate && (!invoice.isInterState ? (
                   <>
                     <tr className="border-b border-gray-100">
                       <td className="px-6 py-2.5 text-right font-semibold text-gray-500 text-[12px]" colSpan={2}>CGST @ {invoice.items[0]?.gstRate ? invoice.items[0].gstRate / 2 : 0}%</td>
@@ -368,7 +368,7 @@ function InvoiceViewContent() {
             </div>
 
             {/* Terms & Notes — only for GST firms */}
-            {firmIsGst ? (
+            {firmIsGst && cv.gstRate ? (
               <div className="px-5 py-5 border-r border-gray-200">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "linear-gradient(135deg, #122a4e, #1a3f6f)" }}>
