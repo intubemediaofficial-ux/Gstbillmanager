@@ -25,39 +25,101 @@ export async function GET(req: Request) {
     return Response.json({ error: "Invalid GSTIN format" }, { status: 400 });
   }
 
-  try {
-    const res = await fetch(
-      `https://sheet.best/api/sheets/1bO5Dq-VhHOlMiYU1ooE3IkZ8a4LNidvqCyaGnTrcQ4w/gstin/${gstin}`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-
-    if (res.ok) {
-      const rows = await res.json();
-      if (Array.isArray(rows) && rows.length > 0) {
-        const row = rows[0];
-        return Response.json({
-          data: {
-            name: row.name || row.tradeName || "",
-            address: row.address || "",
-            city: row.city || "",
-            state: row.state || "",
-            stateCode: row.stateCode || gstin.substring(0, 2),
-            pincode: row.pincode || "",
-            pan: gstin.substring(2, 12),
-            status: row.status || "Active",
-            businessType: row.businessType || "",
-          } as GstinData,
-        });
-      }
-    }
-  } catch {
-    // fallback below
-  }
-
-  // Fallback: extract what we can from the GSTIN itself
   const stateCode = gstin.substring(0, 2);
   const pan = gstin.substring(2, 12);
   const stateName = INDIAN_STATES[stateCode] || "";
+
+  // Source 1: GSTVerify.co.in (₹0.10/call, cheapest option)
+  const gstVerifyKey = process.env.GSTVERIFY_API_KEY || "";
+  if (gstVerifyKey) {
+    try {
+      const res = await fetch(
+        `https://gstverify.co.in/api/v1/verify/${gstin}`,
+        {
+          headers: { "X-API-Key": gstVerifyKey },
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const d = json.data;
+          // Extract city and pincode from address string
+          const addressStr = d.address || "";
+          const pincodeMatch = addressStr.match(/(\d{6})/);
+          const pincode = pincodeMatch ? pincodeMatch[1] : "";
+
+          return Response.json({
+            data: {
+              name: d.trade_name || d.legal_name || "",
+              address: addressStr,
+              city: "",
+              state: d.state || stateName,
+              stateCode,
+              pincode,
+              pan: d.pan || pan,
+              status: d.status || "Active",
+              businessType: d.constitution || d.taxpayer_type || "",
+            } as GstinData,
+          });
+        }
+      }
+    } catch {
+      // continue to next source
+    }
+  }
+
+  // Source 2: Sandbox.co.in (if configured)
+  const sandboxKey = process.env.SANDBOX_API_KEY || "";
+  if (sandboxKey) {
+    try {
+      const res = await fetch(
+        `https://api.sandbox.co.in/gst/compliance/public/gstin/search`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": sandboxKey,
+            "x-api-version": "1.0",
+          },
+          body: JSON.stringify({ gstin }),
+          signal: AbortSignal.timeout(8000),
+        }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data && json.data.gstin) {
+          const d = json.data;
+          const addr = d.pradr?.addr || {};
+          const fullAddress = [addr.bno, addr.bnm, addr.flno, addr.st, addr.loc].filter(Boolean).join(", ");
+          return Response.json({
+            data: {
+              name: d.tradeNam || d.lgnm || "",
+              address: fullAddress,
+              city: addr.dst || addr.loc || addr.city || "",
+              state: addr.stcd || stateName,
+              stateCode,
+              pincode: addr.pncd || "",
+              pan,
+              status: d.sts || "Active",
+              businessType: d.ctb || "",
+            } as GstinData,
+          });
+        }
+      }
+    } catch {
+      // continue to fallback
+    }
+  }
+
+  // Fallback: extract what we can algorithmically from the GSTIN
+  const entityChar = pan.charAt(3);
+  const entityTypes: Record<string, string> = {
+    C: "Company", P: "Individual", H: "HUF", F: "Partnership Firm",
+    A: "AOP/BOI", T: "Trust", B: "Body of Individuals",
+    L: "Local Authority", J: "Artificial Juridical Person", G: "Government",
+  };
+  const businessType = entityTypes[entityChar] || "";
 
   return Response.json({
     data: {
@@ -69,8 +131,9 @@ export async function GET(req: Request) {
       pincode: "",
       pan,
       status: "",
-      businessType: "",
+      businessType,
     } as GstinData,
     partial: true,
+    message: "Only State & PAN extracted. Add GSTVERIFY_API_KEY in Vercel env for full auto-fill (₹0.10/call at gstverify.co.in).",
   });
 }
