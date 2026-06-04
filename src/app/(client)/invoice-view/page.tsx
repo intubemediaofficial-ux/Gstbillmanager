@@ -81,140 +81,135 @@ function InvoiceViewContent() {
     if (!invoice || !invoiceRef.current) return;
     setWordLoading(true);
     try {
-      const el = invoiceRef.current;
-
-      // Collect layout info from source before cloning
-      const layoutMap = new Map<number, { isRow: boolean; width: string; childWidths: string[] }>();
-      let nodeIndex = 0;
-      const analyzeLayout = (source: HTMLElement) => {
-        const idx = nodeIndex++;
-        const computed = window.getComputedStyle(source);
-        const display = computed.getPropertyValue("display");
-        const direction = computed.getPropertyValue("flex-direction");
-        const isFlexRow = (display === "flex" || display === "inline-flex") && direction !== "column";
-        const isGrid = display === "grid" || display === "inline-grid";
-        if (isFlexRow || isGrid) {
-          const childWidths: string[] = [];
-          for (let i = 0; i < source.children.length; i++) {
-            const child = source.children[i] as HTMLElement;
-            if (child instanceof HTMLElement) {
-              const cw = child.getBoundingClientRect().width;
-              const pw = source.getBoundingClientRect().width;
-              const pct = pw > 0 ? Math.round((cw / pw) * 100) : Math.round(100 / source.children.length);
-              childWidths.push(pct + "%");
-            }
-          }
-          layoutMap.set(idx, { isRow: true, width: computed.getPropertyValue("width"), childWidths });
-        }
-        for (let i = 0; i < source.children.length; i++) {
-          if (source.children[i] instanceof HTMLElement) {
-            analyzeLayout(source.children[i] as HTMLElement);
-          }
-        }
-      };
-      analyzeLayout(el);
-
-      // Inline styles and build real HTML tables for flex-row/grid containers
-      nodeIndex = 0;
-      const inlineStyles = (source: HTMLElement, target: HTMLElement) => {
-        const idx = nodeIndex++;
-        const computed = window.getComputedStyle(source);
-        const important = [
-          "color", "background-color", "background", "font-family", "font-size", "font-weight",
-          "font-style", "text-align", "text-decoration", "line-height", "letter-spacing",
-          "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
-          "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
-          "border", "border-top", "border-right", "border-bottom", "border-left",
-          "border-color", "border-width", "border-style", "border-radius",
-          "width", "max-width", "min-width", "height", "vertical-align",
-          "table-layout", "border-collapse", "border-spacing", "white-space",
-          "opacity"
-        ];
-        let style = "";
-        const display = computed.getPropertyValue("display");
-        const direction = computed.getPropertyValue("flex-direction");
-        const isFlexRow = (display === "flex" || display === "inline-flex") && direction !== "column";
-        const isGrid = display === "grid" || display === "inline-grid";
-        if (isFlexRow || isGrid) {
-          style += "display:block;";
-        } else if (display === "flex" || display === "inline-flex") {
-          style += "display:block;";
-        } else {
-          style += `display:${display};`;
-        }
-        for (const prop of important) {
-          const val = computed.getPropertyValue(prop);
-          if (val && val !== "normal" && val !== "none" && val !== "auto" && val !== "0px" && val !== "rgba(0, 0, 0, 0)") {
-            style += `${prop}:${val};`;
-          }
-        }
-        target.setAttribute("style", style);
-        target.removeAttribute("class");
-
-        // Recursively process children first
-        const sourceChildren = source.children;
-        const targetChildren = target.children;
-        for (let i = 0; i < sourceChildren.length; i++) {
-          if (sourceChildren[i] instanceof HTMLElement && targetChildren[i] instanceof HTMLElement) {
-            inlineStyles(sourceChildren[i] as HTMLElement, targetChildren[i] as HTMLElement);
-          }
-        }
-
-        // After children are processed, convert flex-row/grid to real <table>
-        const layout = layoutMap.get(idx);
-        if (layout && layout.isRow && target.children.length > 0) {
-          const table = document.createElement("table");
-          table.setAttribute("style", "width:100%;border-collapse:collapse;table-layout:fixed;");
-          const tr = document.createElement("tr");
-          const children = Array.from(target.children) as HTMLElement[];
-          children.forEach((child, i) => {
-            const td = document.createElement("td");
-            const w = layout.childWidths[i] || Math.round(100 / children.length) + "%";
-            td.setAttribute("style", `width:${w};vertical-align:top;padding:0;`);
-            td.appendChild(child);
-            tr.appendChild(td);
-          });
-          table.appendChild(tr);
-          target.innerHTML = "";
-          target.appendChild(table);
-        }
-      };
-
-      const clone = el.cloneNode(true) as HTMLElement;
-      inlineStyles(el, clone);
-
-      // Remove SVGs (Word can't render them)
-      clone.querySelectorAll("svg").forEach(svg => svg.remove());
-
-      // Convert images to base64
-      const origImages = el.querySelectorAll("img");
-      const cloneImages = clone.querySelectorAll("img");
-      await Promise.all(Array.from(origImages).map(async (img, i) => {
-        if (!cloneImages[i]) return;
+      // Helper: convert image URL to base64
+      const imgToBase64 = async (src: string): Promise<string> => {
         try {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = src; });
           const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || img.width || 200;
-          canvas.height = img.naturalHeight || img.height || 200;
+          canvas.width = img.naturalWidth || 200;
+          canvas.height = img.naturalHeight || 200;
           const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(img, 0, 0);
-            cloneImages[i].src = canvas.toDataURL("image/png");
-          }
-        } catch {
-          try {
-            const resp = await fetch(img.src);
-            const blob = await resp.blob();
-            const base64 = await new Promise<string>((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.readAsDataURL(blob);
-            });
-            cloneImages[i].src = base64;
-          } catch { /* skip */ }
-        }
-      }));
+          if (ctx) { ctx.drawImage(img, 0, 0); return canvas.toDataURL("image/png"); }
+        } catch { /* fallback */ }
+        try {
+          const resp = await fetch(src);
+          const blob = await resp.blob();
+          return await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+        } catch { return src; }
+      };
 
-      // Build HTML doc for Word
+      // Get base64 images
+      const logoB64 = firmLogo ? await imgToBase64(firmLogo) : "";
+      const sigB64 = invoice.signature?.imageData ? await imgToBase64(invoice.signature.imageData) : "";
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://gstbillmanager.com/verify?id=${invoice.id}&uid=${invoice.userId}`)}`;
+      const qrB64 = await imgToBase64(qrUrl);
+
+      // Build items rows
+      const itemRows = invoice.items.map((item, idx) => {
+        const itemTax = item.cgst + item.sgst + item.igst;
+        const lineTotal = item.amount + itemTax;
+        const bgColor = idx % 2 === 0 ? "#ffffff" : "#f8fafd";
+        let row = `<tr style="background-color:${bgColor};">`;
+        row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${idx + 1}</td>`;
+        row += `<td style="padding:6px 4px;border:1px solid #e5e7eb;font-weight:600;font-size:11px;">${item.description}</td>`;
+        if (cv.hsn) row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.hsn || ""}</td>`;
+        if (cv.qty) row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.qty}${cv.unit ? ` ${item.unit}` : ""}</td>`;
+        if (cv.rate) row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-size:10px;">${formatCurrency(item.rate)}</td>`;
+        if (cv.taxableAmount) row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-size:10px;">${formatCurrency(item.amount)}</td>`;
+        if (cv.gstRate) {
+          if (!invoice.isInterState) {
+            row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.gstRate / 2}%</td>`;
+            row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.gstRate / 2}%</td>`;
+          } else {
+            row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.gstRate}%</td>`;
+          }
+        }
+        row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-size:10px;">${formatCurrency(itemTax)}</td>`;
+        row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-weight:700;font-size:11px;">${formatCurrency(lineTotal)}</td>`;
+        row += `</tr>`;
+        return row;
+      }).join("");
+
+      // Build table header columns
+      let headerCols = `<td style="padding:8px 4px;text-align:center;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Sr</td>`;
+      headerCols += `<td style="padding:8px 4px;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Description</td>`;
+      if (cv.hsn) headerCols += `<td style="padding:8px 4px;text-align:center;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">HSN</td>`;
+      if (cv.qty) headerCols += `<td style="padding:8px 4px;text-align:center;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Qty</td>`;
+      if (cv.rate) headerCols += `<td style="padding:8px 4px;text-align:right;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Rate</td>`;
+      if (cv.taxableAmount) headerCols += `<td style="padding:8px 4px;text-align:right;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Amount</td>`;
+      if (cv.gstRate) {
+        if (!invoice.isInterState) {
+          headerCols += `<td style="padding:8px 4px;text-align:center;background-color:#122a4e;color:white;font-weight:700;font-size:9px;border:1px solid #0a1628;">CGST%</td>`;
+          headerCols += `<td style="padding:8px 4px;text-align:center;background-color:#122a4e;color:white;font-weight:700;font-size:9px;border:1px solid #0a1628;">SGST%</td>`;
+        } else {
+          headerCols += `<td style="padding:8px 4px;text-align:center;background-color:#122a4e;color:white;font-weight:700;font-size:9px;border:1px solid #0a1628;">IGST%</td>`;
+        }
+      }
+      headerCols += `<td style="padding:8px 4px;text-align:right;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Tax ₹</td>`;
+      headerCols += `<td style="padding:8px 4px;text-align:right;background-color:#122a4e;color:white;font-weight:700;font-size:10px;border:1px solid #0a1628;">Total ₹</td>`;
+
+      // GST totals
+      let gstTotals = "";
+      if (firmIsGst && cv.gstRate) {
+        if (!invoice.isInterState) {
+          gstTotals = `<tr><td colspan="2" style="padding:6px 16px;text-align:right;font-weight:600;color:#666;font-size:12px;border-bottom:1px solid #e5e7eb;">CGST @ ${invoice.items[0]?.gstRate ? invoice.items[0].gstRate / 2 : 0}%</td><td style="padding:6px 16px;text-align:right;font-weight:700;font-size:12px;border-bottom:1px solid #e5e7eb;">${formatCurrency(invoice.totalCgst)}</td></tr>
+          <tr><td colspan="2" style="padding:6px 16px;text-align:right;font-weight:600;color:#666;font-size:12px;border-bottom:1px solid #e5e7eb;">SGST @ ${invoice.items[0]?.gstRate ? invoice.items[0].gstRate / 2 : 0}%</td><td style="padding:6px 16px;text-align:right;font-weight:700;font-size:12px;border-bottom:1px solid #e5e7eb;">${formatCurrency(invoice.totalSgst)}</td></tr>`;
+        } else {
+          gstTotals = `<tr><td colspan="2" style="padding:6px 16px;text-align:right;font-weight:600;color:#666;font-size:12px;border-bottom:1px solid #e5e7eb;">IGST @ ${invoice.items[0]?.gstRate || 0}%</td><td style="padding:6px 16px;text-align:right;font-weight:700;font-size:12px;border-bottom:1px solid #e5e7eb;">${formatCurrency(invoice.totalIgst)}</td></tr>`;
+        }
+      }
+
+      // Terms or QR middle section
+      let middleSection = "";
+      if (firmIsGst && cv.gstRate) {
+        const termsLines = invoice.terms ? invoice.terms.split("\n").map(l => `<li style="margin-bottom:4px;">${l}</li>`).join("") : `<li style="margin-bottom:4px;">Goods once sold will not be taken back.</li><li style="margin-bottom:4px;">Please make payment within the due date.</li><li style="margin-bottom:4px;">Interest @ 18% p.a. on overdue payments.</li>`;
+        middleSection = `<td style="width:34%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;">
+          <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Terms &amp; Notes</p>
+          <ul style="font-size:11px;color:#555;padding-left:16px;margin:0;line-height:1.6;">${termsLines}</ul>
+        </td>`;
+      } else {
+        middleSection = `<td style="width:34%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;text-align:center;">
+          <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">QR Code</p>
+          <img src="${qrB64}" width="80" height="80" style="margin:8px auto;" />
+          <p style="font-size:9px;color:#999;margin:4px 0 0 0;">Scan to verify &amp; download</p>
+        </td>`;
+      }
+
+      // Seller details rows
+      let sellerRows = `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;white-space:nowrap;">Name</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;font-weight:700;color:#111;font-size:13px;">${firmName}</td></tr>`;
+      if (firmAddress) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Address</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${firmAddress}${firmCity ? `, ${firmCity}` : ""}${firmState ? `, ${firmState}` : ""}, India</td></tr>`;
+      if (firmGstin) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">GSTIN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${firmGstin}</td></tr>`;
+      if (firmPan) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">PAN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${firmPan}</td></tr>`;
+      if (firmPhone) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Contact</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${firmPhone}</td></tr>`;
+      if (firmEmail) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Email</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${firmEmail}</td></tr>`;
+
+      // Buyer details rows
+      let buyerRows = `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;white-space:nowrap;">Name</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;font-weight:700;color:#111;font-size:13px;">${invoice.customer.name}</td></tr>`;
+      if (invoice.customer.address) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Address</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.address}${invoice.customer.city ? `, ${invoice.customer.city}` : ""}${invoice.customer.state ? `, ${invoice.customer.state}` : ""}, India</td></tr>`;
+      if (invoice.customer.gstin) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">GSTIN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${invoice.customer.gstin}</td></tr>`;
+      if (invoice.customer.gstin && invoice.customer.gstin.length >= 12) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">PAN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${invoice.customer.gstin.substring(2, 12)}</td></tr>`;
+      if (invoice.customer.state) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">State</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.state}${invoice.customer.stateCode ? ` (${invoice.customer.stateCode})` : ""}</td></tr>`;
+      if (invoice.customer.phone) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Contact</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.phone}</td></tr>`;
+      if (invoice.customer.email) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Email</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.email}</td></tr>`;
+
+      // Payment details
+      const bankName = invoice.firm?.bankName || settings?.bankName || "";
+      const accNo = invoice.firm?.accountNumber || settings?.accountNumber || "";
+      const ifsc = invoice.firm?.ifscCode || settings?.ifscCode || "";
+      const branch = invoice.firm?.branchName || settings?.branchName || "";
+
+      // Logo HTML
+      const logoHtml = logoB64
+        ? `<img src="${logoB64}" width="60" height="60" style="display:block;" />`
+        : `<div style="width:50px;height:50px;background-color:#c9a84c;color:#0a1628;font-size:24px;font-weight:700;text-align:center;line-height:50px;font-family:Georgia,serif;">${firmName.charAt(0)}</div>`;
+
+      // Build complete Word HTML
       const htmlContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="utf-8">
@@ -222,14 +217,152 @@ function InvoiceViewContent() {
 <meta name="Generator" content="Microsoft Word 15">
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>
-@page { size: A4; margin: 15mm; }
-body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+@page { size: A4; margin: 12mm; }
+body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; }
 table { border-collapse: collapse; }
 td { vertical-align: top; }
-img { max-width: 100%; }
 </style>
 </head>
-<body>${clone.outerHTML}</body>
+<body>
+<table style="width:100%;border-collapse:collapse;border:1px solid #ccc;">
+<!-- HEADER -->
+<tr>
+<td style="background-color:#122a4e;padding:16px 20px;">
+<table style="width:100%;border-collapse:collapse;">
+<tr>
+<td style="width:70px;vertical-align:middle;">${logoHtml}</td>
+<td style="vertical-align:middle;padding-left:12px;">
+<p style="margin:0;font-size:22px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:2px;">${firmName}</p>
+<p style="margin:4px 0 0 0;font-size:11px;font-weight:600;color:#c9a84c;text-transform:uppercase;letter-spacing:2px;">${INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
+</td>
+<td style="text-align:right;vertical-align:middle;">
+<div style="border:1.5px solid #c9a84c;padding:6px 12px;color:#c9a84c;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Original for Recipient</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- SELLER + INVOICE DETAILS -->
+<tr>
+<td style="padding:0;">
+<table style="width:100%;border-collapse:collapse;">
+<tr>
+<td style="width:60%;padding:16px 20px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">
+<p style="margin:0 0 10px 0;font-size:12px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;">Seller</p>
+<table style="border-collapse:collapse;"><tbody>${sellerRows}</tbody></table>
+</td>
+<td style="width:40%;padding:16px 20px;background-color:#f0f4fa;border-bottom:1px solid #e5e7eb;">
+<p style="margin:0 0 10px 0;font-size:12px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;">Invoice Details</p>
+<table style="border-collapse:collapse;">
+<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Invoice No.</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;font-weight:700;color:#111;font-size:14px;">${invoice.invoiceNumber}</td></tr>
+<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Invoice Date</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;color:#444;font-size:12px;">${formatDate(invoice.date)}</td></tr>
+${invoice.dueDate ? `<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Due Date</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;color:#444;font-size:12px;">${formatDate(invoice.dueDate)}</td></tr>` : ""}
+${placeOfSupply ? `<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Place of Supply</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;color:#444;font-size:12px;">${placeOfSupply}</td></tr>` : ""}
+</table>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- BUYER -->
+<tr>
+<td style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+<p style="margin:0 0 10px 0;font-size:12px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;">Buyer</p>
+<table style="border-collapse:collapse;"><tbody>${buyerRows}</tbody></table>
+</td>
+</tr>
+
+<!-- ITEMS TABLE -->
+<tr>
+<td style="padding:0;">
+<table style="width:100%;border-collapse:collapse;">
+<tr>${headerCols}</tr>
+${itemRows}
+</table>
+</td>
+</tr>
+
+<!-- SUBTOTAL + GST -->
+<tr>
+<td style="padding:0;border-top:1px solid #e5e7eb;">
+<table style="width:100%;border-collapse:collapse;">
+<tr style="background-color:#fafafa;"><td colspan="2" style="padding:8px 16px;text-align:right;font-weight:600;color:#666;font-size:12px;border-bottom:1px solid #e5e7eb;">Subtotal (Taxable Value)</td><td style="padding:8px 16px;text-align:right;font-weight:700;font-size:13px;border-bottom:1px solid #e5e7eb;width:150px;">${formatCurrency(invoice.subtotal)}</td></tr>
+${gstTotals}
+</table>
+</td>
+</tr>
+
+<!-- GRAND TOTAL -->
+<tr>
+<td style="padding:0;border-top:2px solid #122a4e;">
+<table style="width:100%;border-collapse:collapse;">
+<tr>
+<td style="width:55%;padding:12px 20px;background-color:#f0f4fa;">
+<p style="margin:0 0 4px 0;font-size:10px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:1px;">Amount in Words</p>
+<p style="margin:0;font-size:13px;font-weight:600;font-style:italic;color:#122a4e;">${numberToWords(invoice.grandTotal)}</p>
+</td>
+<td style="width:45%;padding:12px 20px;background-color:#122a4e;text-align:right;">
+<span style="font-size:12px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:1px;">Grand Total&nbsp;&nbsp;</span>
+<span style="font-size:24px;font-weight:800;color:white;">${formatCurrency(invoice.grandTotal)}</span>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- PAYMENT + TERMS/QR + SIGNATURE -->
+<tr>
+<td style="padding:0;border-top:1px solid #e5e7eb;">
+<table style="width:100%;border-collapse:collapse;">
+<tr>
+<td style="width:33%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;">
+<p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Payment Details</p>
+${bankName ? `<table style="border-collapse:collapse;font-size:11px;">
+<tr><td style="padding:2px 0;font-weight:600;color:#666;">Bank</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#222;">${bankName}</td></tr>
+<tr><td style="padding:2px 0;font-weight:600;color:#666;">A/C No.</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#222;">${accNo}</td></tr>
+<tr><td style="padding:2px 0;font-weight:600;color:#666;">IFSC</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#222;">${ifsc}</td></tr>
+${branch ? `<tr><td style="padding:2px 0;font-weight:600;color:#666;">Branch</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#444;">${branch}</td></tr>` : ""}
+</table>` : `<p style="color:#999;font-style:italic;font-size:11px;">Not provided</p>`}
+</td>
+${middleSection}
+<td style="width:33%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;text-align:center;">
+<p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Authorized Signatory</p>
+${sigB64 ? `<img src="${sigB64}" width="120" height="60" style="margin:10px auto;display:block;" />` : `<div style="border-bottom:1px dashed #ccc;width:80%;margin:30px auto 10px auto;">&nbsp;</div>`}
+<p style="font-weight:700;font-size:12px;color:#111;margin:6px 0 2px 0;">${invoice.signature?.directorName || invoice.firm?.signatureText || settings?.signatureText || ""}</p>
+<p style="font-size:10px;color:#666;margin:2px 0;">For ${firmName}</p>
+<p style="font-size:9px;color:#999;font-style:italic;margin:2px 0;">Authorized Signatory</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- E-INVOICE QR -->
+<tr>
+<td style="padding:8px 16px;background-color:#fafafa;border-top:1px solid #e5e7eb;">
+<table style="width:100%;border-collapse:collapse;">
+<tr>
+<td style="width:70px;"><img src="${qrB64}" width="60" height="60" /></td>
+<td style="padding-left:10px;vertical-align:middle;">
+<p style="margin:0;font-size:9px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:1px;">E-Invoice QR Code</p>
+<p style="margin:2px 0 0 0;font-size:8px;color:#999;">Scan to verify invoice details</p>
+</td>
+<td style="text-align:right;vertical-align:middle;font-size:8px;color:#999;">IRN: ${invoice.id.substring(0, 16).toUpperCase()}</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- FOOTER -->
+<tr>
+<td style="background-color:#122a4e;padding:8px 20px;text-align:center;">
+<p style="margin:0;font-size:10px;color:white;letter-spacing:1px;">This is a Computer Generated Invoice &nbsp;&bull;&nbsp; E. &amp; O.E.</p>
+</td>
+</tr>
+</table>
+</body>
 </html>`;
 
       const blob = new Blob(["\ufeff" + htmlContent], { type: "application/msword" });
