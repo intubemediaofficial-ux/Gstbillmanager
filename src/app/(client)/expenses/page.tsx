@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Receipt, Plus, Trash2, Search, Filter, TrendingDown, Calendar, IndianRupee, Download, ChevronDown, ChevronRight } from "lucide-react";
+import { Receipt, Plus, Trash2, Search, Filter, TrendingDown, Calendar, IndianRupee, Download, Upload, ChevronDown, ChevronRight } from "lucide-react";
 import type { Expense, ExpenseCategory } from "@/lib/gst-types";
 import { EXPENSE_CATEGORIES } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
@@ -20,6 +20,7 @@ export default function ExpensesPage() {
   const [viewMode, setViewMode] = useState<"list" | "category">("list");
   const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({ date: new Date().toISOString().split("T")[0], category: "custom" as ExpenseCategory, customCategory: "", description: "", amount: "", gstAmount: "0", paymentMode: "cash", vendorName: "", billNumber: "", notes: "" });
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const didFetch = useRef(false);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function ExpensesPage() {
   const filtered = items.filter((i) => {
     const q = search.toLowerCase();
     const matchSearch = !q || i.description.toLowerCase().includes(q) || (i.vendorName || "").toLowerCase().includes(q) || getCatLabel(i).toLowerCase().includes(q);
-    const matchCat = !filterCat || i.category === filterCat || (filterCat === "custom" && i.category === "custom");
+    const matchCat = !filterCat || i.category === filterCat || (filterCat === "custom" && i.category === "custom") || (filterCat.startsWith("custom:") && i.category === "custom" && i.customCategory === filterCat.slice(7));
     const matchMonth = !filterMonth || i.date.startsWith(filterMonth);
     return matchSearch && matchCat && matchMonth;
   });
@@ -74,9 +75,11 @@ export default function ExpensesPage() {
   }
   const sortedGroups = Array.from(categoryGroups.entries()).sort((a, b) => b[1].total - a[1].total);
 
-  // Get unique custom categories for filter dropdown
+  // Get unique custom categories for filter dropdown + auto-suggest
   const customCats = new Set<string>();
   items.forEach((i) => { if (i.category === "custom" && i.customCategory) customCats.add(i.customCategory); });
+  const customCatList = Array.from(customCats).sort();
+  const suggestions = form.customCategory.trim() ? customCatList.filter((c) => c.toLowerCase().includes(form.customCategory.toLowerCase()) && c.toLowerCase() !== form.customCategory.toLowerCase()) : [];
 
   const toggleCat = (key: string) => {
     setCollapsedCats((prev) => {
@@ -118,6 +121,40 @@ export default function ExpensesPage() {
     XLSX.writeFile(wb, `Expenses_${monthStr}.xlsx`);
   };
 
+  // Excel Upload
+  const handleUploadExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const XLSX = await import("xlsx");
+    const ab = await file.arrayBuffer();
+    const wb = XLSX.read(ab);
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json<Record<string, string | number>>(ws);
+    let added = 0;
+    for (const row of rows) {
+      const date = String(row["Date"] || row["date"] || new Date().toISOString().split("T")[0]);
+      const cat = String(row["Category"] || row["category"] || "");
+      const desc = String(row["Description"] || row["description"] || "");
+      const amt = Number(row["Amount"] || row["amount"] || 0);
+      const gst = Number(row["GST"] || row["gst"] || row["GST Amount"] || 0);
+      const vendor = String(row["Vendor"] || row["vendor"] || "");
+      const mode = String(row["Payment Mode"] || row["payment_mode"] || "cash");
+      const billNo = String(row["Bill No."] || row["bill_number"] || "");
+      const notes = String(row["Notes"] || row["notes"] || "");
+      if (!amt || desc.startsWith("---")) continue;
+      const knownCats = Object.keys(EXPENSE_CATEGORIES);
+      const isKnown = knownCats.includes(cat.toLowerCase().replace(/[^a-z_]/g, "_"));
+      const res = await fetch("/api/expenses", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", date, category: isKnown ? cat.toLowerCase().replace(/[^a-z_]/g, "_") : "custom", customCategory: isKnown ? "" : cat, description: desc, amount: amt, gstAmount: gst, paymentMode: mode.toLowerCase().replace(/ /g, "_"), vendorName: vendor, billNumber: billNo, notes }),
+      });
+      const data = await res.json();
+      if (data.success) { setItems((p) => [data.data, ...p]); added++; }
+    }
+    alert(`${added} expenses imported from Excel!`);
+    e.target.value = "";
+  };
+
   const CAT_COLORS: Record<string, string> = {
     rent: "bg-blue-100 text-blue-700", salary: "bg-violet-100 text-violet-700", utilities: "bg-amber-100 text-amber-700",
     office_supplies: "bg-emerald-100 text-emerald-700", travel: "bg-orange-100 text-orange-700", marketing: "bg-pink-100 text-pink-700",
@@ -137,6 +174,10 @@ export default function ExpensesPage() {
           <p className="text-sm text-gray-500 mt-1">Track your business expenses</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <label className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-bold hover:bg-amber-700 transition cursor-pointer">
+            <Upload className="w-4 h-4" /> Upload Excel
+            <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleUploadExcel} />
+          </label>
           <button onClick={handleDownloadExcel} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition">
             <Download className="w-4 h-4" /> Download Excel
           </button>
@@ -175,6 +216,7 @@ export default function ExpensesPage() {
           <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="pl-9 pr-8 py-2 border rounded-lg text-sm appearance-none">
             <option value="">All Categories</option>
             {Object.entries(EXPENSE_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            {customCatList.map((c) => <option key={`custom:${c}`} value={`custom:${c}`}>{c}</option>)}
           </select>
         </div>
         <div className="flex bg-gray-100 rounded-lg p-0.5">
@@ -189,12 +231,21 @@ export default function ExpensesPage() {
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold mb-4">Add Expense</h2>
             <div className="space-y-3">
-              {/* Custom category input FIRST */}
-              <div>
+              {/* Custom category input FIRST with auto-suggest */}
+              <div className="relative">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">What is this expense for? (Type manually)</label>
                 <input placeholder="e.g. Singer Payment, DJ Booking, Shooting, Studio, Dancer..." value={form.customCategory}
-                  onChange={(e) => setForm({ ...form, customCategory: e.target.value, category: e.target.value ? "custom" : form.category })}
+                  onChange={(e) => { setForm({ ...form, customCategory: e.target.value, category: e.target.value ? "custom" : form.category }); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="w-full px-3 py-2.5 border-2 border-blue-300 rounded-lg text-sm bg-blue-50 placeholder-blue-300 font-medium" />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                    {suggestions.map((s) => (
+                      <button key={s} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { setForm({ ...form, customCategory: s, category: "custom" }); setShowSuggestions(false); }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 border-b last:border-b-0">{s}</button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="text-center text-xs text-gray-400">— or select from list —</div>
               <select value={form.category} onChange={(e) => { setForm({ ...form, category: e.target.value as ExpenseCategory, customCategory: e.target.value === "custom" ? form.customCategory : "" }); }} className="w-full px-3 py-2 border rounded-lg text-sm">
@@ -203,9 +254,10 @@ export default function ExpensesPage() {
               <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
-                <input type="number" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="px-3 py-2 border rounded-lg text-sm" />
-                <input type="number" placeholder="GST Amount" value={form.gstAmount} onChange={(e) => setForm({ ...form, gstAmount: e.target.value })} className="px-3 py-2 border rounded-lg text-sm" />
+                <input type="number" step="any" placeholder="Amount (exact)" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="px-3 py-2 border rounded-lg text-sm" />
+                <input type="number" step="any" placeholder="GST Amount" value={form.gstAmount} onChange={(e) => setForm({ ...form, gstAmount: e.target.value })} className="px-3 py-2 border rounded-lg text-sm" />
               </div>
+              {form.amount && <p className="text-xs text-gray-500">Total: <span className="font-bold text-gray-900">{formatCurrency(Number(form.amount) + Number(form.gstAmount || 0))}</span></p>}
               <select value={form.paymentMode} onChange={(e) => setForm({ ...form, paymentMode: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm">
                 {Object.entries(PAYMENT_MODES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
