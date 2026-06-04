@@ -115,23 +115,23 @@ function InvoiceViewContent() {
         const itemTax = item.cgst + item.sgst + item.igst;
         const lineTotal = item.amount + itemTax;
         const bgColor = idx % 2 === 0 ? "#ffffff" : "#f8fafd";
-        let row = `<tr style="background-color:${bgColor};">`;
-        row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${idx + 1}</td>`;
-        row += `<td style="padding:6px 4px;border:1px solid #e5e7eb;font-weight:600;font-size:11px;">${item.description}</td>`;
-        if (cv.hsn) row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.hsn || ""}</td>`;
-        if (cv.qty) row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.qty}${cv.unit ? ` ${item.unit}` : ""}</td>`;
-        if (cv.rate) row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-size:10px;">${formatCurrency(item.rate)}</td>`;
-        if (cv.taxableAmount) row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-size:10px;">${formatCurrency(item.amount)}</td>`;
+        let row = `<tr>`;
+        row += `<td style="padding:8px 6px;text-align:center;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${idx + 1}</td>`;
+        row += `<td style="padding:8px 6px;border:1px solid #e2e8f0;font-weight:600;font-size:11px;background-color:${bgColor};">${item.description}</td>`;
+        if (cv.hsn) row += `<td style="padding:8px 6px;text-align:center;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${item.hsn || ""}</td>`;
+        if (cv.qty) row += `<td style="padding:8px 6px;text-align:center;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${item.qty}${cv.unit ? ` ${item.unit}` : ""}</td>`;
+        if (cv.rate) row += `<td style="padding:8px 6px;text-align:right;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${formatCurrency(item.rate)}</td>`;
+        if (cv.taxableAmount) row += `<td style="padding:8px 6px;text-align:right;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${formatCurrency(item.amount)}</td>`;
         if (cv.gstRate) {
           if (!invoice.isInterState) {
-            row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.gstRate / 2}%</td>`;
-            row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.gstRate / 2}%</td>`;
+            row += `<td style="padding:8px 6px;text-align:center;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${item.gstRate / 2}%</td>`;
+            row += `<td style="padding:8px 6px;text-align:center;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${item.gstRate / 2}%</td>`;
           } else {
-            row += `<td style="padding:6px 4px;text-align:center;border:1px solid #e5e7eb;font-size:10px;">${item.gstRate}%</td>`;
+            row += `<td style="padding:8px 6px;text-align:center;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${item.gstRate}%</td>`;
           }
         }
-        row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-size:10px;">${formatCurrency(itemTax)}</td>`;
-        row += `<td style="padding:6px 4px;text-align:right;border:1px solid #e5e7eb;font-weight:700;font-size:11px;">${formatCurrency(lineTotal)}</td>`;
+        row += `<td style="padding:8px 6px;text-align:right;border:1px solid #e2e8f0;font-size:11px;background-color:${bgColor};">${formatCurrency(itemTax)}</td>`;
+        row += `<td style="padding:8px 6px;text-align:right;border:1px solid #e2e8f0;font-weight:700;font-size:11px;background-color:${bgColor};">${formatCurrency(lineTotal)}</td>`;
         row += `</tr>`;
         return row;
       }).join("");
@@ -165,38 +165,42 @@ function InvoiceViewContent() {
         }
       }
 
+      // Badge helper - creates a small colored square with letter (Word-compatible)
+      const badge = (letter: string, color: string) => `<td style="width:24px;background-color:${color};color:white;font-size:11px;font-weight:700;text-align:center;vertical-align:middle;padding:4px 0;mso-line-height-rule:exactly;line-height:24px;">${letter}</td><td style="width:8px;background-color:#ffffff;">&nbsp;</td>`;
+
+      // Seller details rows (explicit white backgrounds for Word compatibility)
+      const wCell = "background-color:#ffffff;";
+      let sellerRows = `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;white-space:nowrap;${wCell}">Name</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;font-weight:700;color:#111;font-size:13px;${wCell}">${firmName}</td></tr>`;
+      if (firmAddress) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Address</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${firmAddress}${firmCity ? `, ${firmCity}` : ""}${firmState ? `, ${firmState}` : ""}, India</td></tr>`;
+      if (firmGstin) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">GSTIN</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#222;font-weight:600;font-size:12px;${wCell}">${firmGstin}</td></tr>`;
+      if (firmPan) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">PAN</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#222;font-weight:600;font-size:12px;${wCell}">${firmPan}</td></tr>`;
+      if (firmPhone) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Contact</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${firmPhone}</td></tr>`;
+      if (firmEmail) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Email</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${firmEmail}</td></tr>`;
+
+      // Buyer details rows (explicit white backgrounds for Word compatibility)
+      let buyerRows = `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;white-space:nowrap;${wCell}">Name</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;font-weight:700;color:#111;font-size:13px;${wCell}">${invoice.customer.name}</td></tr>`;
+      if (invoice.customer.address) buyerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Address</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${invoice.customer.address}${invoice.customer.city ? `, ${invoice.customer.city}` : ""}${invoice.customer.state ? `, ${invoice.customer.state}` : ""}, India</td></tr>`;
+      if (invoice.customer.gstin) buyerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">GSTIN</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#222;font-weight:600;font-size:12px;${wCell}">${invoice.customer.gstin}</td></tr>`;
+      if (invoice.customer.gstin && invoice.customer.gstin.length >= 12) buyerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">PAN</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#222;font-weight:600;font-size:12px;${wCell}">${invoice.customer.gstin.substring(2, 12)}</td></tr>`;
+      if (invoice.customer.state) buyerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">State</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${invoice.customer.state}${invoice.customer.stateCode ? ` (${invoice.customer.stateCode})` : ""}</td></tr>`;
+      if (invoice.customer.phone) buyerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Contact</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${invoice.customer.phone}</td></tr>`;
+      if (invoice.customer.email) buyerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Email</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${invoice.customer.email}</td></tr>`;
+
       // Terms or QR middle section
       let middleSection = "";
       if (firmIsGst && cv.gstRate) {
         const termsLines = invoice.terms ? invoice.terms.split("\n").map(l => `<li style="margin-bottom:4px;">${l}</li>`).join("") : `<li style="margin-bottom:4px;">Goods once sold will not be taken back.</li><li style="margin-bottom:4px;">Please make payment within the due date.</li><li style="margin-bottom:4px;">Interest @ 18% p.a. on overdue payments.</li>`;
-        middleSection = `<td style="width:34%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;">
+        middleSection = `<td style="width:34%;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
           <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Terms &amp; Notes</p>
           <ul style="font-size:11px;color:#555;padding-left:16px;margin:0;line-height:1.6;">${termsLines}</ul>
         </td>`;
       } else {
-        middleSection = `<td style="width:34%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;text-align:center;">
-          <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">QR Code</p>
+        middleSection = `<td style="width:34%;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
+          <table style="border-collapse:collapse;margin:0 auto 8px auto;"><tr>${badge("Q", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">QR Code</td></tr></table>
           <img src="${qrB64}" width="80" height="80" style="margin:8px auto;" />
-          <p style="font-size:9px;color:#999;margin:4px 0 0 0;">Scan to verify &amp; download</p>
+          <p style="font-size:9px;color:#888;margin:4px 0 0 0;">Scan to verify &amp; download</p>
         </td>`;
       }
-
-      // Seller details rows
-      let sellerRows = `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;white-space:nowrap;">Name</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;font-weight:700;color:#111;font-size:13px;">${firmName}</td></tr>`;
-      if (firmAddress) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Address</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${firmAddress}${firmCity ? `, ${firmCity}` : ""}${firmState ? `, ${firmState}` : ""}, India</td></tr>`;
-      if (firmGstin) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">GSTIN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${firmGstin}</td></tr>`;
-      if (firmPan) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">PAN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${firmPan}</td></tr>`;
-      if (firmPhone) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Contact</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${firmPhone}</td></tr>`;
-      if (firmEmail) sellerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Email</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${firmEmail}</td></tr>`;
-
-      // Buyer details rows
-      let buyerRows = `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;white-space:nowrap;">Name</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;font-weight:700;color:#111;font-size:13px;">${invoice.customer.name}</td></tr>`;
-      if (invoice.customer.address) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Address</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.address}${invoice.customer.city ? `, ${invoice.customer.city}` : ""}${invoice.customer.state ? `, ${invoice.customer.state}` : ""}, India</td></tr>`;
-      if (invoice.customer.gstin) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">GSTIN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${invoice.customer.gstin}</td></tr>`;
-      if (invoice.customer.gstin && invoice.customer.gstin.length >= 12) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">PAN</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#222;font-weight:600;font-size:12px;">${invoice.customer.gstin.substring(2, 12)}</td></tr>`;
-      if (invoice.customer.state) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">State</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.state}${invoice.customer.stateCode ? ` (${invoice.customer.stateCode})` : ""}</td></tr>`;
-      if (invoice.customer.phone) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Contact</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.phone}</td></tr>`;
-      if (invoice.customer.email) buyerRows += `<tr><td style="padding:3px 0;font-weight:600;color:#666;font-size:12px;">Email</td><td style="padding:3px 4px;color:#ccc;">:</td><td style="padding:3px 0;color:#444;font-size:12px;">${invoice.customer.email}</td></tr>`;
 
       // Payment details
       const bankName = invoice.firm?.bankName || settings?.bankName || "";
@@ -217,26 +221,27 @@ function InvoiceViewContent() {
 <meta name="Generator" content="Microsoft Word 15">
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>
-@page { size: A4; margin: 12mm; }
-body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; }
-table { border-collapse: collapse; }
+@page { size: A4; margin: 10mm 12mm; }
+body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; color: #333; }
+table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
 td { vertical-align: top; }
+p { margin: 0; }
 </style>
 </head>
 <body>
-<table style="width:100%;border-collapse:collapse;border:1px solid #ccc;">
+<table style="width:100%;border-collapse:collapse;background-color:#ffffff;">
 <!-- HEADER -->
 <tr>
-<td style="background-color:#122a4e;padding:16px 20px;">
+<td style="background-color:#122a4e;padding:18px 24px;">
 <table style="width:100%;border-collapse:collapse;">
 <tr>
-<td style="width:70px;vertical-align:middle;">${logoHtml}</td>
-<td style="vertical-align:middle;padding-left:12px;">
-<p style="margin:0;font-size:22px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:2px;">${firmName}</p>
-<p style="margin:4px 0 0 0;font-size:11px;font-weight:600;color:#c9a84c;text-transform:uppercase;letter-spacing:2px;">${INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
+<td style="width:60px;vertical-align:middle;background-color:#122a4e;">${logoHtml}</td>
+<td style="vertical-align:middle;padding-left:14px;background-color:#122a4e;">
+<p style="margin:0;font-size:24px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:2px;font-family:Georgia,serif;">${firmName}</p>
+<p style="margin:6px 0 0 0;font-size:12px;font-weight:600;color:#c9a84c;text-transform:uppercase;letter-spacing:2px;">${INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
 </td>
-<td style="text-align:right;vertical-align:middle;">
-<div style="border:1.5px solid #c9a84c;padding:6px 12px;color:#c9a84c;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Original for Recipient</div>
+<td style="text-align:right;vertical-align:middle;background-color:#122a4e;">
+<table style="border-collapse:collapse;margin-left:auto;"><tr><td style="border:2px solid #c9a84c;padding:6px 14px;color:#c9a84c;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;background-color:#122a4e;">Original for Recipient</td></tr></table>
 </td>
 </tr>
 </table>
@@ -245,20 +250,20 @@ td { vertical-align: top; }
 
 <!-- SELLER + INVOICE DETAILS -->
 <tr>
-<td style="padding:0;">
+<td style="padding:0;background-color:#ffffff;">
 <table style="width:100%;border-collapse:collapse;">
 <tr>
-<td style="width:60%;padding:16px 20px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">
-<p style="margin:0 0 10px 0;font-size:12px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;">Seller</p>
-<table style="border-collapse:collapse;"><tbody>${sellerRows}</tbody></table>
+<td style="width:60%;padding:16px 24px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background-color:#ffffff;">
+<table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("S", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Seller</td></tr></table>
+<table style="width:100%;border-collapse:collapse;"><tbody>${sellerRows}</tbody></table>
 </td>
-<td style="width:40%;padding:16px 20px;background-color:#f0f4fa;border-bottom:1px solid #e5e7eb;">
-<p style="margin:0 0 10px 0;font-size:12px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;">Invoice Details</p>
-<table style="border-collapse:collapse;">
-<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Invoice No.</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;font-weight:700;color:#111;font-size:14px;">${invoice.invoiceNumber}</td></tr>
-<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Invoice Date</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;color:#444;font-size:12px;">${formatDate(invoice.date)}</td></tr>
-${invoice.dueDate ? `<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Due Date</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;color:#444;font-size:12px;">${formatDate(invoice.dueDate)}</td></tr>` : ""}
-${placeOfSupply ? `<tr><td style="padding:4px 0;font-weight:600;color:#666;font-size:12px;">Place of Supply</td><td style="padding:4px 6px;color:#ccc;">:</td><td style="padding:4px 0;color:#444;font-size:12px;">${placeOfSupply}</td></tr>` : ""}
+<td style="width:40%;padding:16px 24px;background-color:#f0f4fa;border-bottom:1px solid #e2e8f0;">
+<table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("I", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#f0f4fa;">Invoice Details</td></tr></table>
+<table style="width:100%;border-collapse:collapse;">
+<tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice No.</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;font-weight:700;color:#111;font-size:14px;background-color:#f0f4fa;">${invoice.invoiceNumber}</td></tr>
+<tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice Date</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;color:#333;font-size:12px;background-color:#f0f4fa;">${formatDate(invoice.date)}</td></tr>
+${invoice.dueDate ? `<tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Due Date</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;color:#333;font-size:12px;background-color:#f0f4fa;">${formatDate(invoice.dueDate)}</td></tr>` : ""}
+${placeOfSupply ? `<tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Place of Supply</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;color:#333;font-size:12px;background-color:#f0f4fa;">${placeOfSupply}</td></tr>` : ""}
 </table>
 </td>
 </tr>
@@ -268,16 +273,16 @@ ${placeOfSupply ? `<tr><td style="padding:4px 0;font-weight:600;color:#666;font-
 
 <!-- BUYER -->
 <tr>
-<td style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
-<p style="margin:0 0 10px 0;font-size:12px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;">Buyer</p>
-<table style="border-collapse:collapse;"><tbody>${buyerRows}</tbody></table>
+<td style="padding:16px 24px;border-bottom:1px solid #e2e8f0;background-color:#ffffff;">
+<table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("B", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Buyer</td></tr></table>
+<table style="width:100%;border-collapse:collapse;"><tbody>${buyerRows}</tbody></table>
 </td>
 </tr>
 
 <!-- ITEMS TABLE -->
 <tr>
-<td style="padding:0;">
-<table style="width:100%;border-collapse:collapse;">
+<td style="padding:0;background-color:#ffffff;">
+<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
 <tr>${headerCols}</tr>
 ${itemRows}
 </table>
@@ -286,9 +291,9 @@ ${itemRows}
 
 <!-- SUBTOTAL + GST -->
 <tr>
-<td style="padding:0;border-top:1px solid #e5e7eb;">
+<td style="padding:0;background-color:#ffffff;">
 <table style="width:100%;border-collapse:collapse;">
-<tr style="background-color:#fafafa;"><td colspan="2" style="padding:8px 16px;text-align:right;font-weight:600;color:#666;font-size:12px;border-bottom:1px solid #e5e7eb;">Subtotal (Taxable Value)</td><td style="padding:8px 16px;text-align:right;font-weight:700;font-size:13px;border-bottom:1px solid #e5e7eb;width:150px;">${formatCurrency(invoice.subtotal)}</td></tr>
+<tr style="background-color:#fafafa;"><td colspan="2" style="padding:10px 24px;text-align:right;font-weight:600;color:#555;font-size:12px;border-bottom:1px solid #e2e8f0;background-color:#fafafa;">Subtotal (Taxable Value)</td><td style="padding:10px 24px;text-align:right;font-weight:700;font-size:14px;border-bottom:1px solid #e2e8f0;width:160px;background-color:#fafafa;">${formatCurrency(invoice.subtotal)}</td></tr>
 ${gstTotals}
 </table>
 </td>
@@ -296,16 +301,15 @@ ${gstTotals}
 
 <!-- GRAND TOTAL -->
 <tr>
-<td style="padding:0;border-top:2px solid #122a4e;">
+<td style="padding:0;">
 <table style="width:100%;border-collapse:collapse;">
 <tr>
-<td style="width:55%;padding:12px 20px;background-color:#f0f4fa;">
+<td style="width:55%;padding:14px 24px;background-color:#f0f4fa;border-top:2px solid #122a4e;">
 <p style="margin:0 0 4px 0;font-size:10px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:1px;">Amount in Words</p>
-<p style="margin:0;font-size:13px;font-weight:600;font-style:italic;color:#122a4e;">${numberToWords(invoice.grandTotal)}</p>
+<p style="margin:0;font-size:14px;font-weight:600;font-style:italic;color:#122a4e;">${numberToWords(invoice.grandTotal)}</p>
 </td>
-<td style="width:45%;padding:12px 20px;background-color:#122a4e;text-align:right;">
-<span style="font-size:12px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:1px;">Grand Total&nbsp;&nbsp;</span>
-<span style="font-size:24px;font-weight:800;color:white;">${formatCurrency(invoice.grandTotal)}</span>
+<td style="width:45%;padding:14px 24px;background-color:#122a4e;text-align:right;border-top:2px solid #122a4e;">
+<p style="margin:0;"><span style="font-size:12px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:1px;">Grand Total&nbsp;&nbsp;</span><span style="font-size:26px;font-weight:800;color:#ffffff;">${formatCurrency(invoice.grandTotal)}</span></p>
 </td>
 </tr>
 </table>
@@ -314,25 +318,25 @@ ${gstTotals}
 
 <!-- PAYMENT + TERMS/QR + SIGNATURE -->
 <tr>
-<td style="padding:0;border-top:1px solid #e5e7eb;">
+<td style="padding:0;background-color:#ffffff;border-top:1px solid #e2e8f0;">
 <table style="width:100%;border-collapse:collapse;">
 <tr>
-<td style="width:33%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;">
-<p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Payment Details</p>
-${bankName ? `<table style="border-collapse:collapse;font-size:11px;">
-<tr><td style="padding:2px 0;font-weight:600;color:#666;">Bank</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#222;">${bankName}</td></tr>
-<tr><td style="padding:2px 0;font-weight:600;color:#666;">A/C No.</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#222;">${accNo}</td></tr>
-<tr><td style="padding:2px 0;font-weight:600;color:#666;">IFSC</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#222;">${ifsc}</td></tr>
-${branch ? `<tr><td style="padding:2px 0;font-weight:600;color:#666;">Branch</td><td style="padding:2px 4px;color:#ccc;">:</td><td style="padding:2px 0;color:#444;">${branch}</td></tr>` : ""}
+<td style="width:33%;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
+<table style="border-collapse:collapse;margin-bottom:8px;"><tr>${badge("₹", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">Payment Details</td></tr></table>
+${bankName ? `<table style="border-collapse:collapse;font-size:11px;width:100%;">
+<tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">Bank</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${bankName}</td></tr>
+<tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">A/C No.</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${accNo}</td></tr>
+<tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">IFSC</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${ifsc}</td></tr>
+${branch ? `<tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">Branch</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#333;background-color:#ffffff;">${branch}</td></tr>` : ""}
 </table>` : `<p style="color:#999;font-style:italic;font-size:11px;">Not provided</p>`}
 </td>
 ${middleSection}
-<td style="width:33%;padding:12px;border:1px solid #e5e7eb;vertical-align:top;text-align:center;">
+<td style="width:33%;padding:14px 16px;border-left:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
 <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Authorized Signatory</p>
-${sigB64 ? `<img src="${sigB64}" width="120" height="60" style="margin:10px auto;display:block;" />` : `<div style="border-bottom:1px dashed #ccc;width:80%;margin:30px auto 10px auto;">&nbsp;</div>`}
-<p style="font-weight:700;font-size:12px;color:#111;margin:6px 0 2px 0;">${invoice.signature?.directorName || invoice.firm?.signatureText || settings?.signatureText || ""}</p>
-<p style="font-size:10px;color:#666;margin:2px 0;">For ${firmName}</p>
-<p style="font-size:9px;color:#999;font-style:italic;margin:2px 0;">Authorized Signatory</p>
+${sigB64 ? `<img src="${sigB64}" width="130" height="65" style="margin:8px auto;display:block;" />` : `<p style="border-bottom:1px dashed #ccc;width:80%;margin:30px auto 10px auto;">&nbsp;</p>`}
+<p style="font-weight:700;font-size:12px;color:#111;margin:8px 0 2px 0;">${invoice.signature?.directorName || invoice.firm?.signatureText || settings?.signatureText || ""}</p>
+<p style="font-size:10px;color:#555;margin:2px 0;">For ${firmName}</p>
+<p style="font-size:9px;color:#888;font-style:italic;margin:2px 0;">Authorized Signatory</p>
 </td>
 </tr>
 </table>
@@ -341,15 +345,15 @@ ${sigB64 ? `<img src="${sigB64}" width="120" height="60" style="margin:10px auto
 
 <!-- E-INVOICE QR -->
 <tr>
-<td style="padding:8px 16px;background-color:#fafafa;border-top:1px solid #e5e7eb;">
+<td style="padding:10px 24px;background-color:#fafafa;border-top:1px solid #e2e8f0;">
 <table style="width:100%;border-collapse:collapse;">
 <tr>
-<td style="width:70px;"><img src="${qrB64}" width="60" height="60" /></td>
-<td style="padding-left:10px;vertical-align:middle;">
-<p style="margin:0;font-size:9px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:1px;">E-Invoice QR Code</p>
-<p style="margin:2px 0 0 0;font-size:8px;color:#999;">Scan to verify invoice details</p>
+<td style="width:60px;background-color:#fafafa;"><img src="${qrB64}" width="50" height="50" /></td>
+<td style="padding-left:12px;vertical-align:middle;background-color:#fafafa;">
+<p style="margin:0;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;">E-Invoice QR Code</p>
+<p style="margin:3px 0 0 0;font-size:9px;color:#888;">Scan to verify invoice details</p>
 </td>
-<td style="text-align:right;vertical-align:middle;font-size:8px;color:#999;">IRN: ${invoice.id.substring(0, 16).toUpperCase()}</td>
+<td style="text-align:right;vertical-align:middle;font-size:9px;color:#888;background-color:#fafafa;">IRN: ${invoice.id.substring(0, 16).toUpperCase()}</td>
 </tr>
 </table>
 </td>
@@ -357,8 +361,8 @@ ${sigB64 ? `<img src="${sigB64}" width="120" height="60" style="margin:10px auto
 
 <!-- FOOTER -->
 <tr>
-<td style="background-color:#122a4e;padding:8px 20px;text-align:center;">
-<p style="margin:0;font-size:10px;color:white;letter-spacing:1px;">This is a Computer Generated Invoice &nbsp;&bull;&nbsp; E. &amp; O.E.</p>
+<td style="background-color:#122a4e;padding:10px 24px;text-align:center;">
+<p style="margin:0;font-size:10px;color:#ffffff;letter-spacing:1px;">This is a Computer Generated Invoice &nbsp;&bull;&nbsp; E. &amp; O.E.</p>
 </td>
 </tr>
 </table>
