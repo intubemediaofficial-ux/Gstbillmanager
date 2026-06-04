@@ -8,7 +8,7 @@ import {
   Building2, Package, FilePlus, Settings, Menu, X, CreditCard, TrendingUp,
   Truck, ClipboardList, FolderOpen, History,
   RefreshCw, Receipt, UserCheck, CalendarDays, Target, Bell, Mail, Clock,
-  ChevronDown, ChevronRight, FileDown, FileUp, ShoppingCart, IndianRupee, Upload, BookOpen, Image, Tag,
+  ChevronDown, ChevronRight, FileDown, FileUp, ShoppingCart, IndianRupee, Upload, BookOpen, Image, Tag, Scan, Globe, Printer as PrinterIcon,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -68,6 +68,9 @@ const clientNavItems = [
   { label: "Follow-ups", href: "/follow-ups", icon: Bell },
   { label: "Email Templates", href: "/email-templates", icon: Mail },
   { label: "Greeting Cards", href: "/greeting-cards", icon: Image },
+  { label: "Customer Portal", href: "/customer-portal", icon: Globe },
+  { label: "Barcode Scanner", href: "/barcode-scanner", icon: Scan },
+  { label: "POS Receipt", href: "/pos-receipt", icon: PrinterIcon },
   { label: "Documents", href: "/documents", icon: FolderOpen },
   { label: "Document History", href: "/document-history", icon: History },
   { label: "Invoice Reports", href: "/reports", icon: BarChart3 },

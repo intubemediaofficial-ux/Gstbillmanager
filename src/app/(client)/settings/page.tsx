@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Save, Eye, EyeOff, Lock, Cpu, MessageCircle } from "lucide-react";
+import { Save, Eye, EyeOff, Lock, Cpu, MessageCircle, Globe } from "lucide-react";
 import type { BusinessSettings } from "@/lib/gst-types";
+import { getLanguage, setLanguage, type Language } from "@/lib/i18n";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
 const defaultSettings: BusinessSettings = {
@@ -25,6 +26,9 @@ export default function SettingsPage() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState("");
   const [pwError, setPwError] = useState("");
+  const [lang, setLang] = useState<Language>("en");
+
+  useEffect(() => { setLang(getLanguage()); }, []);
 
   const didFetch = useRef(false);
   useEffect(() => {
@@ -67,6 +71,20 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold mb-6">Business Settings</h1>
 
       <div className="space-y-6">
+        {/* Language Selection */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+          <h2 className="font-semibold mb-4 flex items-center gap-2"><Globe className="w-4 h-4" /> Language / भाषा</h2>
+          <div className="flex gap-3">
+            <button onClick={() => { setLang("en"); setLanguage("en"); }} className={`px-6 py-3 rounded-lg border-2 font-medium transition ${lang === "en" ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}>
+              🇬🇧 English
+            </button>
+            <button onClick={() => { setLang("hi"); setLanguage("hi"); }} className={`px-6 py-3 rounded-lg border-2 font-medium transition ${lang === "hi" ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}>
+              🇮🇳 हिन्दी
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">Navigation labels and common UI text will switch to the selected language.</p>
+        </div>
+
         {/* Company Info */}
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <h2 className="font-semibold mb-4">Company Information</h2>

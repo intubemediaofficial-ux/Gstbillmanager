@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { getLanguage, t } from "@/lib/i18n";
 import {
   LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut, Menu, X, FolderOpen, History,
   RefreshCw, Receipt, TrendingUp, UserCheck, CreditCard, CalendarDays, Target, Bell, Mail, Clock, ChevronDown, ChevronRight, Archive,
-  FileDown, FileUp, BookOpen, ShoppingCart, ClipboardList, IndianRupee, Upload, Image, Tag,
+  FileDown, FileUp, BookOpen, ShoppingCart, ClipboardList, IndianRupee, Upload, Image, Tag, Scan, Globe, Printer,
 } from "lucide-react";
 
 const navSections = [
@@ -66,6 +67,7 @@ const navSections = [
       { label: "Follow-up Reminders", href: "/follow-ups", icon: Bell },
       { label: "Email Templates", href: "/email-templates", icon: Mail },
       { label: "Greeting Cards", href: "/greeting-cards", icon: Image },
+      { label: "Customer Portal", href: "/customer-portal", icon: Globe },
     ],
   },
   {
@@ -73,6 +75,13 @@ const navSections = [
     items: [
       { label: "Documents", href: "/documents", icon: FolderOpen },
       { label: "Document History", href: "/document-history", icon: History },
+    ],
+  },
+  {
+    label: "POS & Tools",
+    items: [
+      { label: "Barcode Scanner", href: "/barcode-scanner", icon: Scan },
+      { label: "POS Receipt", href: "/pos-receipt", icon: Printer },
     ],
   },
   {
@@ -88,6 +97,28 @@ export default function ClientSidebar() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [lang, setLang] = useState(getLanguage());
+  useEffect(() => {
+    const handler = () => setLang(getLanguage());
+    window.addEventListener("languagechange", handler);
+    return () => window.removeEventListener("languagechange", handler);
+  }, []);
+  const i = (key: string, fallback: string) => t(key, lang) !== key ? t(key, lang) : fallback;
+
+  const hrefToKey: Record<string, string> = {
+    "/dashboard": "nav.dashboard", "/my-firms": "nav.my_firms", "/customers": "nav.customers", "/products": "nav.products",
+    "/create-invoice": "nav.create_invoice", "/invoices": "nav.invoices", "/quotations": "nav.quotations",
+    "/credit-notes": "nav.credit_notes", "/debit-notes": "nav.debit_notes", "/purchase-bills": "nav.purchase_bills",
+    "/recurring-invoices": "nav.recurring_invoices", "/party-ledger": "nav.party_ledger", "/expenses": "nav.expenses",
+    "/profit-loss": "nav.profit_loss", "/bill-manager": "nav.bill_manager", "/aging-report": "nav.aging_report",
+    "/party-rates": "nav.party_rates", "/bulk-import": "nav.bulk_import", "/reports": "nav.reports",
+    "/employees": "nav.employees", "/salary-slips": "nav.salary_slips", "/attendance": "nav.attendance",
+    "/gstr-reports": "nav.gstr_reports", "/gstr-2b": "nav.gstr_2b", "/leads": "nav.leads",
+    "/follow-ups": "nav.follow_ups", "/email-templates": "nav.email_templates", "/greeting-cards": "nav.greeting_cards",
+    "/documents": "nav.documents", "/document-history": "nav.document_history", "/settings": "nav.settings",
+    "/inventory": "nav.inventory", "/eway-bills": "nav.eway_bills",
+  };
+  const navLabel = (href: string, fallback: string) => { const k = hrefToKey[href]; return k ? i(k, fallback) : fallback; };
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -145,7 +176,7 @@ export default function ClientSidebar() {
                       }`}
                     >
                       <item.icon className="w-4 h-4" />
-                      {item.label}
+                      {navLabel(item.href, item.label)}
                     </Link>
                   );
                 })}
@@ -159,7 +190,7 @@ export default function ClientSidebar() {
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition"
           >
             <LogOut className="w-5 h-5" />
-            Logout
+            {i("common.logout", "Logout")}
           </button>
         </div>
       </aside>
