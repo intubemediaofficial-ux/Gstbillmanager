@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, FilePlus, Trash2, Eye, MessageCircle, Edit2 } from "lucide-react";
+import { Search, FilePlus, Trash2, Eye, MessageCircle, Edit2, Download } from "lucide-react";
 import type { Invoice, InvoiceStatus } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
@@ -21,6 +21,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState("");
 
   const fetchRef = useRef(0);
   const fetchInvoices = () => {
@@ -67,8 +68,33 @@ export default function InvoicesPage() {
     const matchSearch = inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
       inv.customer.name.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || inv.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchMonth = !monthFilter || inv.date.startsWith(monthFilter);
+    return matchSearch && matchStatus && matchMonth;
   });
+
+  const handleDownloadExcel = async () => {
+    const XLSX = await import("xlsx");
+    const data = filtered.map((inv) => ({
+      "Invoice #": inv.invoiceNumber,
+      "Type": INVOICE_TYPE_LABELS[inv.invoiceType],
+      "Customer": inv.customer.name,
+      "GSTIN": inv.customer.gstin || "",
+      "Date": inv.date,
+      "Subtotal": inv.subtotal,
+      "CGST": inv.totalCgst,
+      "SGST": inv.totalSgst,
+      "IGST": inv.totalIgst,
+      "Grand Total": inv.grandTotal,
+      "Status": inv.status.toUpperCase(),
+      "Amount Paid": inv.amountPaid || 0,
+      "Balance": inv.grandTotal - (inv.amountPaid || 0),
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws["!cols"] = [{ wch: 14 }, { wch: 10 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 8 }, { wch: 12 }, { wch: 12 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Invoices");
+    XLSX.writeFile(wb, `Invoices_${monthFilter || "All"}.xlsx`);
+  };
 
   return (
     <div>
@@ -85,6 +111,7 @@ export default function InvoicesPage() {
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search invoices..."
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
+        <input type="month" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="px-3 py-2 border rounded-lg text-sm" />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <option value="all">All Status</option>
@@ -95,6 +122,12 @@ export default function InvoicesPage() {
           <option value="overdue">Overdue</option>
           <option value="cancelled">Cancelled</option>
         </select>
+        <button onClick={handleDownloadExcel} className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs font-medium">
+          <Download className="w-3.5 h-3.5" /> Download Excel
+        </button>
+        <a href={`/api/tally-export?format=csv&month=${monthFilter}`} download className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium">
+          <Download className="w-3.5 h-3.5" /> CSV
+        </a>
       </div>
 
       {loading ? (
