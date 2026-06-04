@@ -1,0 +1,53 @@
+{
+  "packageId": "com.gstbillmanager.app",
+  "host": "gstbillmanager.com",
+  "name": "GST Bill Manager",
+  "launcherName": "GST Bills",
+  "display": "standalone",
+  "themeColor": "#4f46e5",
+  "navigationColor": "#1e1b4b",
+  "navigationColorDark": "#0f0e2a",
+  "navigationDividerColor": "#1e1b4b",
+  "navigationDividerColorDark": "#0f0e2a",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "startUrl": "/dashboard",
+  "iconUrl": "https://gstbillmanager.com/icons/icon-512.png",
+  "maskableIconUrl": "https://gstbillmanager.com/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "gstbillmanager"
+  },
+  "appVersionCode": 1,
+  "appVersionName": "1.0.0",
+  "shortcuts": [
+    {
+      "name": "Create Invoice",
+      "short_name": "New Bill",
+      "url": "/create-invoice",
+      "icon": "/icons/icon-192.png"
+    },
+    {
+      "name": "Invoices",
+      "short_name": "Bills",
+      "url": "/invoices",
+      "icon": "/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://gstbillmanager.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true
+}
