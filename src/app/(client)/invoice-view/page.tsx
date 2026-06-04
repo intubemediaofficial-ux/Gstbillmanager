@@ -83,7 +83,7 @@ function InvoiceViewContent() {
     try {
       const el = invoiceRef.current;
 
-      // Inline all computed styles onto each element so Word renders correctly
+      // Inline all computed styles — convert flex to table for Word compatibility
       const inlineStyles = (source: HTMLElement, target: HTMLElement) => {
         const computed = window.getComputedStyle(source);
         const important = [
@@ -93,17 +93,36 @@ function InvoiceViewContent() {
           "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
           "border", "border-top", "border-right", "border-bottom", "border-left",
           "border-color", "border-width", "border-style", "border-radius",
-          "width", "max-width", "min-width", "height", "display", "flex-direction",
-          "justify-content", "align-items", "gap", "vertical-align",
-          "table-layout", "border-collapse", "border-spacing", "white-space", "overflow",
-          "opacity", "box-sizing", "position"
+          "width", "max-width", "min-width", "height", "vertical-align",
+          "table-layout", "border-collapse", "border-spacing", "white-space",
+          "opacity"
         ];
         let style = "";
+        const display = computed.getPropertyValue("display");
+        // Convert flex to table layout for Word compatibility
+        if (display === "flex" || display === "inline-flex") {
+          const direction = computed.getPropertyValue("flex-direction");
+          if (direction === "column") {
+            style += "display:block;";
+          } else {
+            style += "display:table;width:100%;";
+          }
+        } else if (display === "grid" || display === "inline-grid") {
+          style += "display:table;width:100%;";
+        } else {
+          style += `display:${display};`;
+        }
         for (const prop of important) {
           const val = computed.getPropertyValue(prop);
           if (val && val !== "normal" && val !== "none" && val !== "auto" && val !== "0px" && val !== "rgba(0, 0, 0, 0)") {
             style += `${prop}:${val};`;
           }
+        }
+        // If parent is flex row, make this a table-cell
+        const parentDisplay = source.parentElement ? window.getComputedStyle(source.parentElement).getPropertyValue("display") : "";
+        const parentDirection = source.parentElement ? window.getComputedStyle(source.parentElement).getPropertyValue("flex-direction") : "";
+        if ((parentDisplay === "flex" || parentDisplay === "inline-flex") && parentDirection !== "column") {
+          style = style.replace(/display:[^;]+;/, "display:table-cell;vertical-align:top;");
         }
         target.setAttribute("style", style);
         target.removeAttribute("class");
@@ -119,6 +138,9 @@ function InvoiceViewContent() {
 
       const clone = el.cloneNode(true) as HTMLElement;
       inlineStyles(el, clone);
+
+      // Remove SVGs (Word can't render them) — they're just decorative icons
+      clone.querySelectorAll("svg").forEach(svg => svg.remove());
 
       // Convert images to base64
       const origImages = el.querySelectorAll("img");
