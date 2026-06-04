@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Eye, EyeOff, Lock, Cpu, MessageCircle, Globe } from "lucide-react";
 import type { BusinessSettings } from "@/lib/gst-types";
-import { getLanguage, setLanguage, type Language } from "@/lib/i18n";
+import { getLanguage, setLanguage, LANGUAGE_OPTIONS, type Language } from "@/lib/i18n";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
 const defaultSettings: BusinessSettings = {
@@ -73,16 +73,17 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* Language Selection */}
         <div className="bg-white rounded-xl shadow-sm border p-6">
-          <h2 className="font-semibold mb-4 flex items-center gap-2"><Globe className="w-4 h-4" /> Language / भाषा</h2>
-          <div className="flex gap-3">
-            <button onClick={() => { setLang("en"); setLanguage("en"); }} className={`px-6 py-3 rounded-lg border-2 font-medium transition ${lang === "en" ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}>
-              🇬🇧 English
-            </button>
-            <button onClick={() => { setLang("hi"); setLanguage("hi"); }} className={`px-6 py-3 rounded-lg border-2 font-medium transition ${lang === "hi" ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}>
-              🇮🇳 हिन्दी
-            </button>
+          <h2 className="font-semibold mb-4 flex items-center gap-2"><Globe className="w-4 h-4" /> Language / भाषा चुनें</h2>
+          <p className="text-sm text-gray-500 mb-3">Select your preferred language — the entire dashboard will switch to that language.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {LANGUAGE_OPTIONS.map((opt) => (
+              <button key={opt.code} onClick={() => { setLang(opt.code); setLanguage(opt.code); }}
+                className={`px-3 py-2.5 rounded-lg border-2 font-medium text-sm transition text-left ${lang === opt.code ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-300" : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"}`}>
+                <span className="text-xs text-gray-400 font-mono mr-1">{opt.flag}</span> {opt.label}
+              </button>
+            ))}
           </div>
-          <p className="text-xs text-gray-400 mt-2">Navigation labels and common UI text will switch to the selected language.</p>
+          <p className="text-xs text-gray-400 mt-3">Navigation, buttons, and common UI text will switch to the selected language.</p>
         </div>
 
         {/* Company Info */}

@@ -100,10 +100,20 @@ export default function InvoicesPage() {
   const handleBulkPDF = async () => {
     if (filtered.length === 0) return;
     setBulkPdfLoading(true);
+    // Open a single window and navigate it sequentially for each invoice
+    const pdfWindow = window.open("about:blank", "pdf_download_window");
     for (let i = 0; i < filtered.length; i++) {
-      window.open(`/invoice-view?id=${filtered[i].id}&auto=pdf`, "_blank");
-      await new Promise((r) => setTimeout(r, 2000));
+      if (pdfWindow && !pdfWindow.closed) {
+        pdfWindow.location.href = `/invoice-view?id=${filtered[i].id}&auto=pdf`;
+      } else {
+        // Fallback: open new window if previous was closed
+        window.open(`/invoice-view?id=${filtered[i].id}&auto=pdf`, "pdf_download_window");
+      }
+      // Wait enough time for PDF to generate and download
+      await new Promise((r) => setTimeout(r, 4000));
     }
+    // Close the helper window
+    try { if (pdfWindow && !pdfWindow.closed) pdfWindow.close(); } catch { /* */ }
     setBulkPdfLoading(false);
   };
 

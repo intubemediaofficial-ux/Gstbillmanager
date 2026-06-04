@@ -46,7 +46,7 @@ function InvoiceViewContent() {
   useEffect(() => {
     if (autoPdf && invoice && !loading && invoiceRef.current && !autoPdfTriggered.current) {
       autoPdfTriggered.current = true;
-      setTimeout(() => { handlePDF().then(() => { window.close(); }); }, 500);
+      setTimeout(() => { handlePDF(); }, 500);
     }
   });
 

@@ -117,6 +117,7 @@ export default function ClientSidebar() {
     "/follow-ups": "nav.follow_ups", "/email-templates": "nav.email_templates", "/greeting-cards": "nav.greeting_cards",
     "/documents": "nav.documents", "/document-history": "nav.document_history", "/settings": "nav.settings",
     "/inventory": "nav.inventory", "/eway-bills": "nav.eway_bills",
+    "/barcode-scanner": "nav.barcode_scanner", "/pos-receipt": "nav.pos_receipt", "/customer-portal": "nav.customer_portal",
   };
   const navLabel = (href: string, fallback: string) => { const k = hrefToKey[href]; return k ? i(k, fallback) : fallback; };
 
