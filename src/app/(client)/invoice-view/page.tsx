@@ -81,52 +81,90 @@ function InvoiceViewContent() {
     if (!invoice || !invoiceRef.current) return;
     setWordLoading(true);
     try {
-      // Export the exact invoice HTML as .doc file — Word opens HTML natively
-      // This preserves the EXACT design: logo, signature, colors, layout — all editable
       const el = invoiceRef.current;
 
-      // Convert all images to base64 so they persist in the .doc file
+      // Inline all computed styles onto each element so Word renders correctly
+      const inlineStyles = (source: HTMLElement, target: HTMLElement) => {
+        const computed = window.getComputedStyle(source);
+        const important = [
+          "color", "background-color", "background", "font-family", "font-size", "font-weight",
+          "font-style", "text-align", "text-decoration", "line-height", "letter-spacing",
+          "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+          "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+          "border", "border-top", "border-right", "border-bottom", "border-left",
+          "border-color", "border-width", "border-style", "border-radius",
+          "width", "max-width", "min-width", "height", "display", "flex-direction",
+          "justify-content", "align-items", "gap", "vertical-align",
+          "table-layout", "border-collapse", "border-spacing", "white-space", "overflow",
+          "opacity", "box-sizing", "position"
+        ];
+        let style = "";
+        for (const prop of important) {
+          const val = computed.getPropertyValue(prop);
+          if (val && val !== "normal" && val !== "none" && val !== "auto" && val !== "0px" && val !== "rgba(0, 0, 0, 0)") {
+            style += `${prop}:${val};`;
+          }
+        }
+        target.setAttribute("style", style);
+        target.removeAttribute("class");
+
+        const sourceChildren = source.children;
+        const targetChildren = target.children;
+        for (let i = 0; i < sourceChildren.length; i++) {
+          if (sourceChildren[i] instanceof HTMLElement && targetChildren[i] instanceof HTMLElement) {
+            inlineStyles(sourceChildren[i] as HTMLElement, targetChildren[i] as HTMLElement);
+          }
+        }
+      };
+
       const clone = el.cloneNode(true) as HTMLElement;
-      const images = clone.querySelectorAll("img");
-      await Promise.all(Array.from(images).map(async (img) => {
+      inlineStyles(el, clone);
+
+      // Convert images to base64
+      const origImages = el.querySelectorAll("img");
+      const cloneImages = clone.querySelectorAll("img");
+      await Promise.all(Array.from(origImages).map(async (img, i) => {
         try {
-          const resp = await fetch(img.src);
-          const blob = await resp.blob();
-          const reader = new FileReader();
-          const base64 = await new Promise<string>((resolve) => {
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-          img.src = base64;
-        } catch { /* skip if fetch fails */ }
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width || 200;
+          canvas.height = img.naturalHeight || img.height || 200;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            cloneImages[i].src = canvas.toDataURL("image/png");
+          }
+        } catch {
+          try {
+            const resp = await fetch(img.src);
+            const blob = await resp.blob();
+            const base64 = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+            cloneImages[i].src = base64;
+          } catch { /* skip */ }
+        }
       }));
 
-      // Get all stylesheets and inline them
-      const styles = Array.from(document.styleSheets).map(sheet => {
-        try { return Array.from(sheet.cssRules).map(r => r.cssText).join("\n"); } catch { return ""; }
-      }).join("\n");
+      // Build HTML doc
+      const htmlContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+@page { size: A4; margin: 15mm; }
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+table { border-collapse: collapse; }
+img { max-width: 100%; }
+</style>
+</head>
+<body>${clone.outerHTML}</body>
+</html>`;
 
-      // Build full HTML document that Word can open
-      const htmlContent = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-          <meta charset="utf-8">
-          <meta name="ProgId" content="Word.Document">
-          <meta name="Generator" content="Microsoft Word 15">
-          <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
-          <style>
-            @page { size: A4; margin: 10mm; }
-            body { font-family: Arial, sans-serif; }
-            ${styles}
-          </style>
-        </head>
-        <body>
-          ${clone.outerHTML}
-        </body>
-        </html>
-      `;
-
-      const blob = new Blob([htmlContent], { type: "application/msword" });
+      const blob = new Blob(["\ufeff" + htmlContent], { type: "application/msword" });
       const custName = invoice.customer.name.replace(/[^a-zA-Z0-9\u0900-\u097F\u0600-\u06FF ]/g, "").trim().replace(/\s+/g, "_");
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
