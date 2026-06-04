@@ -169,7 +169,7 @@ function InvoiceViewContent() {
       const badge = (letter: string, color: string) => `<td style="width:24px;background-color:${color};color:white;font-size:11px;font-weight:700;text-align:center;vertical-align:middle;padding:4px 0;mso-line-height-rule:exactly;line-height:24px;">${letter}</td><td style="width:8px;background-color:#ffffff;">&nbsp;</td>`;
 
       // Seller details rows (explicit white backgrounds for Word compatibility)
-      const wCell = "background-color:#ffffff;";
+      const wCell = "background-color:#ffffff;word-wrap:break-word;word-break:break-word;";
       let sellerRows = `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;white-space:nowrap;${wCell}">Name</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;font-weight:700;color:#111;font-size:13px;${wCell}">${firmName}</td></tr>`;
       if (firmAddress) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">Address</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#333;font-size:12px;${wCell}">${firmAddress}${firmCity ? `, ${firmCity}` : ""}${firmState ? `, ${firmState}` : ""}, India</td></tr>`;
       if (firmGstin) sellerRows += `<tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:12px;${wCell}">GSTIN</td><td style="padding:4px 6px;color:#aaa;${wCell}">:</td><td style="padding:4px 0;color:#222;font-weight:600;font-size:12px;${wCell}">${firmGstin}</td></tr>`;
@@ -251,15 +251,16 @@ p { margin: 0; }
 <!-- SELLER + INVOICE DETAILS -->
 <tr>
 <td style="padding:0;background-color:#ffffff;">
-<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;table-layout:fixed;">
+<colgroup><col width="60%" style="width:11.2cm;" /><col width="40%" style="width:7.4cm;" /></colgroup>
 <tr>
 <td width="60%" style="width:11.2cm;padding:16px 24px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background-color:#ffffff;vertical-align:top;">
 <table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("S", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Seller</td></tr></table>
-<table style="width:100%;border-collapse:collapse;"><tbody>${sellerRows}</tbody></table>
+<table style="border-collapse:collapse;table-layout:fixed;width:9.5cm;"><colgroup><col style="width:2cm;" /><col style="width:0.5cm;" /><col style="width:7cm;" /></colgroup><tbody>${sellerRows}</tbody></table>
 </td>
 <td width="40%" style="width:7.4cm;padding:16px 24px;background-color:#f0f4fa;border-bottom:1px solid #e2e8f0;vertical-align:top;">
 <table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("I", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#f0f4fa;">Invoice Details</td></tr></table>
-<table style="width:100%;border-collapse:collapse;">
+<table style="border-collapse:collapse;table-layout:fixed;width:5.5cm;"><colgroup><col style="width:2.5cm;" /><col style="width:0.5cm;" /><col style="width:2.5cm;" /></colgroup>
 <tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice No.</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;font-weight:700;color:#111;font-size:14px;background-color:#f0f4fa;">${invoice.invoiceNumber}</td></tr>
 <tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice Date</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;color:#333;font-size:12px;background-color:#f0f4fa;">${formatDate(invoice.date)}</td></tr>
 ${invoice.dueDate ? `<tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Due Date</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;color:#333;font-size:12px;background-color:#f0f4fa;">${formatDate(invoice.dueDate)}</td></tr>` : ""}
@@ -275,7 +276,7 @@ ${placeOfSupply ? `<tr><td style="padding:5px 0;font-weight:600;color:#555;font-
 <tr>
 <td style="padding:16px 24px;border-bottom:1px solid #e2e8f0;background-color:#ffffff;">
 <table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("B", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Buyer</td></tr></table>
-<table style="width:100%;border-collapse:collapse;"><tbody>${buyerRows}</tbody></table>
+<table style="border-collapse:collapse;table-layout:fixed;width:16cm;"><colgroup><col style="width:2cm;" /><col style="width:0.5cm;" /><col style="width:13.5cm;" /></colgroup><tbody>${buyerRows}</tbody></table>
 </td>
 </tr>
 
@@ -302,7 +303,8 @@ ${gstTotals}
 <!-- GRAND TOTAL -->
 <tr>
 <td style="padding:0;">
-<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;table-layout:fixed;">
+<colgroup><col width="55%" style="width:10.2cm;" /><col width="45%" style="width:8.4cm;" /></colgroup>
 <tr>
 <td width="55%" style="width:10.2cm;padding:14px 24px;background-color:#f0f4fa;border-top:2px solid #122a4e;vertical-align:top;">
 <p style="margin:0 0 4px 0;font-size:10px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:1px;">Amount in Words</p>
@@ -319,11 +321,12 @@ ${gstTotals}
 <!-- PAYMENT + TERMS/QR + SIGNATURE -->
 <tr>
 <td style="padding:0;background-color:#ffffff;border-top:1px solid #e2e8f0;">
-<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;table-layout:fixed;">
+<colgroup><col width="33%" style="width:6.2cm;" /><col width="34%" style="width:6.2cm;" /><col width="33%" style="width:6.2cm;" /></colgroup>
 <tr>
 <td width="33%" style="width:6.2cm;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
 <table style="border-collapse:collapse;margin-bottom:8px;"><tr>${badge("₹", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">Payment Details</td></tr></table>
-${bankName ? `<table style="border-collapse:collapse;font-size:11px;width:100%;">
+${bankName ? `<table style="border-collapse:collapse;font-size:11px;table-layout:fixed;width:4.5cm;">
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">Bank</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${bankName}</td></tr>
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">A/C No.</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${accNo}</td></tr>
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">IFSC</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${ifsc}</td></tr>
