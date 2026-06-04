@@ -8,7 +8,7 @@ import {
   Building2, Package, FilePlus, Settings, Menu, X, CreditCard, TrendingUp,
   Truck, ClipboardList, FolderOpen, History,
   RefreshCw, Receipt, UserCheck, CalendarDays, Target, Bell, Mail, Clock,
-  ChevronDown, ChevronRight, FileDown, FileUp, ShoppingCart, IndianRupee, Upload, BookOpen, Image,
+  ChevronDown, ChevronRight, FileDown, FileUp, ShoppingCart, IndianRupee, Upload, BookOpen, Image, Tag,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -56,6 +56,7 @@ const clientNavItems = [
   { label: "Expenses", href: "/expenses", icon: Receipt },
   { label: "Profit & Loss", href: "/profit-loss", icon: TrendingUp },
   { label: "Aging Report", href: "/aging-report", icon: Clock },
+  { label: "Party Rates", href: "/party-rates", icon: Tag },
   { label: "Bulk Import", href: "/bulk-import", icon: Upload },
   { label: "E-Way Bills", href: "/eway-bills", icon: Truck },
   { label: "GSTR Reports", href: "/gstr-reports", icon: BarChart3 },

@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Building2, Users, Package, FilePlus, FileText, Settings, BarChart3, LogOut, Menu, X, FolderOpen, History,
   RefreshCw, Receipt, TrendingUp, UserCheck, CreditCard, CalendarDays, Target, Bell, Mail, Clock, ChevronDown, ChevronRight, Archive,
-  FileDown, FileUp, BookOpen, ShoppingCart, ClipboardList, IndianRupee, Upload, Image,
+  FileDown, FileUp, BookOpen, ShoppingCart, ClipboardList, IndianRupee, Upload, Image, Tag,
 } from "lucide-react";
 
 const navSections = [
@@ -39,6 +39,7 @@ const navSections = [
       { label: "Profit & Loss", href: "/profit-loss", icon: TrendingUp },
       { label: "Bill Manager", href: "/bill-manager", icon: Archive },
       { label: "Aging Report", href: "/aging-report", icon: Clock },
+      { label: "Party Rates", href: "/party-rates", icon: Tag },
       { label: "Bulk Import", href: "/bulk-import", icon: Upload },
       { label: "Reports", href: "/reports", icon: BarChart3 },
     ],

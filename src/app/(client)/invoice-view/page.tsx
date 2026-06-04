@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Printer, Download, Share2, Mail, ArrowLeft, Loader2, FileText } from "lucide-react";
+import { Printer, Download, Share2, Mail, ArrowLeft, Loader2, FileText, CreditCard } from "lucide-react";
 import type { Invoice, BusinessSettings } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/gst-utils";
@@ -85,6 +85,21 @@ function InvoiceViewContent() {
     const subject = `Invoice ${invoice.invoiceNumber} - ${invoice.firm?.name || settings?.companyName || "GST Bill"}`;
     const body = `Dear ${invoice.customer.name},\n\nPlease find the invoice details below:\n\nInvoice #: ${invoice.invoiceNumber}\nAmount: ${formatCurrency(invoice.grandTotal)}\nDate: ${formatDate(invoice.date)}\nDue Date: ${invoice.dueDate ? formatDate(invoice.dueDate) : "N/A"}\n\nView Invoice: ${window.location.href}\n\nThank you for your business.\n\n${invoice.firm?.name || settings?.companyName || ""}`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+  };
+
+  const handlePaymentLink = () => {
+    if (!invoice) return;
+    const firmName = invoice.firm?.name || settings?.companyName || "Business";
+    const balance = invoice.grandTotal - (invoice.amountPaid || 0);
+    const upiId = settings?.bankName ? `${settings.bankName}@upi` : "";
+    if (upiId) {
+      const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(firmName)}&am=${balance.toFixed(2)}&tn=${encodeURIComponent(`Payment for Invoice ${invoice.invoiceNumber}`)}&cu=INR`;
+      const text = `*${firmName}*\n\n📄 Invoice: *${invoice.invoiceNumber}*\n💰 Amount Due: *${formatCurrency(balance)}*\n\n💳 Pay via UPI:\n${upiLink}\n\nOr scan the QR code on the invoice.`;
+      window.open(`https://wa.me/${invoice.customer.phone || ""}?text=${encodeURIComponent(text)}`, "_blank");
+    } else {
+      const text = `*${firmName}*\n\n📄 Invoice: *${invoice.invoiceNumber}*\n💰 Amount Due: *${formatCurrency(balance)}*\n\n🏦 Bank Details:\nBank: ${invoice.firm?.bankName || settings?.bankName || ""}\nA/C: ${invoice.firm?.accountNumber || settings?.accountNumber || ""}\nIFSC: ${invoice.firm?.ifscCode || settings?.ifscCode || ""}\n\nPlease pay and share the reference number.`;
+      window.open(`https://wa.me/${invoice.customer.phone || ""}?text=${encodeURIComponent(text)}`, "_blank");
+    }
   };
 
   const handleWord = async () => {
@@ -453,6 +468,9 @@ ${sigB64 ? `<img src="${sigB64}" width="130" height="65" style="margin:8px auto;
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
         <div className="flex gap-2">
+          <button onClick={handlePaymentLink} className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium shadow-sm">
+            <CreditCard className="w-4 h-4" /> Pay Link
+          </button>
           <button onClick={handleWhatsApp} className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-sm">
             <Share2 className="w-4 h-4" /> WhatsApp
           </button>
