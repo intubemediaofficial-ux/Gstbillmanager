@@ -39,7 +39,7 @@ export default function SalarySlipsPage() {
       const conv = 1600;
       const med = 1250;
       const special = emp.salary - basic - hra - conv - med;
-      setForm({ ...form, employeeId: empId, basicSalary: String(basic), hra: String(hra), conveyance: String(conv), medicalAllowance: String(med), specialAllowance: String(Math.max(0, special)), pf: String(Math.round(basic * 0.12)), esi: String(emp.salary <= 21000 ? Math.round(emp.salary * 0.0075) : 0), professionalTax: "200" });
+      setForm({ ...form, employeeId: empId, basicSalary: String(basic), hra: String(hra), conveyance: String(conv), medicalAllowance: String(med), specialAllowance: String(Math.max(0, special)), pf: "", esi: "", professionalTax: "", tds: "", otherDeductions: "" });
     } else {
       setForm({ ...form, employeeId: empId });
     }
@@ -77,6 +77,137 @@ export default function SalarySlipsPage() {
     if (!confirm("Delete this salary slip?")) return;
     await fetch("/api/salary-slips", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", id }) });
     setItems((p) => p.filter((i) => i.id !== id));
+  };
+
+  const handleDownloadPDF = async (slip: SalarySlip) => {
+    const { default: jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const monthLabel = new Date(slip.month + "-01").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    const fc = (n: number) => "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    const w = 190;
+    let y = 15;
+
+    // Header
+    doc.setFillColor(18, 42, 78);
+    doc.rect(10, 10, w, 22, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("SALARY SLIP", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(monthLabel, 105, 27, { align: "center" });
+    y = 40;
+
+    // Employee Details
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Employee Details", 14, y);
+    y += 2;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, y, 196, y);
+    y += 7;
+    doc.setFontSize(9);
+    const details = [
+      ["Name", slip.employeeName, "Emp Code", slip.empCode],
+      ["Department", slip.department, "Designation", slip.designation],
+      ["Payment Mode", slip.paymentMode.replace("_", " ").toUpperCase(), "Payment Date", slip.paymentDate],
+      ["Bank", slip.bankName || "-", "Account", slip.accountNumber || "-"],
+    ];
+    for (const row of details) {
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text(row[0] + ":", 14, y);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(row[1], 50, y);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text(row[2] + ":", 110, y);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(row[3], 148, y);
+      y += 6;
+    }
+    y += 4;
+
+    // Earnings & Deductions side by side
+    const colW = 88;
+    // Earnings header
+    doc.setFillColor(220, 240, 220);
+    doc.rect(14, y, colW, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(0, 100, 0);
+    doc.text("EARNINGS", 16, y + 5.5);
+    doc.text("Amount", 14 + colW - 4, y + 5.5, { align: "right" });
+    // Deductions header
+    doc.setFillColor(240, 220, 220);
+    doc.rect(108, y, colW, 8, "F");
+    doc.setTextColor(180, 0, 0);
+    doc.text("DEDUCTIONS", 110, y + 5.5);
+    doc.text("Amount", 108 + colW - 4, y + 5.5, { align: "right" });
+    y += 10;
+
+    const earnings = [
+      ["Basic Salary", slip.basicSalary], ["HRA", slip.hra], ["Conveyance", slip.conveyance],
+      ["Medical Allowance", slip.medicalAllowance], ["Special Allowance", slip.specialAllowance], ["Other Allowances", slip.otherAllowances],
+    ].filter(([, v]) => (v as number) > 0);
+    const deductions = [
+      ["PF", slip.pf], ["ESI", slip.esi], ["Professional Tax", slip.professionalTax],
+      ["TDS", slip.tds], ["Other Deductions", slip.otherDeductions],
+    ].filter(([, v]) => (v as number) > 0);
+
+    const maxRows = Math.max(earnings.length, deductions.length);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    for (let i = 0; i < maxRows; i++) {
+      if (i % 2 === 0) {
+        doc.setFillColor(248, 248, 248);
+        doc.rect(14, y - 1, colW, 6, "F");
+        doc.rect(108, y - 1, colW, 6, "F");
+      }
+      doc.setTextColor(60, 60, 60);
+      if (earnings[i]) {
+        doc.text(earnings[i][0] as string, 16, y + 3);
+        doc.text(fc(earnings[i][1] as number), 14 + colW - 4, y + 3, { align: "right" });
+      }
+      if (deductions[i]) {
+        doc.text(deductions[i][0] as string, 110, y + 3);
+        doc.text(fc(deductions[i][1] as number), 108 + colW - 4, y + 3, { align: "right" });
+      }
+      y += 6;
+    }
+    y += 2;
+
+    // Totals
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, y, 196, y);
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 100, 0);
+    doc.text("Gross Salary:", 16, y);
+    doc.text(fc(slip.grossSalary), 14 + colW - 4, y, { align: "right" });
+    doc.setTextColor(180, 0, 0);
+    doc.text("Total Deductions:", 110, y);
+    doc.text(fc(slip.totalDeductions), 108 + colW - 4, y, { align: "right" });
+    y += 10;
+
+    // Net Salary Box
+    doc.setFillColor(18, 42, 78);
+    doc.rect(14, y, w, 14, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.text("NET SALARY", 20, y + 10);
+    doc.text(fc(slip.netSalary), 190, y + 10, { align: "right" });
+    y += 22;
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text("This is a system generated salary slip.", 105, y, { align: "center" });
+
+    doc.save(`Salary_Slip_${slip.employeeName.replace(/\s+/g, "_")}_${slip.month}.pdf`);
   };
 
   const filtered = items.filter((i) => {
@@ -179,6 +310,7 @@ export default function SalarySlipsPage() {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${slip.status === "paid" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}`}>{slip.status}</span>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
+                  <button onClick={() => handleDownloadPDF(slip)} className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Download PDF"><Download className="w-4 h-4" /></button>
                   {slip.status === "draft" && (
                     <button onClick={() => handleMarkPaid(slip.id)} className="p-2 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Mark Paid"><CheckCircle className="w-4 h-4" /></button>
                   )}
