@@ -83,8 +83,41 @@ function InvoiceViewContent() {
     try {
       const el = invoiceRef.current;
 
-      // Inline all computed styles — convert flex to table for Word compatibility
+      // Collect layout info from source before cloning
+      const layoutMap = new Map<number, { isRow: boolean; width: string; childWidths: string[] }>();
+      let nodeIndex = 0;
+      const analyzeLayout = (source: HTMLElement) => {
+        const idx = nodeIndex++;
+        const computed = window.getComputedStyle(source);
+        const display = computed.getPropertyValue("display");
+        const direction = computed.getPropertyValue("flex-direction");
+        const isFlexRow = (display === "flex" || display === "inline-flex") && direction !== "column";
+        const isGrid = display === "grid" || display === "inline-grid";
+        if (isFlexRow || isGrid) {
+          const childWidths: string[] = [];
+          for (let i = 0; i < source.children.length; i++) {
+            const child = source.children[i] as HTMLElement;
+            if (child instanceof HTMLElement) {
+              const cw = child.getBoundingClientRect().width;
+              const pw = source.getBoundingClientRect().width;
+              const pct = pw > 0 ? Math.round((cw / pw) * 100) : Math.round(100 / source.children.length);
+              childWidths.push(pct + "%");
+            }
+          }
+          layoutMap.set(idx, { isRow: true, width: computed.getPropertyValue("width"), childWidths });
+        }
+        for (let i = 0; i < source.children.length; i++) {
+          if (source.children[i] instanceof HTMLElement) {
+            analyzeLayout(source.children[i] as HTMLElement);
+          }
+        }
+      };
+      analyzeLayout(el);
+
+      // Inline styles and build real HTML tables for flex-row/grid containers
+      nodeIndex = 0;
       const inlineStyles = (source: HTMLElement, target: HTMLElement) => {
+        const idx = nodeIndex++;
         const computed = window.getComputedStyle(source);
         const important = [
           "color", "background-color", "background", "font-family", "font-size", "font-weight",
@@ -99,16 +132,13 @@ function InvoiceViewContent() {
         ];
         let style = "";
         const display = computed.getPropertyValue("display");
-        // Convert flex to table layout for Word compatibility
-        if (display === "flex" || display === "inline-flex") {
-          const direction = computed.getPropertyValue("flex-direction");
-          if (direction === "column") {
-            style += "display:block;";
-          } else {
-            style += "display:table;width:100%;";
-          }
-        } else if (display === "grid" || display === "inline-grid") {
-          style += "display:table;width:100%;";
+        const direction = computed.getPropertyValue("flex-direction");
+        const isFlexRow = (display === "flex" || display === "inline-flex") && direction !== "column";
+        const isGrid = display === "grid" || display === "inline-grid";
+        if (isFlexRow || isGrid) {
+          style += "display:block;";
+        } else if (display === "flex" || display === "inline-flex") {
+          style += "display:block;";
         } else {
           style += `display:${display};`;
         }
@@ -118,17 +148,10 @@ function InvoiceViewContent() {
             style += `${prop}:${val};`;
           }
         }
-        // If parent is flex row or grid, make this a table-cell
-        const parentDisplay = source.parentElement ? window.getComputedStyle(source.parentElement).getPropertyValue("display") : "";
-        const parentDirection = source.parentElement ? window.getComputedStyle(source.parentElement).getPropertyValue("flex-direction") : "";
-        if ((parentDisplay === "flex" || parentDisplay === "inline-flex") && parentDirection !== "column") {
-          style = style.replace(/display:[^;]+;/, "display:table-cell;vertical-align:top;");
-        } else if (parentDisplay === "grid" || parentDisplay === "inline-grid") {
-          style = style.replace(/display:[^;]+;/, "display:table-cell;vertical-align:top;");
-        }
         target.setAttribute("style", style);
         target.removeAttribute("class");
 
+        // Recursively process children first
         const sourceChildren = source.children;
         const targetChildren = target.children;
         for (let i = 0; i < sourceChildren.length; i++) {
@@ -136,18 +159,38 @@ function InvoiceViewContent() {
             inlineStyles(sourceChildren[i] as HTMLElement, targetChildren[i] as HTMLElement);
           }
         }
+
+        // After children are processed, convert flex-row/grid to real <table>
+        const layout = layoutMap.get(idx);
+        if (layout && layout.isRow && target.children.length > 0) {
+          const table = document.createElement("table");
+          table.setAttribute("style", "width:100%;border-collapse:collapse;table-layout:fixed;");
+          const tr = document.createElement("tr");
+          const children = Array.from(target.children) as HTMLElement[];
+          children.forEach((child, i) => {
+            const td = document.createElement("td");
+            const w = layout.childWidths[i] || Math.round(100 / children.length) + "%";
+            td.setAttribute("style", `width:${w};vertical-align:top;padding:0;`);
+            td.appendChild(child);
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+          target.innerHTML = "";
+          target.appendChild(table);
+        }
       };
 
       const clone = el.cloneNode(true) as HTMLElement;
       inlineStyles(el, clone);
 
-      // Remove SVGs (Word can't render them) — they're just decorative icons
+      // Remove SVGs (Word can't render them)
       clone.querySelectorAll("svg").forEach(svg => svg.remove());
 
       // Convert images to base64
       const origImages = el.querySelectorAll("img");
       const cloneImages = clone.querySelectorAll("img");
       await Promise.all(Array.from(origImages).map(async (img, i) => {
+        if (!cloneImages[i]) return;
         try {
           const canvas = document.createElement("canvas");
           canvas.width = img.naturalWidth || img.width || 200;
@@ -171,7 +214,7 @@ function InvoiceViewContent() {
         }
       }));
 
-      // Build HTML doc
+      // Build HTML doc for Word
       const htmlContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="utf-8">
@@ -182,6 +225,7 @@ function InvoiceViewContent() {
 @page { size: A4; margin: 15mm; }
 body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
 table { border-collapse: collapse; }
+td { vertical-align: top; }
 img { max-width: 100%; }
 </style>
 </head>
