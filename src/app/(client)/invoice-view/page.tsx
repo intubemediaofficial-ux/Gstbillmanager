@@ -21,6 +21,7 @@ function InvoiceViewContent() {
   const [wordLoading, setWordLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const autoPdf = searchParams.get("auto") === "pdf";
 
   const didFetch = useRef(false);
   useEffect(() => {
@@ -39,6 +40,15 @@ function InvoiceViewContent() {
       setCurrentUserId(adminUserId || meRes.id || "");
     }).finally(() => setLoading(false));
   }, [id, adminUserId]);
+
+  // Auto-download PDF when ?auto=pdf is set (for bulk download)
+  const autoPdfTriggered = useRef(false);
+  useEffect(() => {
+    if (autoPdf && invoice && !loading && invoiceRef.current && !autoPdfTriggered.current) {
+      autoPdfTriggered.current = true;
+      setTimeout(() => { handlePDF().then(() => { window.close(); }); }, 500);
+    }
+  });
 
   const handlePrint = () => window.print();
 

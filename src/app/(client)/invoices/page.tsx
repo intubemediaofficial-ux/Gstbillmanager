@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, FilePlus, Trash2, Eye, MessageCircle, Edit2, Download } from "lucide-react";
+import { Search, FilePlus, Trash2, Eye, MessageCircle, Edit2, Download, FileDown, Loader2 } from "lucide-react";
 import type { Invoice, InvoiceStatus } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
@@ -22,6 +22,7 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState("");
+  const [bulkPdfLoading, setBulkPdfLoading] = useState(false);
 
   const fetchRef = useRef(0);
   const fetchInvoices = () => {
@@ -96,6 +97,16 @@ export default function InvoicesPage() {
     XLSX.writeFile(wb, `Invoices_${monthFilter || "All"}.xlsx`);
   };
 
+  const handleBulkPDF = async () => {
+    if (filtered.length === 0) return;
+    setBulkPdfLoading(true);
+    for (let i = 0; i < filtered.length; i++) {
+      window.open(`/invoice-view?id=${filtered[i].id}&auto=pdf`, "_blank");
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    setBulkPdfLoading(false);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -128,6 +139,9 @@ export default function InvoicesPage() {
         <a href={`/api/tally-export?format=csv&month=${monthFilter}`} download className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium">
           <Download className="w-3.5 h-3.5" /> CSV
         </a>
+        <button onClick={handleBulkPDF} disabled={bulkPdfLoading || filtered.length === 0} className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-xs font-medium disabled:opacity-50">
+          {bulkPdfLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} {bulkPdfLoading ? "Downloading..." : `All PDFs (${filtered.length})`}
+        </button>
       </div>
 
       {loading ? (
