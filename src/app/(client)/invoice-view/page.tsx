@@ -104,6 +104,24 @@ function InvoiceViewContent() {
     unit: invoice.columnVisibility?.unit !== false,
   };
 
+  // Compute column widths that sum to exactly 100% to prevent flex/table misalignment
+  const colW = (() => {
+    const sr = 4, hsn = 8, qty = 6, rate = 10, amount = 11, tax = 9, total = 11;
+    const cgstSgst = 12, igst = 7;
+    let used = sr + tax + total;
+    if (cv.hsn) used += hsn;
+    if (cv.qty) used += qty;
+    if (cv.rate) used += rate;
+    if (cv.taxableAmount) used += amount;
+    if (cv.gstRate) used += invoice.isInterState ? igst : cgstSgst;
+    const desc = 100 - used;
+    return {
+      sr: `${sr}%`, desc: `${desc}%`, hsn: `${hsn}%`, qty: `${qty}%`,
+      rate: `${rate}%`, amount: `${amount}%`, cgst: "6%", sgst: "6%",
+      igst: `${igst}%`, tax: `${tax}%`, total: `${total}%`,
+    };
+  })();
+
   return (
     <div>
       {/* Action Bar */}
@@ -240,34 +258,34 @@ function InvoiceViewContent() {
           <div>
             {/* Header row as div for html2canvas compatibility */}
             <div className="flex text-white text-[11px] font-bold uppercase" style={{ background: "#122a4e", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
-              <div className="py-3 text-center" style={{ width: "4%", minWidth: "4%" }}>Sr</div>
-              <div className="py-3 px-1 text-left" style={{ width: cv.gstRate ? (invoice.isInterState ? "28%" : "24%") : "36%", minWidth: cv.gstRate ? (invoice.isInterState ? "28%" : "24%") : "36%" }}>Description</div>
-              {cv.hsn && <div className="py-3 text-center" style={{ width: "8%", minWidth: "8%" }}>HSN</div>}
-              {cv.qty && <div className="py-3 text-center" style={{ width: "6%", minWidth: "6%" }}>Qty</div>}
-              {cv.rate && <div className="py-3 text-right px-1" style={{ width: "10%", minWidth: "10%" }}>Rate</div>}
-              {cv.taxableAmount && <div className="py-3 text-right px-1" style={{ width: "11%", minWidth: "11%" }}>Amount</div>}
+              <div className="py-3 text-center" style={{ width: colW.sr, minWidth: colW.sr }}>Sr</div>
+              <div className="py-3 px-1 text-left" style={{ width: colW.desc, minWidth: colW.desc }}>Description</div>
+              {cv.hsn && <div className="py-3 text-center" style={{ width: colW.hsn, minWidth: colW.hsn }}>HSN</div>}
+              {cv.qty && <div className="py-3 text-center" style={{ width: colW.qty, minWidth: colW.qty }}>Qty</div>}
+              {cv.rate && <div className="py-3 text-right px-1" style={{ width: colW.rate, minWidth: colW.rate }}>Rate</div>}
+              {cv.taxableAmount && <div className="py-3 text-right px-1" style={{ width: colW.amount, minWidth: colW.amount }}>Amount</div>}
               {cv.gstRate && (!invoice.isInterState ? (
                 <>
-                  <div className="py-3 text-center text-[10px]" style={{ width: "6%", minWidth: "6%" }}>CGST%</div>
-                  <div className="py-3 text-center text-[10px]" style={{ width: "6%", minWidth: "6%" }}>SGST%</div>
+                  <div className="py-3 text-center text-[10px]" style={{ width: colW.cgst, minWidth: colW.cgst }}>CGST%</div>
+                  <div className="py-3 text-center text-[10px]" style={{ width: colW.sgst, minWidth: colW.sgst }}>SGST%</div>
                 </>
               ) : (
-                <div className="py-3 text-center text-[10px]" style={{ width: "7%", minWidth: "7%" }}>IGST%</div>
+                <div className="py-3 text-center text-[10px]" style={{ width: colW.igst, minWidth: colW.igst }}>IGST%</div>
               ))}
-              <div className="py-3 text-right px-1" style={{ width: "9%", minWidth: "9%" }}>Tax ₹</div>
-              <div className="py-3 text-right pr-4" style={{ width: "11%", minWidth: "11%" }}>Total ₹</div>
+              <div className="py-3 text-right px-1" style={{ width: colW.tax, minWidth: colW.tax }}>Tax ₹</div>
+              <div className="py-3 text-right pr-4" style={{ width: colW.total, minWidth: colW.total }}>Total ₹</div>
             </div>
             <table className="w-full text-[11px]" style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", tableLayout: "fixed", borderCollapse: "collapse", borderSpacing: "0" }}>
               <colgroup>
-                <col style={{ width: "4%" }} />
-                <col style={{ width: cv.gstRate ? (invoice.isInterState ? "28%" : "24%") : "36%" }} />
-                {cv.hsn && <col style={{ width: "8%" }} />}
-                {cv.qty && <col style={{ width: "6%" }} />}
-                {cv.rate && <col style={{ width: "10%" }} />}
-                {cv.taxableAmount && <col style={{ width: "11%" }} />}
-                {cv.gstRate && (!invoice.isInterState ? (<><col style={{ width: "6%" }} /><col style={{ width: "6%" }} /></>) : (<col style={{ width: "7%" }} />))}
-                <col style={{ width: "9%" }} />
-                <col style={{ width: "11%" }} />
+                <col style={{ width: colW.sr }} />
+                <col style={{ width: colW.desc }} />
+                {cv.hsn && <col style={{ width: colW.hsn }} />}
+                {cv.qty && <col style={{ width: colW.qty }} />}
+                {cv.rate && <col style={{ width: colW.rate }} />}
+                {cv.taxableAmount && <col style={{ width: colW.amount }} />}
+                {cv.gstRate && (!invoice.isInterState ? (<><col style={{ width: colW.cgst }} /><col style={{ width: colW.sgst }} /></>) : (<col style={{ width: colW.igst }} />))}
+                <col style={{ width: colW.tax }} />
+                <col style={{ width: colW.total }} />
               </colgroup>
               <tbody>
                 {invoice.items.map((item, idx) => {
