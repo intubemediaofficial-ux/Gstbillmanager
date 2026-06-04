@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Save, Eye, EyeOff, Lock } from "lucide-react";
+import { Save, Eye, EyeOff, Lock, Cpu, MessageCircle } from "lucide-react";
 import type { BusinessSettings } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
 
@@ -153,6 +153,48 @@ export default function SettingsPage() {
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
             <div><label className="block text-sm font-medium mb-1">Signature Text</label>
               <input value={form.signatureText} onChange={(e) => setForm({ ...form, signatureText: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Authorized Signatory Name" /></div>
+          </div>
+        </div>
+
+        {/* Attendance Machine Integration */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+          <h2 className="font-semibold mb-4 flex items-center gap-2"><Cpu className="w-4 h-4" /> Attendance Machine Integration</h2>
+          <p className="text-sm text-gray-500 mb-4">Connect your biometric/attendance machine for automatic attendance sync. If you have a cloud-enabled machine (eSSL BioTime, ZKTeco Cloud), enter the API details below.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Machine Provider</label>
+              <select value={form.machineProvider || ""} onChange={(e) => setForm({ ...form, machineProvider: e.target.value as BusinessSettings["machineProvider"] })}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">Select Provider</option>
+                <option value="essl">eSSL (BioTime / ZKBioSecurity)</option>
+                <option value="zkteco">ZKTeco Cloud</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">API URL</label>
+              <input value={form.machineApiUrl || ""} onChange={(e) => setForm({ ...form, machineApiUrl: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
+                placeholder="https://your-machine-cloud.com/api" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">API Key / Token</label>
+              <input value={form.machineApiKey || ""} onChange={(e) => setForm({ ...form, machineApiKey: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
+                placeholder="Enter API key from your machine software" />
+            </div>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm font-medium text-blue-800 mb-2">Don&apos;t have API details?</p>
+              <p className="text-xs text-blue-600 mb-3">Most biometric machines work on local network and need cloud software for API access. You can:</p>
+              <div className="space-y-2">
+                <p className="text-xs text-blue-700">1. Export attendance as Excel from your machine software and use <strong>&quot;Upload Excel&quot;</strong> on Attendance page</p>
+                <p className="text-xs text-blue-700">2. Contact your machine vendor for cloud API setup</p>
+                <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Hi, I need help setting up attendance machine API integration with GST Bill Manager. Can you assist?")}`, "_blank")}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition mt-1">
+                  <MessageCircle className="w-4 h-4" /> Contact Admin for Setup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

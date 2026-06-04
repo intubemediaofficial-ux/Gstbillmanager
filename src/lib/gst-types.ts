@@ -169,6 +169,9 @@ export interface BusinessSettings {
   branchName: string;
   termsAndConditions: string;
   signatureText: string;
+  machineApiUrl?: string;
+  machineApiKey?: string;
+  machineProvider?: "essl" | "zkteco" | "other" | "";
 }
 
 // ── Director Signature ──
