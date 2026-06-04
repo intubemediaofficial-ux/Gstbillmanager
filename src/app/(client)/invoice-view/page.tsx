@@ -283,7 +283,7 @@ ${sectionTitle("B", "#3b82f6", "Buyer")}
 <!-- ITEMS TABLE -->
 <tr>
 <td style="padding:0;background-color:#ffffff;">
-<table style="width:100%;border-collapse:collapse;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;table-layout:fixed;">
 <tr>${headerCols}</tr>
 ${itemRows}
 </table>
@@ -293,7 +293,7 @@ ${itemRows}
 <!-- SUBTOTAL + GST -->
 <tr>
 <td style="padding:0;background-color:#ffffff;">
-<table style="width:100%;border-collapse:collapse;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
 <tr style="background-color:#fafafa;"><td colspan="2" style="padding:10px 24px;text-align:right;font-weight:600;color:#555;font-size:12px;border-bottom:1px solid #e2e8f0;background-color:#fafafa;">Subtotal (Taxable Value)</td><td style="padding:10px 24px;text-align:right;font-weight:700;font-size:14px;border-bottom:1px solid #e2e8f0;width:160px;background-color:#fafafa;">${formatCurrency(invoice.subtotal)}</td></tr>
 ${gstTotals}
 </table>
