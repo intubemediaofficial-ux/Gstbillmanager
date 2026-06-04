@@ -165,8 +165,8 @@ function InvoiceViewContent() {
         }
       }
 
-      // Badge helper - creates a small colored square with letter (Word-compatible)
-      const badge = (letter: string, color: string) => `<td style="width:24px;background-color:${color};color:white;font-size:11px;font-weight:700;text-align:center;vertical-align:middle;padding:4px 0;mso-line-height-rule:exactly;line-height:24px;">${letter}</td><td style="width:8px;background-color:#ffffff;">&nbsp;</td>`;
+      // Badge helper - creates a simple inline badge (no nested table to avoid breaking table-layout:fixed)
+      const sectionTitle = (letter: string, color: string, title: string, bg: string = "#ffffff") => `<p style="margin:0 0 10px 0;font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;background-color:${bg};"><span style="display:inline-block;width:22px;height:22px;background-color:${color};color:white;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:8px;">${letter}</span>${title}</p>`;
 
       // Seller details rows (explicit white backgrounds for Word compatibility)
       const wCell = "background-color:#ffffff;word-wrap:break-word;word-break:break-word;";
@@ -196,7 +196,7 @@ function InvoiceViewContent() {
         </td>`;
       } else {
         middleSection = `<td width="34%" style="width:6.2cm;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
-          <table style="border-collapse:collapse;margin:0 auto 8px auto;"><tr>${badge("Q", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">QR Code</td></tr></table>
+          ${sectionTitle("Q", "#10b981", "QR Code")}
           <img src="${qrB64}" width="80" height="80" style="margin:8px auto;" />
           <p style="font-size:9px;color:#888;margin:4px 0 0 0;">Scan to verify &amp; download</p>
         </td>`;
@@ -255,11 +255,11 @@ p { margin: 0; }
 <colgroup><col width="60%" style="width:11.2cm;" /><col width="40%" style="width:7.4cm;" /></colgroup>
 <tr>
 <td width="60%" style="width:11.2cm;padding:16px 24px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background-color:#ffffff;vertical-align:top;">
-<table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("S", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Seller</td></tr></table>
+${sectionTitle("S", "#3b82f6", "Seller")}
 <table style="border-collapse:collapse;table-layout:fixed;width:9.5cm;"><colgroup><col style="width:2cm;" /><col style="width:0.5cm;" /><col style="width:7cm;" /></colgroup><tbody>${sellerRows}</tbody></table>
 </td>
 <td width="40%" style="width:7.4cm;padding:16px 24px;background-color:#f0f4fa;border-bottom:1px solid #e2e8f0;vertical-align:top;">
-<table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("I", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#f0f4fa;">Invoice Details</td></tr></table>
+${sectionTitle("I", "#3b82f6", "Invoice Details", "#f0f4fa")}
 <table style="border-collapse:collapse;table-layout:fixed;width:5.5cm;"><colgroup><col style="width:2.5cm;" /><col style="width:0.5cm;" /><col style="width:2.5cm;" /></colgroup>
 <tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice No.</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;font-weight:700;color:#111;font-size:14px;background-color:#f0f4fa;">${invoice.invoiceNumber}</td></tr>
 <tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice Date</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;color:#333;font-size:12px;background-color:#f0f4fa;">${formatDate(invoice.date)}</td></tr>
@@ -275,7 +275,7 @@ ${placeOfSupply ? `<tr><td style="padding:5px 0;font-weight:600;color:#555;font-
 <!-- BUYER -->
 <tr>
 <td style="padding:16px 24px;border-bottom:1px solid #e2e8f0;background-color:#ffffff;">
-<table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("B", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Buyer</td></tr></table>
+${sectionTitle("B", "#3b82f6", "Buyer")}
 <table style="border-collapse:collapse;table-layout:fixed;width:16cm;"><colgroup><col style="width:2cm;" /><col style="width:0.5cm;" /><col style="width:13.5cm;" /></colgroup><tbody>${buyerRows}</tbody></table>
 </td>
 </tr>
@@ -325,7 +325,7 @@ ${gstTotals}
 <colgroup><col width="33%" style="width:6.2cm;" /><col width="34%" style="width:6.2cm;" /><col width="33%" style="width:6.2cm;" /></colgroup>
 <tr>
 <td width="33%" style="width:6.2cm;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
-<table style="border-collapse:collapse;margin-bottom:8px;"><tr>${badge("₹", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">Payment Details</td></tr></table>
+${sectionTitle("₹", "#10b981", "Payment Details")}
 ${bankName ? `<table style="border-collapse:collapse;font-size:11px;table-layout:fixed;width:4.5cm;">
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">Bank</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${bankName}</td></tr>
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">A/C No.</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${accNo}</td></tr>
