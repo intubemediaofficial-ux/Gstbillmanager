@@ -190,12 +190,12 @@ function InvoiceViewContent() {
       let middleSection = "";
       if (firmIsGst && cv.gstRate) {
         const termsLines = invoice.terms ? invoice.terms.split("\n").map(l => `<li style="margin-bottom:4px;">${l}</li>`).join("") : `<li style="margin-bottom:4px;">Goods once sold will not be taken back.</li><li style="margin-bottom:4px;">Please make payment within the due date.</li><li style="margin-bottom:4px;">Interest @ 18% p.a. on overdue payments.</li>`;
-        middleSection = `<td style="width:34%;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
+        middleSection = `<td width="34%" style="width:6.2cm;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
           <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Terms &amp; Notes</p>
           <ul style="font-size:11px;color:#555;padding-left:16px;margin:0;line-height:1.6;">${termsLines}</ul>
         </td>`;
       } else {
-        middleSection = `<td style="width:34%;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
+        middleSection = `<td width="34%" style="width:6.2cm;padding:14px 16px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
           <table style="border-collapse:collapse;margin:0 auto 8px auto;"><tr>${badge("Q", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">QR Code</td></tr></table>
           <img src="${qrB64}" width="80" height="80" style="margin:8px auto;" />
           <p style="font-size:9px;color:#888;margin:4px 0 0 0;">Scan to verify &amp; download</p>
@@ -229,13 +229,13 @@ p { margin: 0; }
 </style>
 </head>
 <body>
-<table style="width:100%;border-collapse:collapse;background-color:#ffffff;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;background-color:#ffffff;mso-table-lspace:0pt;mso-table-rspace:0pt;">
 <!-- HEADER -->
 <tr>
 <td style="background-color:#122a4e;padding:18px 24px;">
-<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
 <tr>
-<td style="width:60px;vertical-align:middle;background-color:#122a4e;">${logoHtml}</td>
+<td width="60" style="width:60px;vertical-align:middle;background-color:#122a4e;">${logoHtml}</td>
 <td style="vertical-align:middle;padding-left:14px;background-color:#122a4e;">
 <p style="margin:0;font-size:24px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:2px;font-family:Georgia,serif;">${firmName}</p>
 <p style="margin:6px 0 0 0;font-size:12px;font-weight:600;color:#c9a84c;text-transform:uppercase;letter-spacing:2px;">${INVOICE_TYPE_LABELS[invoice.invoiceType]}</p>
@@ -251,13 +251,13 @@ p { margin: 0; }
 <!-- SELLER + INVOICE DETAILS -->
 <tr>
 <td style="padding:0;background-color:#ffffff;">
-<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
 <tr>
-<td style="width:60%;padding:16px 24px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background-color:#ffffff;">
+<td width="60%" style="width:11.2cm;padding:16px 24px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background-color:#ffffff;vertical-align:top;">
 <table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("S", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#ffffff;">Seller</td></tr></table>
 <table style="width:100%;border-collapse:collapse;"><tbody>${sellerRows}</tbody></table>
 </td>
-<td style="width:40%;padding:16px 24px;background-color:#f0f4fa;border-bottom:1px solid #e2e8f0;">
+<td width="40%" style="width:7.4cm;padding:16px 24px;background-color:#f0f4fa;border-bottom:1px solid #e2e8f0;vertical-align:top;">
 <table style="border-collapse:collapse;margin-bottom:10px;"><tr>${badge("I", "#3b82f6")}<td style="font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;vertical-align:middle;background-color:#f0f4fa;">Invoice Details</td></tr></table>
 <table style="width:100%;border-collapse:collapse;">
 <tr><td style="padding:5px 0;font-weight:600;color:#555;font-size:12px;background-color:#f0f4fa;">Invoice No.</td><td style="padding:5px 8px;color:#aaa;background-color:#f0f4fa;">:</td><td style="padding:5px 0;font-weight:700;color:#111;font-size:14px;background-color:#f0f4fa;">${invoice.invoiceNumber}</td></tr>
@@ -302,13 +302,13 @@ ${gstTotals}
 <!-- GRAND TOTAL -->
 <tr>
 <td style="padding:0;">
-<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
 <tr>
-<td style="width:55%;padding:14px 24px;background-color:#f0f4fa;border-top:2px solid #122a4e;">
+<td width="55%" style="width:10.2cm;padding:14px 24px;background-color:#f0f4fa;border-top:2px solid #122a4e;vertical-align:top;">
 <p style="margin:0 0 4px 0;font-size:10px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:1px;">Amount in Words</p>
 <p style="margin:0;font-size:14px;font-weight:600;font-style:italic;color:#122a4e;">${numberToWords(invoice.grandTotal)}</p>
 </td>
-<td style="width:45%;padding:14px 24px;background-color:#122a4e;text-align:right;border-top:2px solid #122a4e;">
+<td width="45%" style="width:8.4cm;padding:14px 24px;background-color:#122a4e;text-align:right;border-top:2px solid #122a4e;vertical-align:middle;">
 <p style="margin:0;"><span style="font-size:12px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:1px;">Grand Total&nbsp;&nbsp;</span><span style="font-size:26px;font-weight:800;color:#ffffff;">${formatCurrency(invoice.grandTotal)}</span></p>
 </td>
 </tr>
@@ -319,9 +319,9 @@ ${gstTotals}
 <!-- PAYMENT + TERMS/QR + SIGNATURE -->
 <tr>
 <td style="padding:0;background-color:#ffffff;border-top:1px solid #e2e8f0;">
-<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+<table width="100%" cellpadding="0" cellspacing="0" style="width:18.6cm;border-collapse:collapse;">
 <tr>
-<td style="width:33%;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
+<td width="33%" style="width:6.2cm;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
 <table style="border-collapse:collapse;margin-bottom:8px;"><tr>${badge("₹", "#10b981")}<td style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;vertical-align:middle;background-color:#ffffff;">Payment Details</td></tr></table>
 ${bankName ? `<table style="border-collapse:collapse;font-size:11px;width:100%;">
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">Bank</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${bankName}</td></tr>
@@ -331,7 +331,7 @@ ${branch ? `<tr><td style="padding:3px 0;font-weight:600;color:#555;background-c
 </table>` : `<p style="color:#999;font-style:italic;font-size:11px;">Not provided</p>`}
 </td>
 ${middleSection}
-<td style="width:33%;padding:14px 16px;border-left:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
+<td width="33%" style="width:6.2cm;padding:14px 16px;border-left:1px solid #e2e8f0;vertical-align:top;text-align:center;background-color:#ffffff;">
 <p style="font-weight:700;font-size:10px;color:#122a4e;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px 0;">Authorized Signatory</p>
 ${sigB64 ? `<img src="${sigB64}" width="130" height="65" style="margin:8px auto;display:block;" />` : `<p style="border-bottom:1px dashed #ccc;width:80%;margin:30px auto 10px auto;">&nbsp;</p>`}
 <p style="font-weight:700;font-size:12px;color:#111;margin:8px 0 2px 0;">${invoice.signature?.directorName || invoice.firm?.signatureText || settings?.signatureText || ""}</p>
