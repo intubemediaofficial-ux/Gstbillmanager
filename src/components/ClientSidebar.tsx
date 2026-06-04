@@ -82,6 +82,8 @@ const navSections = [
     items: [
       { label: "Barcode Scanner", href: "/barcode-scanner", icon: Scan },
       { label: "POS Receipt", href: "/pos-receipt", icon: Printer },
+      { label: "Business Card", href: "/business-card", icon: CreditCard },
+      { label: "Cash Book", href: "/cash-book", icon: BookOpen },
     ],
   },
   {
@@ -118,6 +120,7 @@ export default function ClientSidebar() {
     "/documents": "nav.documents", "/document-history": "nav.document_history", "/settings": "nav.settings",
     "/inventory": "nav.inventory", "/eway-bills": "nav.eway_bills",
     "/barcode-scanner": "nav.barcode_scanner", "/pos-receipt": "nav.pos_receipt", "/customer-portal": "nav.customer_portal",
+    "/business-card": "nav.business_card", "/cash-book": "nav.cash_book",
   };
   const navLabel = (href: string, fallback: string) => { const k = hrefToKey[href]; return k ? i(k, fallback) : fallback; };
 

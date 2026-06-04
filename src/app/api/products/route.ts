@@ -32,6 +32,7 @@ export async function POST(req: Request) {
         userId: session.id,
         name: body.name,
         hsn: body.hsn || "",
+        barcode: body.barcode || "",
         unit: body.unit || "PCS",
         rate: body.rate || 0,
         gstRate: body.gstRate ?? 18,

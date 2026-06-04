@@ -11,7 +11,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
-  const [form, setForm] = useState({ name: "", hsn: "", unit: "PCS", rate: "", gstRate: "18", type: "goods" as "goods" | "service", description: "" });
+  const [form, setForm] = useState({ name: "", hsn: "", barcode: "", unit: "PCS", rate: "", gstRate: "18", type: "goods" as "goods" | "service", description: "" });
 
   const fetchRef = useRef(0);
   const fetchProducts = () => {
@@ -29,7 +29,7 @@ export default function ProductsPage() {
     const payload = {
       action: editing ? "update" : "create",
       ...(editing ? { id: editing.id } : {}),
-      name: form.name, hsn: form.hsn, unit: form.unit,
+      name: form.name, hsn: form.hsn, barcode: form.barcode, unit: form.unit,
       rate: parseFloat(form.rate) || 0, gstRate: parseInt(form.gstRate),
       type: form.type, description: form.description,
     };
@@ -40,7 +40,7 @@ export default function ProductsPage() {
     });
     setShowForm(false);
     setEditing(null);
-    setForm({ name: "", hsn: "", unit: "PCS", rate: "", gstRate: "18", type: "goods", description: "" });
+    setForm({ name: "", hsn: "", barcode: "", unit: "PCS", rate: "", gstRate: "18", type: "goods", description: "" });
     fetchProducts();
   };
 
@@ -56,19 +56,19 @@ export default function ProductsPage() {
 
   const openEdit = (p: Product) => {
     setEditing(p);
-    setForm({ name: p.name, hsn: p.hsn, unit: p.unit, rate: String(p.rate), gstRate: String(p.gstRate), type: p.type, description: p.description || "" });
+    setForm({ name: p.name, hsn: p.hsn, barcode: p.barcode || "", unit: p.unit, rate: String(p.rate), gstRate: String(p.gstRate), type: p.type, description: p.description || "" });
     setShowForm(true);
   };
 
   const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) || p.hsn.includes(search)
+    p.name.toLowerCase().includes(search.toLowerCase()) || p.hsn.includes(search) || (p.barcode || "").includes(search)
   );
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Products & Services</h1>
-        <button onClick={() => { setEditing(null); setForm({ name: "", hsn: "", unit: "PCS", rate: "", gstRate: "18", type: "goods", description: "" }); setShowForm(true); }}
+        <button onClick={() => { setEditing(null); setForm({ name: "", hsn: "", barcode: "", unit: "PCS", rate: "", gstRate: "18", type: "goods", description: "" }); setShowForm(true); }}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium">
           <Plus className="w-4 h-4" /> Add Product
         </button>
@@ -144,6 +144,12 @@ export default function ProductsPage() {
                     <option value="service">Service</option>
                   </select>
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Barcode Number (EAN-13, UPC etc.)</label>
+                <input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} placeholder="e.g. 8901234567890"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+                <p className="text-xs text-gray-400 mt-1">Product packet पर जो barcode number लिखा है वो यहाँ डालो</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>

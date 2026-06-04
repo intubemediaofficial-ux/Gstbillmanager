@@ -140,6 +140,54 @@ export default function ClientDashboard() {
         ))}
       </div>
 
+      {/* Income vs Expense Chart (Visual) */}
+      {(() => {
+        const months: string[] = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          months.push(d.toISOString().slice(0, 7));
+        }
+        const monthLabels = months.map((m) => { const d = new Date(m + "-01"); return d.toLocaleString("default", { month: "short" }); });
+        const incomeByMonth = months.map((m) => invoices.filter((inv) => inv.status === "paid" && inv.date.startsWith(m)).reduce((s, inv) => s + inv.grandTotal, 0));
+        const expenseByMonth = months.map((m) => expenses.filter((exp) => exp.date.startsWith(m)).reduce((s, exp) => s + exp.totalAmount, 0));
+        const maxVal = Math.max(...incomeByMonth, ...expenseByMonth, 1);
+        const totalIncome6m = incomeByMonth.reduce((a, b) => a + b, 0);
+        const totalExpense6m = expenseByMonth.reduce((a, b) => a + b, 0);
+        const profit6m = totalIncome6m - totalExpense6m;
+        return (
+          <div className="bg-white rounded-2xl border shadow-sm p-5 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-gray-900 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-indigo-600" /> Income vs Expense (6 Months)</h2>
+              <div className="flex gap-4 text-xs">
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Income</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-400 inline-block" /> Expense</span>
+              </div>
+            </div>
+            {/* Bar Chart */}
+            <div className="flex items-end gap-2 h-48 mb-3">
+              {months.map((_, idx) => (
+                <div key={idx} className="flex-1 flex gap-1 items-end h-full">
+                  <div className="flex-1 bg-emerald-500 rounded-t-md transition-all" style={{ height: `${Math.max((incomeByMonth[idx] / maxVal) * 100, 2)}%` }} title={`Income: ${formatCurrency(incomeByMonth[idx])}`} />
+                  <div className="flex-1 bg-red-400 rounded-t-md transition-all" style={{ height: `${Math.max((expenseByMonth[idx] / maxVal) * 100, 2)}%` }} title={`Expense: ${formatCurrency(expenseByMonth[idx])}`} />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mb-4">
+              {monthLabels.map((label, idx) => (
+                <div key={idx} className="flex-1 text-center text-xs text-gray-500">{label}</div>
+              ))}
+            </div>
+            {/* Summary */}
+            <div className="grid grid-cols-3 gap-4 pt-3 border-t">
+              <div className="text-center"><p className="text-xs text-gray-500">Total Income</p><p className="text-lg font-bold text-emerald-600">{formatCurrency(totalIncome6m)}</p></div>
+              <div className="text-center"><p className="text-xs text-gray-500">Total Expense</p><p className="text-lg font-bold text-red-500">{formatCurrency(totalExpense6m)}</p></div>
+              <div className="text-center"><p className="text-xs text-gray-500">Net Profit</p><p className={`text-lg font-bold ${profit6m >= 0 ? "text-indigo-600" : "text-red-600"}`}>{formatCurrency(profit6m)}</p></div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* New Feature Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Link href="/expenses" className="rounded-xl p-4 bg-white border border-red-100 shadow-sm hover:shadow-md transition">

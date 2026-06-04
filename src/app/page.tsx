@@ -79,7 +79,7 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/25">
             <Zap className="w-4 h-4 text-amber-300" />
-            All-In-One Business Document Platform
+            India&apos;s #1 All-In-One Business Management Platform
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
@@ -88,8 +88,8 @@ export default function HomePage() {
           </h1>
 
           <p className="text-lg sm:text-xl text-white/80 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Professional GST billing, HR letters, quotations, visiting cards, inventory management,
-            E-Way Bills, GSTR reports, WhatsApp share, PDF download — complete business solution for India!
+            Professional GST billing, barcode scanner, digital business card, daily cash book, income charts,
+            HR letters, inventory, GSTR reports, 13 languages, WhatsApp share, PDF download — complete business solution for India!
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
@@ -104,8 +104,8 @@ export default function HomePage() {
           {/* Stats */}
           <div className="flex flex-wrap items-center justify-center gap-8 text-white/80 mb-8">
             <div className="text-center">
-              <p className="text-3xl font-bold text-white">34+</p>
-              <p className="text-sm">API Endpoints</p>
+              <p className="text-3xl font-bold text-white">40+</p>
+              <p className="text-sm">Features</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-white">15</p>
@@ -126,6 +126,8 @@ export default function HomePage() {
             <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-300" /> No credit card</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-300" /> Indian GST format</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-300" /> WhatsApp + PDF</span>
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-300" /> 13 Languages</span>
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-300" /> Barcode Scanner</span>
           </div>
         </div>
 
@@ -141,7 +143,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-cyan-50 text-cyan-700 border border-cyan-100">
-              <Sparkles className="w-3.5 h-3.5" /> 30+ FEATURES
+              <Sparkles className="w-3.5 h-3.5" /> 40+ FEATURES
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Complete GST & Business Management</h2>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto">From GST invoicing to HR letters, inventory to GSTR reports — everything a business needs.</p>
@@ -177,6 +179,20 @@ export default function HomePage() {
               { icon: Lock, title: "OTP Password Reset", desc: "Forgot password? OTP sent to email. Secure reset flow.", bg: "#fef2f2", iconColor: "#ef4444" },
               { icon: Mail, title: "Email Notifications", desc: "Professional emails from noreply@gstbillmanager.com via Resend.", bg: "#e0f2fe", iconColor: "#0284c7" },
               { icon: Smartphone, title: "Mobile Responsive", desc: "Hamburger menu, responsive grids. Works on phone, tablet, desktop.", bg: "#fce7f3", iconColor: "#ec4899" },
+              { icon: Eye, title: "Barcode Scanner", desc: "Scan product barcodes via camera (EAN-13, UPC, QR). Auto-add to cart → instant invoice.", bg: "#ecfdf5", iconColor: "#10b981" },
+              { icon: CreditCard, title: "Digital Business Card", desc: "Create visiting card with logo, QR code, contact info. 6 themes. Download PNG or WhatsApp share.", bg: "#eef2ff", iconColor: "#6366f1" },
+              { icon: BookOpen, title: "Daily Cash Book", desc: "रोज़नामचा — Track daily cash in/out. Opening & closing balance. Day-wise grouping. Excel export.", bg: "#fff7ed", iconColor: "#f97316" },
+              { icon: BarChart3, title: "Income vs Expense Chart", desc: "6-month bar chart on dashboard. Total income, expense, net profit at a glance.", bg: "#ede9fe", iconColor: "#8b5cf6" },
+              { icon: Globe, title: "13 Languages", desc: "English, Hindi, Bengali, Gujarati, Marathi, Tamil, Telugu, Kannada, Malayalam, Punjabi, Urdu, Odia, Assamese.", bg: "#f0fdfa", iconColor: "#0d9488" },
+              { icon: Star, title: "POS Receipt", desc: "Thermal printer receipt (58mm/80mm). Quick billing for retail shops.", bg: "#fef9c3", iconColor: "#ca8a04" },
+              { icon: Globe, title: "Customer Portal", desc: "Share link — customer views their invoices, payments & balance online.", bg: "#e0f2fe", iconColor: "#0284c7" },
+              { icon: Award, title: "Credit / Debit Notes", desc: "GST-compliant return & extra charge notes. Linked to original invoice.", bg: "#fef2f2", iconColor: "#ef4444" },
+              { icon: Users, title: "Party Ledger (खाता बही)", desc: "Complete account book per customer. Sales, payments, balance tracking.", bg: "#dcfce7", iconColor: "#16a34a" },
+              { icon: IndianRupee, title: "Purchase Bills", desc: "Track purchases. Input Tax Credit ready. Vendor management.", bg: "#fef3c7", iconColor: "#d97706" },
+              { icon: Star, title: "Greeting Cards", desc: "Diwali, Holi, Eid cards with company logo & name. WhatsApp share.", bg: "#fce7f3", iconColor: "#ec4899" },
+              { icon: Briefcase, title: "Salary Slips & HR", desc: "Employee management, salary slips, attendance tracking. Complete HR module.", bg: "#eef9ff", iconColor: "#0ea5e9" },
+              { icon: TrendingUp, title: "Profit & Loss Report", desc: "Monthly P&L with income, expenses, GST breakdown. Category-wise analysis.", bg: "#fff7ed", iconColor: "#f97316" },
+              { icon: Download, title: "Bulk Import/Export", desc: "Excel import/export for Products, Customers, Invoices. Bulk operations.", bg: "#ecfdf5", iconColor: "#10b981" },
             ].map((f) => (
               <div key={f.title} className="rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 group bg-white hover:-translate-y-1">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300" style={{ background: f.bg }}>

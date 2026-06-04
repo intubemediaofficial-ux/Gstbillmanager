@@ -41,6 +41,7 @@ export interface Product {
   userId: string;
   name: string;
   hsn: string;
+  barcode?: string;
   unit: string;
   rate: number;
   gstRate: number;
