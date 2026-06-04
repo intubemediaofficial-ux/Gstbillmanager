@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/gst-utils";
 export default function ReportsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exportMonth, setExportMonth] = useState(new Date().toISOString().slice(0, 7));
 
   const didFetch = useRef(false);
   useEffect(() => {
@@ -41,11 +42,12 @@ export default function ReportsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Reports</h1>
-        <div className="flex gap-2">
-          <a href="/api/tally-export?format=xml" download className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium">
+        <div className="flex gap-2 items-center flex-wrap">
+          <input type="month" value={exportMonth} onChange={(e) => setExportMonth(e.target.value)} className="px-3 py-2 border rounded-lg text-xs" />
+          <a href={`/api/tally-export?format=xml&month=${exportMonth}`} download className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium">
             <Download className="w-3.5 h-3.5" /> Tally XML
           </a>
-          <a href="/api/tally-export?format=csv" download className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs font-medium">
+          <a href={`/api/tally-export?format=csv&month=${exportMonth}`} download className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs font-medium">
             <Download className="w-3.5 h-3.5" /> Export CSV
           </a>
         </div>

@@ -14,7 +14,7 @@ export default function ExpensesPage() {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("");
-  const [form, setForm] = useState({ date: new Date().toISOString().split("T")[0], category: "miscellaneous" as ExpenseCategory, description: "", amount: "", gstAmount: "0", paymentMode: "cash", vendorName: "", billNumber: "", notes: "" });
+  const [form, setForm] = useState({ date: new Date().toISOString().split("T")[0], category: "miscellaneous" as ExpenseCategory, customCategory: "", description: "", amount: "", gstAmount: "0", paymentMode: "cash", vendorName: "", billNumber: "", notes: "" });
   const didFetch = useRef(false);
 
   useEffect(() => {
@@ -27,13 +27,13 @@ export default function ExpensesPage() {
     const res = await fetch("/api/expenses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "create", ...form, amount: Number(form.amount), gstAmount: Number(form.gstAmount) }),
+      body: JSON.stringify({ action: "create", ...form, amount: Number(form.amount), gstAmount: Number(form.gstAmount), customCategory: form.category === "custom" ? form.customCategory : "" }),
     });
     const data = await res.json();
     if (data.success) {
       setItems((p) => [data.data, ...p]);
       setShowForm(false);
-      setForm({ date: new Date().toISOString().split("T")[0], category: "miscellaneous", description: "", amount: "", gstAmount: "0", paymentMode: "cash", vendorName: "", billNumber: "", notes: "" });
+      setForm({ date: new Date().toISOString().split("T")[0], category: "miscellaneous", customCategory: "", description: "", amount: "", gstAmount: "0", paymentMode: "cash", vendorName: "", billNumber: "", notes: "" });
     }
   };
 
@@ -118,6 +118,9 @@ export default function ExpensesPage() {
               <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as ExpenseCategory })} className="w-full px-3 py-2 border rounded-lg text-sm">
                 {Object.entries(EXPENSE_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
+              {form.category === "custom" && (
+                <input placeholder="Type custom category (e.g. Singer, DJ, Studio, Shooting, Dancer...)" value={form.customCategory} onChange={(e) => setForm({ ...form, customCategory: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm border-blue-300 bg-blue-50" />
+              )}
               <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
                 <input type="number" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="px-3 py-2 border rounded-lg text-sm" />
@@ -163,7 +166,7 @@ export default function ExpensesPage() {
                 {filtered.map((exp) => (
                   <tr key={exp.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-600">{formatDate(exp.date)}</td>
-                    <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLORS[exp.category] || "bg-gray-100 text-gray-700"}`}>{EXPENSE_CATEGORIES[exp.category]}</span></td>
+                    <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLORS[exp.category] || "bg-gray-100 text-gray-700"}`}>{exp.category === "custom" && exp.customCategory ? exp.customCategory : EXPENSE_CATEGORIES[exp.category]}</span></td>
                     <td className="px-4 py-3 text-gray-900 font-medium max-w-[200px] truncate">{exp.description}</td>
                     <td className="px-4 py-3 text-gray-500">{exp.vendorName || "-"}</td>
                     <td className="px-4 py-3 text-gray-500 capitalize">{PAYMENT_MODES[exp.paymentMode]}</td>

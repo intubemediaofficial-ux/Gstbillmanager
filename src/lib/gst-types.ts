@@ -395,7 +395,7 @@ export type ExpenseCategory =
   | "rent" | "salary" | "utilities" | "office_supplies" | "travel"
   | "marketing" | "insurance" | "maintenance" | "internet_phone"
   | "professional_fees" | "raw_materials" | "transport" | "food"
-  | "entertainment" | "miscellaneous";
+  | "entertainment" | "miscellaneous" | "custom";
 
 export const EXPENSE_CATEGORIES: Record<ExpenseCategory, string> = {
   rent: "Rent",
@@ -413,6 +413,7 @@ export const EXPENSE_CATEGORIES: Record<ExpenseCategory, string> = {
   food: "Food & Beverages",
   entertainment: "Entertainment",
   miscellaneous: "Miscellaneous",
+  custom: "Other (Custom)",
 };
 
 export interface Expense {
@@ -420,6 +421,7 @@ export interface Expense {
   userId: string;
   date: string;
   category: ExpenseCategory;
+  customCategory?: string;
   description: string;
   amount: number;
   gstAmount: number;

@@ -35,6 +35,7 @@ export async function POST(req: Request) {
         userId,
         date: body.date || new Date().toISOString().split("T")[0],
         category: body.category || "miscellaneous",
+        customCategory: body.customCategory || "",
         description: body.description || "",
         amount,
         gstAmount,
