@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Printer, Download, Share2, Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { Printer, Download, Share2, Mail, ArrowLeft, Loader2, FileText } from "lucide-react";
 import type { Invoice, BusinessSettings } from "@/lib/gst-types";
 import { INVOICE_TYPE_LABELS } from "@/lib/gst-types";
 import { formatCurrency, formatDate, numberToWords } from "@/lib/gst-utils";
@@ -18,6 +18,7 @@ function InvoiceViewContent() {
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [wordLoading, setWordLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const invoiceRef = useRef<HTMLDivElement>(null);
 
@@ -41,27 +42,7 @@ function InvoiceViewContent() {
 
   const handlePrint = () => window.print();
 
-  const handlePDF = async () => {
-    if (!invoice || !invoiceRef.current) return;
-    setPdfLoading(true);
-    try {
-      const html2canvas = (await import("html2canvas-pro")).default;
-      const { jsPDF } = await import("jspdf");
-      const el = invoiceRef.current;
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
-      const custName = invoice.customer.name.replace(/[^a-zA-Z0-9\u0900-\u097F\u0600-\u06FF ]/g, "").trim().replace(/\s+/g, "_");
-      pdf.save(`${invoice.invoiceNumber.replace(/[\/\s]/g, "_")}_${custName}.pdf`);
-    } catch {
-      window.print();
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+
 
   const handleWhatsApp = () => {
     if (!invoice) return;
@@ -74,6 +55,290 @@ function InvoiceViewContent() {
     const subject = `Invoice ${invoice.invoiceNumber} - ${invoice.firm?.name || settings?.companyName || "GST Bill"}`;
     const body = `Dear ${invoice.customer.name},\n\nPlease find the invoice details below:\n\nInvoice #: ${invoice.invoiceNumber}\nAmount: ${formatCurrency(invoice.grandTotal)}\nDate: ${formatDate(invoice.date)}\nDue Date: ${invoice.dueDate ? formatDate(invoice.dueDate) : "N/A"}\n\nView Invoice: ${window.location.href}\n\nThank you for your business.\n\n${invoice.firm?.name || settings?.companyName || ""}`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+  };
+
+  const handleWord = async () => {
+    if (!invoice) return;
+    setWordLoading(true);
+    try {
+      const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType, AlignmentType, BorderStyle } = await import("docx");
+      const { saveAs } = await import("file-saver");
+
+      const fName = invoice.firm?.name || settings?.companyName || "Your Company";
+      const fAddress = invoice.firm?.address || settings?.address || "";
+      const fState = invoice.firm?.state || settings?.state || "";
+      const fGstin = invoice.firm?.gstin || settings?.gstin || "";
+      const fPan = invoice.firm?.pan || settings?.pan || "";
+
+      const thinBorder = { top: { style: BorderStyle.SINGLE, size: 1 }, bottom: { style: BorderStyle.SINGLE, size: 1 }, left: { style: BorderStyle.SINGLE, size: 1 }, right: { style: BorderStyle.SINGLE, size: 1 } };
+
+      // Header
+      const headerParagraphs = [
+        new Paragraph({ children: [new TextRun({ text: fName, bold: true, size: 32 })], alignment: AlignmentType.CENTER }),
+        new Paragraph({ children: [new TextRun({ text: fAddress + (fState ? `, ${fState}` : ""), size: 20 })], alignment: AlignmentType.CENTER }),
+        ...(fGstin ? [new Paragraph({ children: [new TextRun({ text: `GSTIN: ${fGstin}  |  PAN: ${fPan}`, size: 18 })], alignment: AlignmentType.CENTER })] : []),
+        new Paragraph({ children: [new TextRun({ text: "" })] }),
+        new Paragraph({ children: [new TextRun({ text: INVOICE_TYPE_LABELS[invoice.invoiceType], bold: true, size: 28 })], alignment: AlignmentType.CENTER }),
+        new Paragraph({ children: [new TextRun({ text: "" })] }),
+      ];
+
+      // Invoice details
+      const detailRows = [
+        `Invoice No: ${invoice.invoiceNumber}`,
+        `Date: ${formatDate(invoice.date)}`,
+        ...(invoice.dueDate ? [`Due Date: ${formatDate(invoice.dueDate)}`] : []),
+      ];
+      const detailParagraphs = detailRows.map(r => new Paragraph({ children: [new TextRun({ text: r, size: 20 })] }));
+
+      // Buyer details
+      const buyerParagraphs = [
+        new Paragraph({ children: [new TextRun({ text: "" })] }),
+        new Paragraph({ children: [new TextRun({ text: "Buyer:", bold: true, size: 22 })] }),
+        new Paragraph({ children: [new TextRun({ text: `Name: ${invoice.customer.name}`, size: 20 })] }),
+        ...(invoice.customer.address ? [new Paragraph({ children: [new TextRun({ text: `Address: ${invoice.customer.address}`, size: 20 })] })] : []),
+        ...(invoice.customer.state ? [new Paragraph({ children: [new TextRun({ text: `State: ${invoice.customer.state}`, size: 20 })] })] : []),
+        ...(invoice.customer.gstin ? [new Paragraph({ children: [new TextRun({ text: `GSTIN: ${invoice.customer.gstin}`, size: 20 })] })] : []),
+        ...(invoice.customer.phone ? [new Paragraph({ children: [new TextRun({ text: `Phone: ${invoice.customer.phone}`, size: 20 })] })] : []),
+        new Paragraph({ children: [new TextRun({ text: "" })] }),
+      ];
+
+      // Items table
+      const isGst = invoice.firm?.isGst !== false;
+      const showGstCols = isGst && invoice.columnVisibility?.gstRate !== false;
+      const headers = ["#", "Description"];
+      if (invoice.columnVisibility?.hsn !== false) headers.push("HSN");
+      if (invoice.columnVisibility?.qty !== false) headers.push("Qty");
+      if (invoice.columnVisibility?.rate !== false) headers.push("Rate");
+      if (invoice.columnVisibility?.taxableAmount !== false) headers.push("Amount");
+      if (showGstCols) {
+        if (!invoice.isInterState) { headers.push("CGST%"); headers.push("SGST%"); }
+        else headers.push("IGST%");
+      }
+      headers.push("Tax ₹");
+      headers.push("Total ₹");
+
+      const headerRow = new TableRow({
+        children: headers.map(h => new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 18 })], alignment: AlignmentType.CENTER })],
+          borders: thinBorder,
+        })),
+      });
+
+      const dataRows = invoice.items.map((item, idx) => {
+        const itemTax = item.cgst + item.sgst + item.igst;
+        const lineTotal = item.amount + itemTax;
+        const cells: string[] = [`${idx + 1}`, item.description];
+        if (invoice.columnVisibility?.hsn !== false) cells.push(item.hsn || "");
+        if (invoice.columnVisibility?.qty !== false) cells.push(`${item.qty}${invoice.columnVisibility?.unit !== false ? ` ${item.unit}` : ""}`);
+        if (invoice.columnVisibility?.rate !== false) cells.push(formatCurrency(item.rate));
+        if (invoice.columnVisibility?.taxableAmount !== false) cells.push(formatCurrency(item.amount));
+        if (showGstCols) {
+          if (!invoice.isInterState) { cells.push(`${item.gstRate / 2}%`); cells.push(`${item.gstRate / 2}%`); }
+          else cells.push(`${item.gstRate}%`);
+        }
+        cells.push(formatCurrency(itemTax));
+        cells.push(formatCurrency(lineTotal));
+
+        return new TableRow({
+          children: cells.map(c => new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: c, size: 18 })], alignment: AlignmentType.RIGHT })],
+            borders: thinBorder,
+          })),
+        });
+      });
+
+      const itemsTable = new Table({
+        rows: [headerRow, ...dataRows],
+        width: { size: 100, type: WidthType.PERCENTAGE },
+      });
+
+      // Totals
+      const totalsParagraphs = [
+        new Paragraph({ children: [new TextRun({ text: "" })] }),
+        new Paragraph({ children: [new TextRun({ text: `Subtotal: ${formatCurrency(invoice.subtotal)}`, size: 20 })], alignment: AlignmentType.RIGHT }),
+      ];
+      if (isGst && showGstCols) {
+        if (!invoice.isInterState) {
+          totalsParagraphs.push(new Paragraph({ children: [new TextRun({ text: `CGST: ${formatCurrency(invoice.totalCgst)}`, size: 20 })], alignment: AlignmentType.RIGHT }));
+          totalsParagraphs.push(new Paragraph({ children: [new TextRun({ text: `SGST: ${formatCurrency(invoice.totalSgst)}`, size: 20 })], alignment: AlignmentType.RIGHT }));
+        } else {
+          totalsParagraphs.push(new Paragraph({ children: [new TextRun({ text: `IGST: ${formatCurrency(invoice.totalIgst)}`, size: 20 })], alignment: AlignmentType.RIGHT }));
+        }
+      }
+      totalsParagraphs.push(new Paragraph({ children: [new TextRun({ text: `Grand Total: ${formatCurrency(invoice.grandTotal)}`, bold: true, size: 24 })], alignment: AlignmentType.RIGHT }));
+      totalsParagraphs.push(new Paragraph({ children: [new TextRun({ text: `Amount in Words: ${numberToWords(invoice.grandTotal)}`, italics: true, size: 20 })] }));
+
+      // Bank + Terms
+      const footerParagraphs: InstanceType<typeof Paragraph>[] = [new Paragraph({ children: [new TextRun({ text: "" })] })];
+      if (invoice.firm?.bankName) {
+        footerParagraphs.push(new Paragraph({ children: [new TextRun({ text: "Bank Details:", bold: true, size: 20 })] }));
+        footerParagraphs.push(new Paragraph({ children: [new TextRun({ text: `Bank: ${invoice.firm.bankName} | A/C: ${invoice.firm.accountNumber} | IFSC: ${invoice.firm.ifscCode}`, size: 18 })] }));
+      }
+      if (invoice.terms) {
+        footerParagraphs.push(new Paragraph({ children: [new TextRun({ text: "" })] }));
+        footerParagraphs.push(new Paragraph({ children: [new TextRun({ text: "Terms & Conditions:", bold: true, size: 20 })] }));
+        footerParagraphs.push(new Paragraph({ children: [new TextRun({ text: invoice.terms, size: 18 })] }));
+      }
+
+      const doc = new Document({
+        sections: [{
+          children: [...headerParagraphs, ...detailParagraphs, ...buyerParagraphs, itemsTable, ...totalsParagraphs, ...footerParagraphs],
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const custName = invoice.customer.name.replace(/[^a-zA-Z0-9\u0900-\u097F\u0600-\u06FF ]/g, "").trim().replace(/\s+/g, "_");
+      saveAs(blob, `${invoice.invoiceNumber.replace(/[\/\s]/g, "_")}_${custName}.docx`);
+    } catch (err) {
+      console.error("Word export failed:", err);
+    } finally {
+      setWordLoading(false);
+    }
+  };
+
+  const handleTextPDF = async () => {
+    if (!invoice) return;
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      let y = 15;
+
+      const fName = invoice.firm?.name || settings?.companyName || "Your Company";
+      const fAddress = invoice.firm?.address || settings?.address || "";
+      const fState = invoice.firm?.state || settings?.state || "";
+      const fGstin = invoice.firm?.gstin || settings?.gstin || "";
+      const fPan = invoice.firm?.pan || settings?.pan || "";
+
+      // Company header
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(fName, pageW / 2, y, { align: "center" });
+      y += 6;
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(fAddress + (fState ? `, ${fState}` : ""), pageW / 2, y, { align: "center" });
+      y += 4;
+      if (fGstin) { pdf.text(`GSTIN: ${fGstin}  |  PAN: ${fPan}`, pageW / 2, y, { align: "center" }); y += 4; }
+      y += 3;
+
+      // Invoice title
+      pdf.setFontSize(13);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(INVOICE_TYPE_LABELS[invoice.invoiceType], pageW / 2, y, { align: "center" });
+      y += 8;
+
+      // Invoice details (left) + Buyer (right)
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Invoice No: ${invoice.invoiceNumber}`, 14, y);
+      pdf.text(`Date: ${formatDate(invoice.date)}`, pageW - 14, y, { align: "right" });
+      y += 4;
+      if (invoice.dueDate) { pdf.text(`Due Date: ${formatDate(invoice.dueDate)}`, 14, y); y += 4; }
+      y += 3;
+
+      // Buyer section
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Buyer:", 14, y); y += 4;
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Name: ${invoice.customer.name}`, 14, y); y += 4;
+      if (invoice.customer.address) { pdf.text(`Address: ${invoice.customer.address}`, 14, y); y += 4; }
+      if (invoice.customer.state) { pdf.text(`State: ${invoice.customer.state}`, 14, y); y += 4; }
+      if (invoice.customer.gstin) { pdf.text(`GSTIN: ${invoice.customer.gstin}`, 14, y); y += 4; }
+      if (invoice.customer.phone) { pdf.text(`Phone: ${invoice.customer.phone}`, 14, y); y += 4; }
+      y += 4;
+
+      // Items table using autoTable
+      const isGst = invoice.firm?.isGst !== false;
+      const showGstCols = isGst && invoice.columnVisibility?.gstRate !== false;
+      const head: string[] = ["#", "Description"];
+      if (invoice.columnVisibility?.hsn !== false) head.push("HSN");
+      if (invoice.columnVisibility?.qty !== false) head.push("Qty");
+      if (invoice.columnVisibility?.rate !== false) head.push("Rate");
+      if (invoice.columnVisibility?.taxableAmount !== false) head.push("Amount");
+      if (showGstCols) {
+        if (!invoice.isInterState) { head.push("CGST%"); head.push("SGST%"); }
+        else head.push("IGST%");
+      }
+      head.push("Tax ₹");
+      head.push("Total ₹");
+
+      const body = invoice.items.map((item, idx) => {
+        const itemTax = item.cgst + item.sgst + item.igst;
+        const lineTotal = item.amount + itemTax;
+        const row: string[] = [`${idx + 1}`, item.description];
+        if (invoice.columnVisibility?.hsn !== false) row.push(item.hsn || "");
+        if (invoice.columnVisibility?.qty !== false) row.push(`${item.qty}${invoice.columnVisibility?.unit !== false ? ` ${item.unit}` : ""}`);
+        if (invoice.columnVisibility?.rate !== false) row.push(formatCurrency(item.rate));
+        if (invoice.columnVisibility?.taxableAmount !== false) row.push(formatCurrency(item.amount));
+        if (showGstCols) {
+          if (!invoice.isInterState) { row.push(`${item.gstRate / 2}%`); row.push(`${item.gstRate / 2}%`); }
+          else row.push(`${item.gstRate}%`);
+        }
+        row.push(formatCurrency(itemTax));
+        row.push(formatCurrency(lineTotal));
+        return row;
+      });
+
+      autoTable(pdf, {
+        startY: y,
+        head: [head],
+        body: body,
+        theme: "grid",
+        headStyles: { fillColor: [18, 42, 78], textColor: 255, fontSize: 8, fontStyle: "bold" },
+        bodyStyles: { fontSize: 8 },
+        styles: { cellPadding: 2 },
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      y = (pdf as any).lastAutoTable.finalY + 6;
+
+      // Totals
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Subtotal: ${formatCurrency(invoice.subtotal)}`, pageW - 14, y, { align: "right" }); y += 4;
+      if (isGst && showGstCols) {
+        if (!invoice.isInterState) {
+          pdf.text(`CGST: ${formatCurrency(invoice.totalCgst)}`, pageW - 14, y, { align: "right" }); y += 4;
+          pdf.text(`SGST: ${formatCurrency(invoice.totalSgst)}`, pageW - 14, y, { align: "right" }); y += 4;
+        } else {
+          pdf.text(`IGST: ${formatCurrency(invoice.totalIgst)}`, pageW - 14, y, { align: "right" }); y += 4;
+        }
+      }
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(11);
+      pdf.text(`Grand Total: ${formatCurrency(invoice.grandTotal)}`, pageW - 14, y, { align: "right" }); y += 6;
+      pdf.setFont("helvetica", "italic");
+      pdf.setFontSize(9);
+      pdf.text(`${numberToWords(invoice.grandTotal)}`, 14, y); y += 6;
+
+      // Bank details
+      if (invoice.firm?.bankName) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Bank Details:", 14, y); y += 4;
+        pdf.setFont("helvetica", "normal");
+        pdf.text(`${invoice.firm.bankName} | A/C: ${invoice.firm.accountNumber} | IFSC: ${invoice.firm.ifscCode}`, 14, y); y += 6;
+      }
+
+      // Terms
+      if (invoice.terms) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Terms & Conditions:", 14, y); y += 4;
+        pdf.setFont("helvetica", "normal");
+        const splitTerms = pdf.splitTextToSize(invoice.terms, pageW - 28);
+        pdf.text(splitTerms, 14, y);
+      }
+
+      const custName = invoice.customer.name.replace(/[^a-zA-Z0-9\u0900-\u097F\u0600-\u06FF ]/g, "").trim().replace(/\s+/g, "_");
+      pdf.save(`${invoice.invoiceNumber.replace(/[\/\s]/g, "_")}_${custName}.pdf`);
+    } catch (err) {
+      console.error("Text PDF failed:", err);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full" /></div>;
@@ -139,8 +404,11 @@ function InvoiceViewContent() {
           <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium shadow-sm">
             <Printer className="w-4 h-4" /> Print
           </button>
-          <button onClick={handlePDF} disabled={pdfLoading} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm disabled:opacity-50">
+          <button onClick={handleTextPDF} disabled={pdfLoading} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm disabled:opacity-50">
             {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} {pdfLoading ? "Generating..." : "PDF"}
+          </button>
+          <button onClick={handleWord} disabled={wordLoading} className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium shadow-sm disabled:opacity-50">
+            {wordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} {wordLoading ? "Generating..." : "Word"}
           </button>
         </div>
       </div>
