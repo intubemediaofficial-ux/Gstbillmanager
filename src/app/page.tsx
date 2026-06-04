@@ -193,6 +193,11 @@ export default function HomePage() {
               { icon: Briefcase, title: "Salary Slips & HR", desc: "Employee management, salary slips, attendance tracking. Complete HR module.", bg: "#eef9ff", iconColor: "#0ea5e9" },
               { icon: TrendingUp, title: "Profit & Loss Report", desc: "Monthly P&L with income, expenses, GST breakdown. Category-wise analysis.", bg: "#fff7ed", iconColor: "#f97316" },
               { icon: Download, title: "Bulk Import/Export", desc: "Excel import/export for Products, Customers, Invoices. Bulk operations.", bg: "#ecfdf5", iconColor: "#10b981" },
+              { icon: FileText, title: "PDF to Word Export", desc: "Download any invoice as Word document (.doc). Auto-converts PDF layout to editable Word format.", bg: "#eef2ff", iconColor: "#6366f1" },
+              { icon: Repeat, title: "Recurring Invoices", desc: "Set monthly/weekly auto-invoices. Never forget to bill again.", bg: "#fef9c3", iconColor: "#ca8a04" },
+              { icon: ClipboardList, title: "GSTR-2B Reconciliation", desc: "Match purchase records with government portal data. Auto-reconcile.", bg: "#ede9fe", iconColor: "#8b5cf6" },
+              { icon: IndianRupee, title: "UPI Payment Link", desc: "Add Pay Now button on invoices. Customer pays via UPI/Razorpay instantly.", bg: "#dcfce7", iconColor: "#16a34a" },
+              { icon: Smartphone, title: "PWA — Install as App", desc: "Install on mobile home screen like an app. Works offline. Play Store ready.", bg: "#fce7f3", iconColor: "#ec4899" },
             ].map((f) => (
               <div key={f.title} className="rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 group bg-white hover:-translate-y-1">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300" style={{ background: f.bg }}>
