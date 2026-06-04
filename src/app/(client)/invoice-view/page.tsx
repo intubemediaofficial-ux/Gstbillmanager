@@ -181,7 +181,7 @@ function InvoiceViewContent() {
                 <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "linear-gradient(135deg, #122a4e, #1a3f6f)" }}>
                   <span className="text-white text-[10px] font-bold">S</span>
                 </div>
-                <h3 className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", color: "#122a4e" }}>Seller / Supplier Details</h3>
+                <h3 className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", color: "#122a4e" }}>Seller</h3>
               </div>
               <table className="text-[13px] leading-relaxed">
                 <tbody>
@@ -221,11 +221,11 @@ function InvoiceViewContent() {
               <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "linear-gradient(135deg, #122a4e, #1a3f6f)" }}>
                 <span className="text-white text-[10px] font-bold">B</span>
               </div>
-              <h3 className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", color: "#122a4e" }}>Bill To</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", color: "#122a4e" }}>Buyer</h3>
             </div>
             <table className="text-[13px] leading-relaxed">
               <tbody>
-                <tr><td className="pr-4 py-1 font-semibold text-gray-500 whitespace-nowrap">Customer Name</td><td className="px-2 text-gray-300">:</td><td className="py-1 font-bold text-gray-900" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontSize: "14px" }}>{invoice.customer.name}</td></tr>
+                <tr><td className="pr-4 py-1 font-semibold text-gray-500 whitespace-nowrap">Company Name</td><td className="px-2 text-gray-300">:</td><td className="py-1 font-bold text-gray-900" style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontSize: "14px" }}>{invoice.customer.name}</td></tr>
                 {invoice.customer.address && <tr><td className="pr-4 py-1 font-semibold text-gray-500">Address</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-700">{invoice.customer.address}{invoice.customer.city ? `, ${invoice.customer.city}` : ""}{invoice.customer.state ? `, ${invoice.customer.state}` : ""}, India</td></tr>}
                 {invoice.customer.gstin && <tr><td className="pr-4 py-1 font-semibold text-gray-500">GSTIN</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-800 font-mono font-semibold tracking-wide">{invoice.customer.gstin}</td></tr>}
                 {invoice.customer.gstin && invoice.customer.gstin.length >= 12 && <tr><td className="pr-4 py-1 font-semibold text-gray-500">PAN</td><td className="px-2 text-gray-300">:</td><td className="py-1 text-gray-800 font-mono font-semibold tracking-wide">{invoice.customer.gstin.substring(2, 12)}</td></tr>}
