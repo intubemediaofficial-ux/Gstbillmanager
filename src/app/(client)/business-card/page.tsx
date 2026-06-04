@@ -32,6 +32,7 @@ export default function BusinessCardPage() {
   });
   const [firms, setFirms] = useState<{ name: string; phone: string; email: string; address: string; city: string; state: string; gstin: string; logoUrl: string }[]>([]);
   const [qrText, setQrText] = useState("");
+  const [qrDataUrl, setQrDataUrl] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
   const didMount = useRef(false);
 
@@ -59,6 +60,12 @@ export default function BusinessCardPage() {
   useEffect(() => {
     const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${card.name}\nORG:${card.company}\nTEL:${card.phone}\nEMAIL:${card.email}\nURL:${card.website}\nADR:;;${card.address}\nTITLE:${card.title}\nNOTE:GSTIN: ${card.gstin}\nEND:VCARD`;
     setQrText(vcard);
+    // Generate QR code data URL
+    import("qrcode").then((QRCode) => {
+      QRCode.toDataURL(vcard, { width: 200, margin: 1, color: { dark: "#000000", light: "#ffffff" } })
+        .then((url: string) => setQrDataUrl(url))
+        .catch(() => setQrDataUrl(""));
+    }).catch(() => {});
   }, [card]);
 
   const selectedTheme = THEMES.find((t) => t.id === card.theme) || THEMES[0];
@@ -183,7 +190,7 @@ export default function BusinessCardPage() {
                 {/* QR Code */}
                 <div className="bg-white p-1.5 rounded-lg">
                   <div className="w-16 h-16 flex items-center justify-center">
-                    <QrCode className="w-12 h-12 text-gray-800" />
+                    {qrDataUrl ? <img src={qrDataUrl} alt="QR Code" className="w-16 h-16" /> : <QrCode className="w-12 h-12 text-gray-800" />}
                   </div>
                 </div>
               </div>
@@ -210,7 +217,7 @@ export default function BusinessCardPage() {
             <div className={`rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br ${selectedTheme.bg} p-6 max-w-md mx-auto flex items-center justify-center`} style={{ aspectRatio: "1.75/1" }}>
               <div className="text-center">
                 <div className="bg-white p-4 rounded-xl inline-block mb-3">
-                  <QrCode className="w-24 h-24 text-gray-800" />
+                  {qrDataUrl ? <img src={qrDataUrl} alt="QR Code" className="w-24 h-24" /> : <QrCode className="w-24 h-24 text-gray-800" />}
                 </div>
                 <p className={`text-sm font-semibold ${isWhiteTheme ? "text-gray-900" : "text-white"}`}>Scan to save contact</p>
                 <p className="text-xs mt-1" style={{ color: selectedTheme.accent }}>{card.company || "Company Name"}</p>
