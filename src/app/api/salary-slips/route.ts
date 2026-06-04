@@ -1,6 +1,6 @@
 import { kv } from "@/lib/kv";
 import { getSession } from "@/lib/session";
-import type { SalarySlip } from "@/lib/gst-types";
+import type { SalarySlip, Expense } from "@/lib/gst-types";
 import { generateId } from "@/lib/gst-utils";
 
 export async function GET(req: Request) {
@@ -81,8 +81,36 @@ export async function POST(req: Request) {
     if (action === "update_status") {
       const idx = items.findIndex((i) => i.id === body.id);
       if (idx === -1) return Response.json({ error: "Not found" }, { status: 404 });
-      items[idx].status = body.status || "paid";
+      const newStatus = body.status || "paid";
+      const wasNotPaid = items[idx].status !== "paid";
+      items[idx].status = newStatus;
       await kv.set(key, items);
+
+      // Auto-add to expenses when marked as paid
+      if (newStatus === "paid" && wasNotPaid) {
+        const slip = items[idx];
+        const expKey = `gst_expenses:${userId}`;
+        const expenses: Expense[] = (await kv.get(expKey)) || [];
+        const expense: Expense = {
+          id: generateId(),
+          userId,
+          date: slip.paymentDate || new Date().toISOString().split("T")[0],
+          category: "salary",
+          customCategory: "",
+          description: `Salary - ${slip.employeeName} (${slip.month})`,
+          amount: slip.netSalary,
+          gstAmount: 0,
+          totalAmount: slip.netSalary,
+          paymentMode: (slip.paymentMode as Expense["paymentMode"]) || "bank_transfer",
+          vendorName: slip.employeeName,
+          billNumber: slip.id,
+          notes: `Auto-added from salary slip. Gross: ${slip.grossSalary}, Deductions: ${slip.totalDeductions}`,
+          createdAt: new Date().toISOString(),
+        };
+        expenses.push(expense);
+        await kv.set(expKey, expenses);
+      }
+
       return Response.json({ success: true, data: items[idx] });
     }
 
