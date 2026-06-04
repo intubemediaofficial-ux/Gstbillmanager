@@ -191,7 +191,7 @@ function InvoiceViewContent() {
       }
 
       // Badge helper - creates a simple inline badge (no nested table to avoid breaking table-layout:fixed)
-      const sectionTitle = (letter: string, color: string, title: string, bg: string = "#ffffff") => `<p style="margin:0 0 10px 0;font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;background-color:${bg};"><span style="display:inline-block;width:22px;height:22px;background-color:${color};color:white;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:8px;">${letter}</span>${title}</p>`;
+      const sectionTitle = (_letter: string, _color: string, title: string, bg: string = "#ffffff") => `<p style="margin:0 0 10px 0;font-size:13px;font-weight:700;color:#122a4e;text-transform:uppercase;letter-spacing:2px;background-color:${bg};">${title}</p>`;
 
       // Seller details rows (explicit white backgrounds for Word compatibility)
       const wCell = "background-color:#ffffff;word-wrap:break-word;word-break:break-word;";
