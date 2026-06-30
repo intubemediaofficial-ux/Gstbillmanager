@@ -97,23 +97,20 @@ export default function InvoicesPage() {
     XLSX.writeFile(wb, `Invoices_${monthFilter || "All"}.xlsx`);
   };
 
+  const handleSinglePDF = (id: string) => {
+    const w = window.open(`/invoice-view?id=${id}&auto=pdf`, "_blank");
+    if (w) setTimeout(() => { try { w.close(); } catch { /* */ } }, 8000);
+  };
+
   const handleBulkPDF = async () => {
     if (filtered.length === 0) return;
     setBulkPdfLoading(true);
-    // Open a single window and navigate it sequentially for each invoice
-    const pdfWindow = window.open("about:blank", "pdf_download_window");
     for (let i = 0; i < filtered.length; i++) {
-      if (pdfWindow && !pdfWindow.closed) {
-        pdfWindow.location.href = `/invoice-view?id=${filtered[i].id}&auto=pdf`;
-      } else {
-        // Fallback: open new window if previous was closed
-        window.open(`/invoice-view?id=${filtered[i].id}&auto=pdf`, "pdf_download_window");
-      }
-      // Wait enough time for PDF to generate and download
-      await new Promise((r) => setTimeout(r, 4000));
+      const w = window.open(`/invoice-view?id=${filtered[i].id}&auto=pdf`, `pdf_${i}`);
+      // Wait for PDF to generate and download before opening next
+      await new Promise((r) => setTimeout(r, 5000));
+      try { if (w && !w.closed) w.close(); } catch { /* */ }
     }
-    // Close the helper window
-    try { if (pdfWindow && !pdfWindow.closed) pdfWindow.close(); } catch { /* */ }
     setBulkPdfLoading(false);
   };
 
@@ -194,6 +191,7 @@ export default function InvoicesPage() {
                   </td>
                   <td className="p-3 text-right">
                     <Link href={`/invoice-view?id=${inv.id}`} className="p-1.5 hover:bg-gray-100 rounded inline-block" title="View"><Eye className="w-4 h-4 text-indigo-500" /></Link>
+                    <button onClick={() => handleSinglePDF(inv.id)} className="p-1.5 hover:bg-purple-50 rounded" title="Download PDF"><Download className="w-4 h-4 text-purple-600" /></button>
                     <Link href={`/create-invoice?edit=${inv.id}`} className="p-1.5 hover:bg-blue-50 rounded inline-block" title="Edit"><Edit2 className="w-4 h-4 text-blue-500" /></Link>
                     {["sent", "partial", "overdue"].includes(inv.status) && (
                       <button onClick={() => sendReminder(inv.id)} className="p-1.5 hover:bg-green-50 rounded" title="WhatsApp Reminder"><MessageCircle className="w-4 h-4 text-green-600" /></button>
