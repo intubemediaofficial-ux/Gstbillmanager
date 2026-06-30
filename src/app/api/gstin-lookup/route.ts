@@ -29,7 +29,43 @@ export async function GET(req: Request) {
   const pan = gstin.substring(2, 12);
   const stateName = INDIAN_STATES[stateCode] || "";
 
-  // Source 1: GSTVerify.co.in (₹0.10/call, cheapest option)
+  // Source 1: GSTINCheck.co.in (free 20 calls on signup, then ₹0.50/call)
+  const gstinCheckKey = process.env.GSTINCHECK_API_KEY || "";
+  if (gstinCheckKey) {
+    try {
+      const res = await fetch(
+        `https://sheet.gstincheck.co.in/check/${gstinCheckKey}/${gstin}`,
+        { signal: AbortSignal.timeout(10000) }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        if (json.flag && json.data) {
+          const d = json.data;
+          const addr = d.pradr?.addr || {};
+          const fullAddress = [addr.bno, addr.bnm, addr.flno, addr.st, addr.loc, addr.dst]
+            .filter(Boolean)
+            .join(", ");
+          return Response.json({
+            data: {
+              name: d.tradeNam || d.lgnm || "",
+              address: fullAddress || d.pradr?.adr || "",
+              city: addr.dst || addr.loc || "",
+              state: d.pradr?.addr?.stcd ? (INDIAN_STATES[d.pradr.addr.stcd] || stateName) : stateName,
+              stateCode,
+              pincode: addr.pncd || "",
+              pan,
+              status: d.sts || "Active",
+              businessType: d.ctb || "",
+            } as GstinData,
+          });
+        }
+      }
+    } catch {
+      // continue to next source
+    }
+  }
+
+  // Source 2: GSTVerify.co.in (₹0.10/call, cheapest option)
   const gstVerifyKey = process.env.GSTVERIFY_API_KEY || "";
   if (gstVerifyKey) {
     try {
@@ -69,7 +105,7 @@ export async function GET(req: Request) {
     }
   }
 
-  // Source 2: Sandbox.co.in (if configured)
+  // Source 3: Sandbox.co.in (if configured)
   const sandboxKey = process.env.SANDBOX_API_KEY || "";
   if (sandboxKey) {
     try {
@@ -134,6 +170,6 @@ export async function GET(req: Request) {
       businessType,
     } as GstinData,
     partial: true,
-    message: "Only State & PAN extracted. Add GSTVERIFY_API_KEY in Vercel env for full auto-fill (₹0.10/call at gstverify.co.in).",
+    message: "Only State & PAN extracted. Add GSTINCHECK_API_KEY or GSTVERIFY_API_KEY in Vercel env for full auto-fill.",
   });
 }
