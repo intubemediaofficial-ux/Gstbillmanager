@@ -194,7 +194,7 @@ export default function MyFirmsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Firm / Person Name *</label>
               <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={form.isGst ? "Bainsla Music" : "Ajit Kumar"} />
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter firm / person name" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN {form.isGst ? "*" : "(optional)"} {gstLookup && <Loader2 className="inline w-3.5 h-3.5 animate-spin text-blue-500 ml-1" />}</label>
@@ -228,17 +228,17 @@ export default function MyFirmsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
               <input value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Jaipur" />
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter city" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
               <input value={form.pincode} onChange={(e) => setForm((p) => ({ ...p, pincode: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="302001" />
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter pincode" />
             </div>
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
               <input value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Full address" />
+                className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter full address" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
@@ -261,12 +261,12 @@ export default function MyFirmsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
                   <input value={form.bankName} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="State Bank of India" />
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter bank name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
                   <input value={form.accountNumber} onChange={(e) => setForm((p) => ({ ...p, accountNumber: e.target.value }))}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="1234567890" />
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter account number" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
@@ -276,7 +276,7 @@ export default function MyFirmsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
                   <input value={form.branchName} onChange={(e) => setForm((p) => ({ ...p, branchName: e.target.value }))}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Main Branch, Jaipur" />
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter branch name" />
                 </div>
               </div>
             </div>
