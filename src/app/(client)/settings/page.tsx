@@ -126,10 +126,10 @@ export default function SettingsPage() {
               <div><label className="block text-sm font-medium mb-1">Pincode</label>
                 <input value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
               <div><label className="block text-sm font-medium mb-1">Phone</label>
-                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} autoComplete="off" name="company-phone-field" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
             </div>
             <div><label className="block text-sm font-medium mb-1">Email</label>
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="off" name="company-email-field" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
           </div>
         </div>
 
@@ -227,6 +227,7 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium mb-1">Current Password</label>
               <div className="relative">
                 <input type={showCurrentPw ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="new-password" name="gbm-current-pw"
                   className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter current password" />
                 <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -237,6 +238,7 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium mb-1">New Password (min 6 characters)</label>
               <div className="relative">
                 <input type={showNewPw ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password" name="gbm-new-pw"
                   className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter new password" minLength={6} />
                 <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -246,6 +248,7 @@ export default function SettingsPage() {
             <div>
               <label className="block text-sm font-medium mb-1">Confirm New Password</label>
               <input type={showNewPw ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password" name="gbm-confirm-pw"
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Confirm new password" />
             </div>
             <button onClick={async () => {
