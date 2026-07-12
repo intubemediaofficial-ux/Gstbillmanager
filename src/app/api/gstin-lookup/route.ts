@@ -170,6 +170,6 @@ export async function GET(req: Request) {
       businessType,
     } as GstinData,
     partial: true,
-    message: "Only State & PAN extracted. Add GSTINCHECK_API_KEY or GSTVERIFY_API_KEY in Vercel env for full auto-fill.",
+    message: "Only State & PAN extracted from GSTIN. A valid GST verification API key is needed for full name/address auto-fill.",
   });
 }

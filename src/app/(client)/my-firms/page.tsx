@@ -194,11 +194,13 @@ export default function MyFirmsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Firm / Person Name *</label>
               <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                autoComplete="off" name="firm-name-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter firm / person name" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN {form.isGst ? "*" : "(optional)"} {gstLookup && <Loader2 className="inline w-3.5 h-3.5 animate-spin text-blue-500 ml-1" />}</label>
               <input value={form.gstin} onChange={(e) => handleGstin(e.target.value.toUpperCase())}
+                autoComplete="off" name="firm-gstin-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="29ABCDE1234F1Z5" maxLength={15} />
               {gstMsg && <p className="text-xs mt-1 text-emerald-600">{gstMsg}</p>}
             </div>
@@ -228,26 +230,31 @@ export default function MyFirmsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
               <input value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+                autoComplete="off" name="firm-city-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter city" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
               <input value={form.pincode} onChange={(e) => setForm((p) => ({ ...p, pincode: e.target.value }))}
+                autoComplete="off" name="firm-pincode-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter pincode" />
             </div>
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
               <input value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+                autoComplete="off" name="firm-address-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter full address" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
               <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                autoComplete="off" name="firm-phone-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="9876543210" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                autoComplete="off" name="firm-email-field"
                 className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="firm@email.com" />
             </div>
             <div>
