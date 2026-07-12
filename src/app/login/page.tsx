@@ -252,7 +252,7 @@ function LoginContent() {
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username"
                         className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
                         placeholder="your@email.com" required />
                     </div>
@@ -261,7 +261,7 @@ function LoginContent() {
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                      <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password"
                         className="w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
                         placeholder="••••••••" required />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -354,7 +354,7 @@ function LoginContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email"
                     className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
                     placeholder="your@email.com" required />
                 </div>
@@ -373,7 +373,7 @@ function LoginContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Password * (min 6 characters)</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                  <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password"
                     className="w-full pl-11 pr-12 py-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
                     placeholder="••••••••" required minLength={6} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
