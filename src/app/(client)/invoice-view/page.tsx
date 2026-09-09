@@ -34,8 +34,17 @@ function InvoiceViewContent() {
       fetch(invoiceUrl).then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json()),
       fetch("/api/auth/me").then((r) => r.json()).catch(() => ({ id: "" })),
-    ]).then(([iRes, sRes, meRes]) => {
-      setInvoice(iRes.data || null);
+      adminUserId ? Promise.resolve({ data: [] }) : fetch("/api/firms").then((r) => r.json()).catch(() => ({ data: [] })),
+    ]).then(([iRes, sRes, meRes, fRes]) => {
+      const inv = iRes.data || null;
+      // Fill fields missing from the stored firm snapshot (e.g. accountHolder
+      // added later) from the live firm record, so older invoices pick up new
+      // firm details without needing to be re-edited.
+      if (inv?.firm) {
+        const live = (fRes.data || []).find((f: { id: string; accountHolder?: string }) => f.id === inv.firm.id);
+        if (live?.accountHolder && !inv.firm.accountHolder) inv.firm.accountHolder = live.accountHolder;
+      }
+      setInvoice(inv);
       setSettings(sRes.data || null);
       setCurrentUserId(adminUserId || meRes.id || "");
     }).finally(() => setLoading(false));
