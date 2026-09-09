@@ -15,22 +15,29 @@ export async function elementToPdf(el: HTMLElement, filename: string): Promise<v
     useCORS: true,
     logging: false,
     backgroundColor: "#ffffff",
+    // Capture the element's full scroll size so content wider/taller than the
+    // visible box (e.g. on small screens) isn't clipped.
+    width: el.scrollWidth,
+    height: el.scrollHeight,
+    windowWidth: Math.max(document.documentElement.clientWidth, el.scrollWidth),
   });
-  const imgData = canvas.toDataURL("image/jpeg", 0.97);
+  const imgData = canvas.toDataURL("image/jpeg", 0.98);
 
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
+  // Small margin so nothing prints outside the printer-safe area.
+  const margin = 4;
+  const pageW = pdf.internal.pageSize.getWidth() - margin * 2;
+  const pageH = pdf.internal.pageSize.getHeight() - margin * 2;
   const imgH = (canvas.height * pageW) / canvas.width;
 
   let heightLeft = imgH;
-  let position = 0;
-  pdf.addImage(imgData, "JPEG", 0, position, pageW, imgH);
+  let position = margin;
+  pdf.addImage(imgData, "JPEG", margin, position, pageW, imgH);
   heightLeft -= pageH;
   while (heightLeft > 0) {
     position -= pageH;
     pdf.addPage();
-    pdf.addImage(imgData, "JPEG", 0, position, pageW, imgH);
+    pdf.addImage(imgData, "JPEG", margin, position, pageW, imgH);
     heightLeft -= pageH;
   }
 

@@ -3,11 +3,15 @@ import { getSession } from "@/lib/session";
 import type { Firm } from "@/lib/gst-types";
 import { generateId } from "@/lib/gst-utils";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-  const firms: Firm[] = (await kv.get(`firms_${session.id}`)) || [];
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
+  const lookupUserId = (userId && session.role === "admin") ? userId : session.id;
+
+  const firms: Firm[] = (await kv.get(`firms_${lookupUserId}`)) || [];
   return Response.json({ data: firms });
 }
 
