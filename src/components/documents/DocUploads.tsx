@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { Upload, Image, PenTool, X } from "lucide-react";
+import { fileToDataUrl } from "@/lib/image-utils";
 
 const STORAGE_KEY_LETTERHEAD = "doc_letterhead";
 const STORAGE_KEY_SIGNATURE = "doc_signature";
@@ -43,15 +44,11 @@ export default function DocUploads({ letterhead, signature, setLetterhead, setSi
   const lhRef = useRef<HTMLInputElement>(null);
   const sigRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>, type: "lh" | "sig") => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>, type: "lh" | "sig") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      type === "lh" ? setLetterhead(url) : setSignature(url);
-    };
-    reader.readAsDataURL(file);
+    const { data } = await fileToDataUrl(file, type === "lh" ? { maxDim: 1600, quality: 0.85 } : { maxDim: 800, quality: 0.9, format: "png" });
+    type === "lh" ? setLetterhead(data) : setSignature(data);
     e.target.value = "";
   };
 
