@@ -55,10 +55,10 @@ export default function IdCardPage() {
     try {
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(docRef.current, { scale: 3, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [54, 86] });
-      pdf.addImage(imgData, "PNG", 0, 0, 54, 86);
+      const canvas = await html2canvas(docRef.current, { scale: 3, useCORS: true, logging: false, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [54, 86], compress: true });
+      pdf.addImage(imgData, "JPEG", 0, 0, 54, 86);
       pdf.save(`ID_Card_${empName || "card"}.pdf`);
       fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "ID Card", title: `ID Card - ${empName}`, recipientName: empName, firmName: selectedFirm?.name || "", templateName: template.name, formData: { empName, empId, designation, department, mobile, bloodGroup, emergencyContact, validTill } }) }).catch(() => {});
     } catch { window.print(); }

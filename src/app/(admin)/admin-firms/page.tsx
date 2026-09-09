@@ -49,6 +49,7 @@ export default function AdminFirmsPage() {
       accountNumber: f.accountNumber || "",
       ifscCode: f.ifscCode || "",
       branchName: f.branchName || "",
+      accountHolder: f.accountHolder || "",
     });
   };
 
@@ -173,6 +174,7 @@ export default function AdminFirmsPage() {
                 ["pincode", "Pincode"],
                 ["phone", "Phone"],
                 ["email", "Email"],
+                ["accountHolder", "Account Holder Name"],
                 ["bankName", "Bank Name"],
                 ["accountNumber", "Account Number"],
                 ["ifscCode", "IFSC Code"],

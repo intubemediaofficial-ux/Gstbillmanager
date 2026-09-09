@@ -376,7 +376,7 @@ export function ClassicTemplate({ invoice, settings, currentUserId, cv }: Invoic
             <p className="font-bold mb-1">Company&apos;s Bank Details</p>
             {(invoice.firm?.bankName || settings?.bankName) ? (
               <div className="text-[10px]">
-                <p>A/c Holder&apos;s Name: <span className="font-bold">{f.name}</span></p>
+                <p>A/c Holder&apos;s Name: <span className="font-bold">{invoice.firm?.accountHolder || settings?.accountHolder || f.name}</span></p>
                 <p>Bank Name: <span className="font-bold">{invoice.firm?.bankName || settings?.bankName}</span></p>
                 <p>A/c No.: <span className="font-bold font-mono">{invoice.firm?.accountNumber || settings?.accountNumber}</span></p>
                 <p>IFSC: <span className="font-bold font-mono">{invoice.firm?.ifscCode || settings?.ifscCode}</span></p>
@@ -541,6 +541,7 @@ export function MinimalTemplate({ invoice, settings, currentUserId, cv }: Invoic
             <p className="font-bold text-[10px] uppercase tracking-wider text-gray-400 mb-2">Bank Details</p>
             {(invoice.firm?.bankName || settings?.bankName) ? (
               <div className="text-[10px] text-gray-600 space-y-0.5">
+                {(invoice.firm?.accountHolder || settings?.accountHolder) && <p>A/c Holder: {invoice.firm?.accountHolder || settings?.accountHolder}</p>}
                 <p>Bank: {invoice.firm?.bankName || settings?.bankName}</p>
                 <p>A/C: {invoice.firm?.accountNumber || settings?.accountNumber}</p>
                 <p>IFSC: {invoice.firm?.ifscCode || settings?.ifscCode}</p>
@@ -760,6 +761,7 @@ export function CorporateTemplate({ invoice, settings, currentUserId, cv }: Invo
             <p className="font-bold text-[10px] uppercase tracking-wider text-slate-400 mb-2">Bank Details</p>
             {(invoice.firm?.bankName || settings?.bankName) ? (
               <div className="text-[10px] text-slate-600 space-y-0.5">
+                {(invoice.firm?.accountHolder || settings?.accountHolder) && <p>A/c Holder: {invoice.firm?.accountHolder || settings?.accountHolder}</p>}
                 <p>{invoice.firm?.bankName || settings?.bankName}</p>
                 <p>A/C: {invoice.firm?.accountNumber || settings?.accountNumber}</p>
                 <p>IFSC: {invoice.firm?.ifscCode || settings?.ifscCode}</p>

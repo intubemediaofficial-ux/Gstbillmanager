@@ -53,10 +53,10 @@ export default function VisitingCardPage() {
     try {
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(docRef.current, { scale: 3, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [89, 51] });
-      pdf.addImage(imgData, "PNG", 0, 0, 89, 51);
+      const canvas = await html2canvas(docRef.current, { scale: 3, useCORS: true, logging: false, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [89, 51], compress: true });
+      pdf.addImage(imgData, "JPEG", 0, 0, 89, 51);
       pdf.save(`Visiting_Card_${name || "card"}.pdf`);
       fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "Visiting Card", title: `Visiting Card - ${name}`, recipientName: name, firmName: selectedFirm?.name || "", templateName: template.name, formData: { name, designation, mobile, email, website, address, gstNo, tagline } }) }).catch(() => {});
     } catch { window.print(); }

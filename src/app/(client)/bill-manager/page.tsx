@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FolderOpen, Upload, Search, Trash2, Download, Filter, CheckSquare, Square, X, Plus, FileText, ShoppingCart, Receipt } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/gst-utils";
+import { fileToDataUrl } from "@/lib/image-utils";
 
 interface StoredBill {
   id: string;
@@ -16,9 +17,10 @@ interface StoredBill {
   year: number;
   category: string;
   notes: string;
-  fileData: string;
+  fileData?: string;
   fileName: string;
   fileType: string;
+  hasFile?: boolean;
   createdAt: string;
 }
 
@@ -76,15 +78,16 @@ export default function BillManagerPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("File size must be under 5MB"); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormFile({ data: reader.result as string, name: file.name, type: file.type });
-    };
-    reader.readAsDataURL(file);
+    if (!file.type.startsWith("image/") && file.size > 5 * 1024 * 1024) { alert("File size must be under 5MB"); return; }
+    try {
+      const compressed = await fileToDataUrl(file, { maxDim: 1600, quality: 0.85 });
+      setFormFile(compressed);
+    } catch {
+      alert("Could not read this file.");
+    }
   };
 
   const handleSave = async () => {
@@ -111,7 +114,7 @@ export default function BillManagerPage() {
     const data = await res.json();
     setSaving(false);
     if (data.success) {
-      setBills((prev) => [data.data, ...prev]);
+      setBills((prev) => [{ ...data.data, fileData: "", hasFile: Boolean(data.data.fileData) }, ...prev]);
       setShowForm(false);
       resetForm();
     }
@@ -128,17 +131,28 @@ export default function BillManagerPage() {
     setSelectedIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
   };
 
+  const downloadBillFile = async (b: StoredBill) => {
+    let data = b.fileData;
+    let name = b.fileName;
+    if (!data) {
+      const res = await fetch(`/api/bill-storage?file=${encodeURIComponent(b.id)}`);
+      const json = await res.json();
+      if (!res.ok || !json.data?.fileData) { alert("File not found for this bill."); return; }
+      data = json.data.fileData as string;
+      name = json.data.fileName;
+    }
+    const link = document.createElement("a");
+    link.href = data;
+    link.download = name || `bill_${b.billNumber || b.id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleBulkDownload = () => {
-    const selected = filtered.filter((b) => selectedIds.has(b.id) && b.fileData);
+    const selected = filtered.filter((b) => selectedIds.has(b.id) && (b.fileData || b.hasFile));
     if (selected.length === 0) { alert("No files to download. Select bills that have uploaded files."); return; }
-    selected.forEach((b) => {
-      const link = document.createElement("a");
-      link.href = b.fileData;
-      link.download = b.fileName || `bill_${b.billNumber || b.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+    selected.forEach((b) => { void downloadBillFile(b); });
   };
 
   const resetForm = () => {
@@ -244,8 +258,8 @@ export default function BillManagerPage() {
                     {bill.gstAmount > 0 && <p className="text-xs text-gray-400">GST: {formatCurrency(bill.gstAmount)}</p>}
                   </div>
                   <div className="flex items-center gap-1">
-                    {bill.fileData && (
-                      <a href={bill.fileData} download={bill.fileName} className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"><Download className="w-4 h-4" /></a>
+                    {(bill.fileData || bill.hasFile) && (
+                      <button onClick={() => downloadBillFile(bill)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"><Download className="w-4 h-4" /></button>
                     )}
                     {bill.fileName && <span className="text-xs text-gray-400 max-w-[80px] truncate">{bill.fileName}</span>}
                     <button onClick={() => handleDelete(bill.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500"><Trash2 className="w-4 h-4" /></button>

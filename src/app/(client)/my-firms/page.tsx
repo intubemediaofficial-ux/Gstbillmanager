@@ -6,12 +6,13 @@ import Image from "next/image";
 import type { Firm, Signature } from "@/lib/gst-types";
 import { INDIAN_STATES } from "@/lib/gst-types";
 import { useAutoSave, loadDraft } from "@/lib/use-auto-save";
+import { fileToDataUrl } from "@/lib/image-utils";
 
 const emptyFirm = {
   isGst: true,
   name: "", address: "", city: "", state: "", stateCode: "", pincode: "",
   gstin: "", pan: "", phone: "", email: "",
-  bankName: "", accountNumber: "", ifscCode: "", branchName: "",
+  bankName: "", accountNumber: "", ifscCode: "", branchName: "", accountHolder: "",
   hsnCode: "", signatureText: "", letterhead: "", logo: "",
 };
 
@@ -99,7 +100,7 @@ export default function MyFirmsPage() {
       name: f.name, address: f.address, city: f.city, state: f.state,
       stateCode: f.stateCode, pincode: f.pincode, gstin: f.gstin, pan: f.pan,
       phone: f.phone, email: f.email, bankName: f.bankName,
-      accountNumber: f.accountNumber, ifscCode: f.ifscCode, branchName: f.branchName,
+      accountNumber: f.accountNumber, ifscCode: f.ifscCode, branchName: f.branchName, accountHolder: f.accountHolder || "",
       hsnCode: f.hsnCode, signatureText: f.signatureText, letterhead: f.letterhead || "", logo: f.logo || "",
     });
     setShowForm(true);
@@ -115,13 +116,15 @@ export default function MyFirmsPage() {
     load();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 500_000) return alert("File too large. Max 500KB.");
-    const reader = new FileReader();
-    reader.onload = () => setSigImage(reader.result as string);
-    reader.readAsDataURL(file);
+    try {
+      const { data } = await fileToDataUrl(file, { maxDim: 800, quality: 0.9, format: "png" });
+      setSigImage(data);
+    } catch {
+      alert("Could not read this image.");
+    }
   };
 
   const handleSigUpload = async () => {
@@ -266,6 +269,11 @@ export default function MyFirmsPage() {
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Landmark className="w-4 h-4" /> Bank Account Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder Name</label>
+                  <input value={form.accountHolder || ""} onChange={(e) => setForm((p) => ({ ...p, accountHolder: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Name as per bank account" />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
                   <input value={form.bankName} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
                     className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Enter bank name" />
@@ -295,13 +303,15 @@ export default function MyFirmsPage() {
             <div className="md:col-span-3 border-t pt-4 mt-2">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Company Letterhead (Optional)</h3>
               <p className="text-xs text-gray-500 mb-2">Upload your company letterhead image. Invoice will print on this letterhead background.</p>
-              <input type="file" accept="image/*" onChange={(e) => {
+              <input type="file" accept="image/*" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                if (file.size > 2 * 1024 * 1024) { alert("Max 2MB allowed"); return; }
-                const reader = new FileReader();
-                reader.onload = () => setForm((p) => ({ ...p, letterhead: reader.result as string }));
-                reader.readAsDataURL(file);
+                try {
+                  const { data } = await fileToDataUrl(file, { maxDim: 1600, quality: 0.85 });
+                  setForm((p) => ({ ...p, letterhead: data }));
+                } catch {
+                  alert("Could not read this image.");
+                }
               }} className="border rounded-lg px-3 py-2 text-sm w-full" />
               {form.letterhead && (
                 <div className="mt-2 border rounded-lg p-2 bg-gray-50 relative">
@@ -316,13 +326,15 @@ export default function MyFirmsPage() {
             <div className="md:col-span-3 border-t pt-4 mt-2">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Company Logo (Optional)</h3>
               <p className="text-xs text-gray-500 mb-2">Upload your company logo. It will appear in the invoice header next to your firm name.</p>
-              <input type="file" accept="image/*" onChange={(e) => {
+              <input type="file" accept="image/*" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                if (file.size > 1 * 1024 * 1024) { alert("Max 1MB allowed"); return; }
-                const reader = new FileReader();
-                reader.onload = () => setForm((p) => ({ ...p, logo: reader.result as string }));
-                reader.readAsDataURL(file);
+                try {
+                  const { data } = await fileToDataUrl(file, { maxDim: 600, quality: 0.9, format: "png" });
+                  setForm((p) => ({ ...p, logo: data }));
+                } catch {
+                  alert("Could not read this image.");
+                }
               }} className="border rounded-lg px-3 py-2 text-sm w-full" />
               {form.logo && (
                 <div className="mt-2 border rounded-lg p-2 bg-gray-50 relative">
@@ -434,6 +446,7 @@ export default function MyFirmsPage() {
                 <div className="mt-3 border-t pt-3">
                   <p className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-1"><Landmark className="w-3 h-3" /> Bank Details</p>
                   <div className="text-sm text-gray-600 space-y-0.5">
+                    {f.accountHolder && <p><span className="text-gray-400">A/c Holder:</span> {f.accountHolder}</p>}
                     {f.bankName && <p><span className="text-gray-400">Bank:</span> {f.bankName}{f.branchName ? ` (${f.branchName})` : ""}</p>}
                     {f.accountNumber && <p><span className="text-gray-400">A/C:</span> {f.accountNumber}</p>}
                     {f.ifscCode && <p><span className="text-gray-400">IFSC:</span> {f.ifscCode}</p>}

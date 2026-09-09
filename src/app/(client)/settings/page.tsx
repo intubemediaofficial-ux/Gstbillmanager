@@ -9,7 +9,7 @@ import { INDIAN_STATES } from "@/lib/gst-types";
 const defaultSettings: BusinessSettings = {
   companyName: "", address: "", city: "", state: "", stateCode: "", pincode: "",
   gstin: "", pan: "", phone: "", email: "", invoicePrefix: "INV/2024-25/",
-  lastInvoiceNumber: 0, bankName: "", accountNumber: "", ifscCode: "", branchName: "",
+  lastInvoiceNumber: 0, bankName: "", accountNumber: "", ifscCode: "", branchName: "", accountHolder: "",
   termsAndConditions: "", signatureText: "",
 };
 
@@ -149,6 +149,8 @@ export default function SettingsPage() {
           <h2 className="font-semibold mb-4">Bank Details</h2>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
+              <div><label className="block text-sm font-medium mb-1">Account Holder Name</label>
+                <input value={form.accountHolder || ""} onChange={(e) => setForm({ ...form, accountHolder: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
               <div><label className="block text-sm font-medium mb-1">Bank Name</label>
                 <input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
               <div><label className="block text-sm font-medium mb-1">Branch</label>
