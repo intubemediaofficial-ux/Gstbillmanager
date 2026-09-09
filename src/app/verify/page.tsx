@@ -124,15 +124,8 @@ export default function VerifyPage() {
                   if (!el) throw new Error("no ref");
                   el.style.display = "block";
                   await new Promise((r) => setTimeout(r, 200));
-                  const html2canvas = (await import("html2canvas-pro")).default;
-                  const { jsPDF } = await import("jspdf");
-                  const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
-                  const imgData = canvas.toDataURL("image/png");
-                  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-                  const pdfW = pdf.internal.pageSize.getWidth();
-                  const pdfH = (canvas.height * pdfW) / canvas.width;
-                  pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
-                  pdf.save(`${data.invoiceNumber.replace(/[\/\s]/g, "_")}.pdf`);
+                  const { elementToPdf } = await import("@/lib/pdf-utils");
+                  await elementToPdf(el, `${data.invoiceNumber.replace(/[\/\s]/g, "_")}.pdf`);
                   el.style.display = "none";
                 } catch {
                   alert("PDF download failed. Please try again.");

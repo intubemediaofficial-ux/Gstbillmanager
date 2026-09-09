@@ -5,6 +5,7 @@ import { ArrowLeft, Download, Printer, Loader2, Upload, X, Image } from "lucide-
 import { useRouter } from "next/navigation";
 import type { Firm } from "@/lib/gst-types";
 import { formatDate } from "@/components/documents/doc-templates";
+import { fileToDataUrl } from "@/lib/image-utils";
 
 interface LetterheadTemplate {
   id: string;
@@ -221,21 +222,19 @@ export default function LetterheadPage() {
     } catch { /* noop */ }
   }, []);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: "logo" | "signature") => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "logo" | "signature") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
+    try {
+      const { data } = await fileToDataUrl(file, { maxDim: 800, quality: 0.9, format: "png" });
       if (type === "logo") {
-        setLogo(dataUrl);
-        try { localStorage.setItem("letterhead_logo", dataUrl); } catch { /* noop */ }
+        setLogo(data);
+        try { localStorage.setItem("letterhead_logo", data); } catch { /* noop */ }
       } else {
-        setSignature(dataUrl);
-        try { localStorage.setItem("doc_signature", dataUrl); } catch { /* noop */ }
+        setSignature(data);
+        try { localStorage.setItem("doc_signature", data); } catch { /* noop */ }
       }
-    };
-    reader.readAsDataURL(file);
+    } catch { /* invalid image */ }
     e.target.value = "";
   };
 
@@ -254,15 +253,8 @@ export default function LetterheadPage() {
     if (!docRef.current) return;
     setPdfLoading(true);
     try {
-      const html2canvas = (await import("html2canvas-pro")).default;
-      const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(docRef.current, { scale: 2, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
-      pdf.save(`Letterhead_${form.subject || "document"}.pdf`);
+      const { elementToPdf } = await import("@/lib/pdf-utils");
+      await elementToPdf(docRef.current, `Letterhead_${form.subject || "document"}.pdf`);
       try {
         await fetch("/api/documents", {
           method: "POST",

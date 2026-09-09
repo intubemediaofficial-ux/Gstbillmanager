@@ -56,17 +56,9 @@ function InvoiceViewContent() {
     if (!invoice || !invoiceRef.current) return;
     setPdfLoading(true);
     try {
-      const html2canvas = (await import("html2canvas-pro")).default;
-      const { jsPDF } = await import("jspdf");
-      const el = invoiceRef.current;
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
+      const { elementToPdf } = await import("@/lib/pdf-utils");
       const custName = invoice.customer.name.replace(/[^a-zA-Z0-9\u0900-\u097F\u0600-\u06FF ]/g, "").trim().replace(/\s+/g, "_");
-      pdf.save(`${invoice.invoiceNumber.replace(/[\/\s]/g, "_")}_${custName}.pdf`);
+      await elementToPdf(invoiceRef.current, `${invoice.invoiceNumber.replace(/[\/\s]/g, "_")}_${custName}.pdf`);
     } catch {
       window.print();
     } finally {
@@ -97,7 +89,8 @@ function InvoiceViewContent() {
       const text = `*${firmName}*\n\n📄 Invoice: *${invoice.invoiceNumber}*\n💰 Amount Due: *${formatCurrency(balance)}*\n\n💳 Pay via UPI:\n${upiLink}\n\nOr scan the QR code on the invoice.`;
       window.open(`https://wa.me/${invoice.customer.phone || ""}?text=${encodeURIComponent(text)}`, "_blank");
     } else {
-      const text = `*${firmName}*\n\n📄 Invoice: *${invoice.invoiceNumber}*\n💰 Amount Due: *${formatCurrency(balance)}*\n\n🏦 Bank Details:\nBank: ${invoice.firm?.bankName || settings?.bankName || ""}\nA/C: ${invoice.firm?.accountNumber || settings?.accountNumber || ""}\nIFSC: ${invoice.firm?.ifscCode || settings?.ifscCode || ""}\n\nPlease pay and share the reference number.`;
+      const accHolder = invoice.firm?.accountHolder || settings?.accountHolder || "";
+      const text = `*${firmName}*\n\n📄 Invoice: *${invoice.invoiceNumber}*\n💰 Amount Due: *${formatCurrency(balance)}*\n\n🏦 Bank Details:\n${accHolder ? `A/c Holder: ${accHolder}\n` : ""}Bank: ${invoice.firm?.bankName || settings?.bankName || ""}\nA/C: ${invoice.firm?.accountNumber || settings?.accountNumber || ""}\nIFSC: ${invoice.firm?.ifscCode || settings?.ifscCode || ""}\n\nPlease pay and share the reference number.`;
       window.open(`https://wa.me/${invoice.customer.phone || ""}?text=${encodeURIComponent(text)}`, "_blank");
     }
   };
@@ -228,6 +221,7 @@ function InvoiceViewContent() {
       }
 
       // Payment details
+      const accHolder = invoice.firm?.accountHolder || settings?.accountHolder || "";
       const bankName = invoice.firm?.bankName || settings?.bankName || "";
       const accNo = invoice.firm?.accountNumber || settings?.accountNumber || "";
       const ifsc = invoice.firm?.ifscCode || settings?.ifscCode || "";
@@ -352,6 +346,7 @@ ${gstTotals}
 <td width="33%" style="width:6.2cm;padding:14px 16px;border-right:1px solid #e2e8f0;vertical-align:top;background-color:#ffffff;">
 ${sectionTitle("₹", "#10b981", "Payment Details")}
 ${bankName ? `<table style="border-collapse:collapse;font-size:11px;table-layout:fixed;width:4.5cm;">
+${accHolder ? `<tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">A/c Holder</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${accHolder}</td></tr>` : ""}
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">Bank</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${bankName}</td></tr>
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">A/C No.</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${accNo}</td></tr>
 <tr><td style="padding:3px 0;font-weight:600;color:#555;background-color:#ffffff;">IFSC</td><td style="padding:3px 6px;color:#aaa;background-color:#ffffff;">:</td><td style="padding:3px 0;color:#222;background-color:#ffffff;">${ifsc}</td></tr>
@@ -718,6 +713,7 @@ ${sigB64 ? `<img src="${sigB64}" width="130" height="65" style="margin:8px auto;
               {(invoice.firm?.bankName || settings?.bankName) ? (
                 <table className="text-[12px] leading-relaxed">
                   <tbody>
+                    {(invoice.firm?.accountHolder || settings?.accountHolder) && <tr><td className="pr-2 py-0.5 font-semibold text-gray-500">A/c Holder</td><td className="px-1.5 text-gray-300">:</td><td className="py-0.5 font-medium text-gray-800">{invoice.firm?.accountHolder || settings?.accountHolder}</td></tr>}
                     <tr><td className="pr-2 py-0.5 font-semibold text-gray-500">Bank</td><td className="px-1.5 text-gray-300">:</td><td className="py-0.5 font-medium text-gray-800">{invoice.firm?.bankName || settings?.bankName}</td></tr>
                     <tr><td className="pr-2 py-0.5 font-semibold text-gray-500">A/C No.</td><td className="px-1.5 text-gray-300">:</td><td className="py-0.5 font-mono font-medium text-gray-800 tracking-wide">{invoice.firm?.accountNumber || settings?.accountNumber}</td></tr>
                     <tr><td className="pr-2 py-0.5 font-semibold text-gray-500">IFSC</td><td className="px-1.5 text-gray-300">:</td><td className="py-0.5 font-mono font-medium text-gray-800 tracking-wide">{invoice.firm?.ifscCode || settings?.ifscCode}</td></tr>

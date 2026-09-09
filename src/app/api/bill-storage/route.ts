@@ -27,13 +27,22 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const adminUserId = searchParams.get("adminUserId");
+  const fileId = searchParams.get("file");
   const lookupUserId = (adminUserId && session.role === "admin") ? adminUserId : session.id;
 
   const key = `gst_bill_storage:${lookupUserId}`;
   const bills: StoredBill[] = (await kv.get(key)) || [];
-  const sorted = bills.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  return Response.json({ data: sorted });
+  if (fileId) {
+    const bill = bills.find((b) => b.id === fileId);
+    if (!bill || !bill.fileData) return Response.json({ error: "File not found" }, { status: 404 });
+    return Response.json({ data: { fileData: bill.fileData, fileName: bill.fileName, fileType: bill.fileType } });
+  }
+
+  const sorted = bills.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const lite = sorted.map(({ fileData, ...b }) => ({ ...b, hasFile: Boolean(fileData) }));
+
+  return Response.json({ data: lite });
 }
 
 export async function POST(req: Request) {

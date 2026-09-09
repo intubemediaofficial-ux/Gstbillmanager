@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Download, Printer, Share2, Loader2, Upload, Image, PenTool, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Firm } from "@/lib/gst-types";
+import { fileToDataUrl } from "@/lib/image-utils";
 
 export interface FieldDef {
   name: string;
@@ -64,21 +65,19 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
     } catch { /* noop */ }
   }, []);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: "letterhead" | "signature") => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "letterhead" | "signature") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
+    try {
+      const { data } = await fileToDataUrl(file, type === "letterhead" ? { maxDim: 1600, quality: 0.85 } : { maxDim: 800, quality: 0.9, format: "png" });
       if (type === "letterhead") {
-        setLetterhead(dataUrl);
-        try { localStorage.setItem(STORAGE_KEY_LETTERHEAD, dataUrl); } catch { /* noop */ }
+        setLetterhead(data);
+        try { localStorage.setItem(STORAGE_KEY_LETTERHEAD, data); } catch { /* noop */ }
       } else {
-        setSignature(dataUrl);
-        try { localStorage.setItem(STORAGE_KEY_SIGNATURE, dataUrl); } catch { /* noop */ }
+        setSignature(data);
+        try { localStorage.setItem(STORAGE_KEY_SIGNATURE, data); } catch { /* noop */ }
       }
-    };
-    reader.readAsDataURL(file);
+    } catch { /* invalid image */ }
     e.target.value = "";
   };
 
@@ -124,15 +123,8 @@ export default function DocGenerator({ title, fields, templates, renderDoc }: Do
     if (!docRef.current) return;
     setPdfLoading(true);
     try {
-      const html2canvas = (await import("html2canvas-pro")).default;
-      const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(docRef.current, { scale: 2, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
-      pdf.save(`${title.replace(/\s+/g, "_")}_${form[fields[0]?.name] || "document"}.pdf`);
+      const { elementToPdf } = await import("@/lib/pdf-utils");
+      await elementToPdf(docRef.current, `${title.replace(/\s+/g, "_")}_${form[fields[0]?.name] || "document"}.pdf`);
       await saveDocumentToHistory();
     } catch { window.print(); }
     finally { setPdfLoading(false); }

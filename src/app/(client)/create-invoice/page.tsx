@@ -300,6 +300,7 @@ function CreateInvoiceContent() {
       accountNumber: selectedFirm.accountNumber,
       ifscCode: selectedFirm.ifscCode,
       branchName: selectedFirm.branchName,
+      accountHolder: selectedFirm.accountHolder,
       signatureText: selectedFirm.signatureText,
       logo: selectedFirm.logo || undefined,
       isGst: selectedFirm.isGst !== false,
@@ -458,10 +459,10 @@ function CreateInvoiceContent() {
             <input value={billNumber} onChange={(e) => {
               const val = e.target.value;
               setBillNumber(val);
-              if (val.trim()) {
-                fetch(`/api/invoices?checkNumber=${encodeURIComponent(val.trim())}`)
-                  .then((r) => r.json())
-                  .then((d) => { setBillNumberError(d.exists ? `Bill #${val.trim()} already exists` : ""); });
+              const trimmed = val.trim();
+              if (trimmed) {
+                const exists = allInvoices.some((i) => i.invoiceNumber === trimmed && i.id !== editId);
+                setBillNumberError(exists ? `Bill #${trimmed} already exists` : "");
               } else { setBillNumberError(""); }
             }}
               placeholder="01/2026"

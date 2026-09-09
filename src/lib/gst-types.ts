@@ -102,6 +102,7 @@ export interface Invoice {
     accountNumber: string;
     ifscCode: string;
     branchName: string;
+    accountHolder?: string;
     signatureText: string;
     logo?: string;
     isGst?: boolean;
@@ -168,6 +169,7 @@ export interface BusinessSettings {
   accountNumber: string;
   ifscCode: string;
   branchName: string;
+  accountHolder?: string;
   termsAndConditions: string;
   signatureText: string;
   machineApiUrl?: string;
@@ -204,6 +206,7 @@ export interface Firm {
   accountNumber: string;
   ifscCode: string;
   branchName: string;
+  accountHolder?: string;
   hsnCode: string;
   signatureText: string;
   letterhead: string;

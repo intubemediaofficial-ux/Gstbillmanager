@@ -53,15 +53,8 @@ export default function QuotationPage() {
     if (!docRef.current) return;
     setPdfLoading(true);
     try {
-      const html2canvas = (await import("html2canvas-pro")).default;
-      const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(docRef.current, { scale: 2, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
-      pdf.save(`Quotation_${quoteNo}.pdf`);
+      const { elementToPdf } = await import("@/lib/pdf-utils");
+      await elementToPdf(docRef.current, `Quotation_${quoteNo}.pdf`);
       fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "Quotation", title: `Quotation - ${clientName}`, recipientName: clientName, firmName: selectedFirm?.name || "", templateName: template.name, formData: { clientName, clientAddress, clientGstin, quoteDate, validTill, quoteNo, notes, terms, grandTotal: String(grandTotal) } }) }).catch(() => {});
     } catch { window.print(); }
     finally { setPdfLoading(false); }

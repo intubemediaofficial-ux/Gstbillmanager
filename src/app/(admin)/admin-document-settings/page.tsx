@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Upload, Image, PenTool, X, FileText, Download, Trash2 } from "lucide-react";
+import { fileToDataUrl } from "@/lib/image-utils";
 
 const STORAGE_KEY_LETTERHEAD = "doc_letterhead";
 const STORAGE_KEY_SIGNATURE = "doc_signature";
@@ -21,21 +22,17 @@ export default function AdminDocumentSettingsPage() {
     } catch { /* noop */ }
   }, []);
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>, type: "letterhead" | "signature") => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "letterhead" | "signature") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      if (type === "letterhead") {
-        setLetterhead(url);
-        try { localStorage.setItem(STORAGE_KEY_LETTERHEAD, url); } catch { /* noop */ }
-      } else {
-        setSignature(url);
-        try { localStorage.setItem(STORAGE_KEY_SIGNATURE, url); } catch { /* noop */ }
-      }
-    };
-    reader.readAsDataURL(file);
+    const { data: url } = await fileToDataUrl(file, type === "letterhead" ? { maxDim: 1600, quality: 0.85 } : { maxDim: 800, quality: 0.9, format: "png" });
+    if (type === "letterhead") {
+      setLetterhead(url);
+      try { localStorage.setItem(STORAGE_KEY_LETTERHEAD, url); } catch { /* noop */ }
+    } else {
+      setSignature(url);
+      try { localStorage.setItem(STORAGE_KEY_SIGNATURE, url); } catch { /* noop */ }
+    }
     e.target.value = "";
   };
 
