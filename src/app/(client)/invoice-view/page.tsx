@@ -34,7 +34,7 @@ function InvoiceViewContent() {
       fetch(invoiceUrl).then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json()),
       fetch("/api/auth/me").then((r) => r.json()).catch(() => ({ id: "" })),
-      adminUserId ? Promise.resolve({ data: [] }) : fetch("/api/firms").then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(adminUserId ? `/api/firms?userId=${encodeURIComponent(adminUserId)}` : "/api/firms").then((r) => r.json()).catch(() => ({ data: [] })),
     ]).then(([iRes, sRes, meRes, fRes]) => {
       const inv = iRes.data || null;
       // Fill fields missing from the stored firm snapshot (e.g. accountHolder
