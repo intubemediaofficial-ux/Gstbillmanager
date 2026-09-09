@@ -27,7 +27,18 @@ export async function GET(req: Request) {
   }
 
   const sorted = invoices.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  return Response.json({ data: sorted });
+  // List responses drop embedded base64 images (logo, letterhead, signature) —
+  // they make the payload multi-MB; full data is still available via ?id=.
+  const lite = sorted.map((inv) => {
+    const { letterhead, signature, firm, ...rest } = inv;
+    return {
+      ...rest,
+      firm: firm ? { ...firm, logo: "" } : firm,
+      signature: signature ? { id: signature.id, directorName: signature.directorName, imageData: "" } : undefined,
+      hasLetterhead: Boolean(letterhead),
+    };
+  });
+  return Response.json({ data: lite });
 }
 
 export async function POST(req: Request) {

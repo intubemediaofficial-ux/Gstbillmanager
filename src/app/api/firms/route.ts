@@ -39,6 +39,7 @@ export async function POST(req: Request) {
         accountNumber: body.accountNumber || "",
         ifscCode: body.ifscCode || "",
         branchName: body.branchName || "",
+        accountHolder: body.accountHolder || "",
         hsnCode: body.hsnCode || "",
         signatureText: body.signatureText || "",
         letterhead: body.letterhead || "",
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
       if (body.accountNumber !== undefined) firms[idx].accountNumber = body.accountNumber;
       if (body.ifscCode !== undefined) firms[idx].ifscCode = body.ifscCode;
       if (body.branchName !== undefined) firms[idx].branchName = body.branchName;
+      if (body.accountHolder !== undefined) firms[idx].accountHolder = body.accountHolder;
       if (body.hsnCode !== undefined) firms[idx].hsnCode = body.hsnCode;
       if (body.signatureText !== undefined) firms[idx].signatureText = body.signatureText;
       if (body.letterhead !== undefined) firms[idx].letterhead = body.letterhead;
