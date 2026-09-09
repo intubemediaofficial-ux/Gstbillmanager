@@ -40,6 +40,7 @@ export default function IdCardPage() {
     setPdfLoading(true);
     try {
       const html2canvas = (await import("html2canvas-pro")).default;
+      await document.fonts.ready;
       const canvas = await html2canvas(docRef.current, { scale: 4, useCORS: true, logging: false });
       const link = document.createElement("a");
       link.download = `ID_Card_${empName || "card"}.png`;
@@ -55,6 +56,7 @@ export default function IdCardPage() {
     try {
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
+      await document.fonts.ready;
       const canvas = await html2canvas(docRef.current, { scale: 3, useCORS: true, logging: false, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/jpeg", 0.92);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [54, 86], compress: true });

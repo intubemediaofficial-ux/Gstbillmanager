@@ -73,6 +73,7 @@ export default function BusinessCardPage() {
   const handleDownload = async () => {
     if (!cardRef.current) return;
     const html2canvas = (await import("html2canvas-pro")).default;
+    await document.fonts.ready;
     const canvas = await html2canvas(cardRef.current, { scale: 3, useCORS: true });
     const link = document.createElement("a");
     link.download = `Business_Card_${card.name || "card"}.png`;
@@ -83,6 +84,7 @@ export default function BusinessCardPage() {
   const handleShare = async () => {
     if (!cardRef.current) return;
     const html2canvas = (await import("html2canvas-pro")).default;
+    await document.fonts.ready;
     const canvas = await html2canvas(cardRef.current, { scale: 3, useCORS: true });
     canvas.toBlob(async (blob) => {
       if (!blob) return;
